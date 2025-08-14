@@ -59,7 +59,7 @@ const AboutSection: React.FC = () => {
               {/* Primary Image */}
               <div className="relative mb-4">
                 <Image
-                  src="/images/about-graphic.png"
+                  src="images/about-graphic.png"
                   alt="Illustration of passport, tickets, and digital nomad with map"
                   width={400}
                   height={300}

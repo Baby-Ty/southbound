@@ -26,7 +26,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1">
-            <Link href="/" className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors">
+            <Link href="./" className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors">
               Southbnd
             </Link>
             <p className="mt-4 text-gray-400 text-sm">

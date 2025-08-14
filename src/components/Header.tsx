@@ -22,9 +22,9 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 mr-12">
-            <Link href="/" className="flex items-center space-x-3 text-2xl font-bold text-black hover:text-gray-800 transition-colors">
+                          <Link href="./" className="flex items-center space-x-3 text-2xl font-bold text-black hover:text-gray-800 transition-colors">
               <img 
-                src="/images/logo.png" 
+                src="images/logo.png" 
                 alt="Southbound Logo" 
                 className="h-10 w-10 object-contain shadow-sm"
               />
