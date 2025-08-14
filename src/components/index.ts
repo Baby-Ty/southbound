@@ -21,3 +21,4 @@ export { default as FloatingWhatsAppButton } from './FloatingWhatsAppButton';
 export { default as PrelaunchModal } from './PrelaunchModal';
 export { default as FAQPageClient } from './FAQPageClient';
 export { default as ContactPageClient } from './ContactPageClient';
+export { default as ChatModal } from './ChatModal';

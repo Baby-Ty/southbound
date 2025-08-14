@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
+import ChatModal from './ChatModal';
 
 const OurPromiseSection: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-sky-200">
       <div className="max-w-screen-xl mx-auto">
@@ -70,7 +73,10 @@ const OurPromiseSection: React.FC = () => {
               </div>
 
               {/* CTA Button */}
-              <button className="bg-teal-800 hover:bg-teal-900 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-lg">
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-teal-800 hover:bg-teal-900 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-lg"
+              >
                 CLICK TO CHAT
               </button>
             </div>
@@ -114,6 +120,12 @@ const OurPromiseSection: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </section>
   );
 };
