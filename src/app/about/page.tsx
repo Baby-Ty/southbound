@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import PrelaunchModal from '@/components/PrelaunchModal';
 
 // Note: metadata moved to layout or handled differently since this is now a client component
 
 const AboutPage = () => {
+  const [prelaunchOpen, setPrelaunchOpen] = useState(false);
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -358,15 +361,15 @@ const AboutPage = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </motion.a>
-              <motion.a
-                href="/contact"
+              <motion.button
+                onClick={() => setPrelaunchOpen(true)}
                 className="inline-flex items-center justify-center px-8 py-4 border-2 border-sb-teal-500 text-sb-teal-700 font-bold text-lg rounded-full hover:bg-sb-teal-500 hover:text-white transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="mr-3">💬</span>
                 let&apos;s Chat
-              </motion.a>
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
@@ -388,6 +391,9 @@ const AboutPage = () => {
           </div>
         </div>
       </motion.section>
+
+      {/* PrelaunchModal */}
+      <PrelaunchModal isOpen={prelaunchOpen} onClose={() => setPrelaunchOpen(false)} />
     </div>
   );
 };

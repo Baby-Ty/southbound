@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import ChatModal from './ChatModal';
+import PrelaunchModal from './PrelaunchModal';
 
 const OurPromiseSection: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [prelaunchOpen, setPrelaunchOpen] = useState(false);
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-sky-200">
@@ -74,7 +74,7 @@ const OurPromiseSection: React.FC = () => {
 
               {/* CTA Button */}
               <button 
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setPrelaunchOpen(true)}
                 className="bg-teal-800 hover:bg-teal-900 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-lg"
               >
                 CLICK TO CHAT
@@ -120,12 +120,9 @@ const OurPromiseSection: React.FC = () => {
           </div>
         </div>
       </div>
-      
-      {/* Chat Modal */}
-      <ChatModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+
+      {/* PrelaunchModal */}
+      <PrelaunchModal isOpen={prelaunchOpen} onClose={() => setPrelaunchOpen(false)} />
     </section>
   );
 };

@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import ChatModal from './ChatModal';
 
 const AboutSection: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -165,14 +162,14 @@ const AboutSection: React.FC = () => {
               className="pt-6"
               variants={itemVariants}
             >
-              <motion.button
-                onClick={() => setIsModalOpen(true)}
+              <motion.a
+                href="#whos-this-for"
                 className="bg-[#1BA39C] text-white px-6 py-3 rounded-full font-medium hover:bg-[#178f87] transition-colors duration-300 shadow-md hover:shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Why We Built This
-              </motion.button>
+              </motion.a>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -192,12 +189,6 @@ const AboutSection: React.FC = () => {
           </div>
         </motion.div>
       </div>
-      
-      {/* Chat Modal */}
-      <ChatModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </section>
   );
 };

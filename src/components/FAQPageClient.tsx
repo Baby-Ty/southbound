@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { PortableText } from '@portabletext/react';
 import Image from 'next/image';
 import { FAQ } from '@/types/sanity';
+import PrelaunchModal from './PrelaunchModal';
 
 interface FAQPageClientProps {
   initialFaqs: FAQ[];
@@ -13,6 +14,7 @@ interface FAQPageClientProps {
 const FAQPageClient = ({ initialFaqs }: FAQPageClientProps) => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [prelaunchOpen, setPrelaunchOpen] = useState(false);
 
   const toggleFaq = (faqId: string) => {
     setOpenFaq(openFaq === faqId ? null : faqId);
@@ -315,15 +317,15 @@ const FAQPageClient = ({ initialFaqs }: FAQPageClientProps) => {
               <p className="text-sb-navy-600 mb-6 leading-relaxed">
                 Our team is here to help you plan your perfect remote work adventure.
               </p>
-              <motion.a
-                href="/contact"
+              <motion.button
+                onClick={() => setPrelaunchOpen(true)}
                 className="inline-flex items-center px-6 py-3 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-medium rounded-full transition-all duration-300 shadow-medium hover:shadow-large"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span>💬</span>
                 <span className="ml-2">Get in Touch</span>
-              </motion.a>
+              </motion.button>
             </motion.div>
         </div>
       </section>
@@ -359,6 +361,9 @@ const FAQPageClient = ({ initialFaqs }: FAQPageClientProps) => {
           </motion.a>
         </div>
       </motion.section>
+
+      {/* PrelaunchModal */}
+      <PrelaunchModal isOpen={prelaunchOpen} onClose={() => setPrelaunchOpen(false)} />
     </div>
   );
 };
