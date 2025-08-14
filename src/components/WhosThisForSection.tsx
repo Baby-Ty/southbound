@@ -15,7 +15,7 @@ const WhosThisForSection: React.FC = () => {
             {/* Main Heading */}
             <div className="space-y-4">
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-                WHO'S THIS FOR?
+                who&apos;s THIS FOR?
               </h2>
               <div className="w-24 h-1 bg-sb-orange-500 rounded-full"></div>
             </div>
@@ -43,7 +43,7 @@ const WhosThisForSection: React.FC = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-white mb-3">Aspiring Adventurers</h3>
                   <p className="text-lg text-gray-300 leading-relaxed">
-                    You dream of working from Bali or Buenos Aires but don't know where to start. 
+                    You dream of working from Bali or Buenos Aires but don&apos;t know where to start. 
                     We've done the groundwork, finding the best neighborhoods, reliable internet, and like-minded communities.
                   </p>
                 </div>

@@ -92,7 +92,7 @@ const FAQPageClient = ({ initialFaqs }: FAQPageClientProps) => {
             
             <p className="text-xl md:text-2xl text-sb-navy-600 max-w-4xl mx-auto leading-relaxed mb-12">
               Everything you need to know about working remotely from amazing destinations. 
-              Can't find what you're looking for? We're here to help!
+              Can&apos;t find what you&apos;re looking for? We&apos;re here to help!
             </p>
             
             <div className="flex justify-center items-center gap-6 text-4xl opacity-80 mb-8">

@@ -309,9 +309,9 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
 
               {/* Right Column */}
               <div className="space-y-6">
-                {/* What's Included */}
+                {/* what&apos;s Included */}
                 <div>
-                  <h3 className="text-xl font-semibold text-sb-navy-700 mb-3">What's Included</h3>
+                  <h3 className="text-xl font-semibold text-sb-navy-700 mb-3">what&apos;s Included</h3>
                   <ul className="space-y-2">
                     {tripDetails.includes.map((item: string, index: number) => (
                       <li key={index} className="flex items-start gap-3 text-sb-navy-600">

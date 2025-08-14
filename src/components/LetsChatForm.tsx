@@ -58,7 +58,7 @@ const LetsChatForm: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-teal-700 mb-4">
-            LET'S CHAT
+            let&apos;s CHAT
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             You can fill in as much or as little as you want – we can always discuss these details later
@@ -80,7 +80,7 @@ const LetsChatForm: React.FC = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Let's start with your name 👋"
+                  placeholder="let&apos;s start with your name 👋"
                   className="w-full border-b-2 border-gray-300 focus:border-teal-600 bg-transparent py-3 text-lg placeholder-gray-400 focus:outline-none transition-colors"
                 />
               </div>
@@ -198,7 +198,7 @@ const LetsChatForm: React.FC = () => {
                   type="submit"
                   className="bg-teal-800 hover:bg-teal-900 text-white px-8 py-4 rounded-full text-lg font-medium transition-colors duration-300 shadow-lg hover:shadow-xl"
                 >
-                  LET'S CHAT
+                  let&apos;s CHAT
                 </button>
               </div>
             </form>

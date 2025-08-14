@@ -12,7 +12,7 @@ const HowItWorksPage = () => {
     {
       number: "01",
       title: "Share Your Vibe",
-      description: "Tell us your dream destinations, work style, and travel timeline. We'll craft a remote work adventure that's uniquely you.",
+      description: "Tell us your dream destinations, work style, and travel timeline. We'll craft a remote work adventure that&apos;s uniquely you.",
       icon: "✨",
       iconBg: "from-sb-teal-300 to-sb-teal-400",
       detail: "Answer a few quick questions about your work setup, preferred destinations, and travel style to help us understand your perfect trip."
@@ -153,7 +153,7 @@ const HowItWorksPage = () => {
               Your Journey Timeline
             </h2>
             <p className="text-sb-navy-600 max-w-2xl mx-auto">
-              From first contact to takeoff – here's what to expect
+              From first contact to takeoff – here&apos;s what to expect
             </p>
           </motion.div>
 
@@ -267,7 +267,7 @@ const HowItWorksPage = () => {
               Why Choose Southbound?
             </h2>
             <p className="text-xl text-sb-navy-600 max-w-3xl mx-auto leading-relaxed">
-              We're not just another booking platform – we're your remote work adventure partners
+              We&apos;re not just another booking platform – We&apos;re your remote work adventure partners
             </p>
           </motion.div>
 

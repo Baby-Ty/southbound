@@ -48,7 +48,7 @@ export default async function Home() {
       {/* About Section */}
       <AboutSection />
 
-      {/* Who's This For Section */}
+      {/* who&apos;s This For Section */}
       <WhosThisForSection />
 
       {/* Destinations Section */}
@@ -63,7 +63,7 @@ export default async function Home() {
       {/* Features Section */}
       <FeaturesSection />
 
-      {/* Let's Chat Form */}
+      {/* let&apos;s Chat Form */}
       <LetsChatForm />
 
       {/* FAQ Section */}

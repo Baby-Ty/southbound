@@ -85,7 +85,7 @@ const Hero = () => {
                   href="#whos-this-for"
                   className="bg-sb-teal-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-sb-teal-700 transition-colors duration-200 text-center"
                 >
-                  Who's this for?
+                  who&apos;s this for?
                 </Link>
               </div>
             </div>

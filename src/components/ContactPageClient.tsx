@@ -124,7 +124,7 @@ const ContactPageClient = ({ initialFaqs }: ContactPageClientProps) => {
             </div>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-sb-navy-700 mb-8 leading-tight">
-              Let's{' '}
+              let&apos;s{' '}
               <span className="relative inline-block">
                 <span className="relative z-10 text-white font-black">Chat</span>
                 <span className="absolute inset-0 bg-sb-orange-500 rounded-lg transform -skew-x-12 z-0"></span>
@@ -133,7 +133,7 @@ const ContactPageClient = ({ initialFaqs }: ContactPageClientProps) => {
             
             <p className="text-xl md:text-2xl text-sb-navy-600 max-w-4xl mx-auto leading-relaxed mb-12">
               Have questions about working remotely from amazing destinations? 
-              Need help planning your adventure? We're here to help!
+              Need help planning your adventure? We&apos;re here to help!
             </p>
             
             <div className="flex justify-center items-center gap-6 text-4xl opacity-80 mb-8">

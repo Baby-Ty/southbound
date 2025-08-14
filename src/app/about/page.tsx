@@ -159,7 +159,7 @@ const AboutPage = () => {
                 </h2>
                 
                 <p className="text-lg text-sb-navy-600 leading-relaxed mb-6">
-                  We're not a tour company. We're your behind-the-scenes crew for remote work adventures. 
+                  We&apos;re not a tour company. We&apos;re your behind-the-scenes crew for remote work adventures. 
                   While others book you a hotel, we set up your entire work-life ecosystem abroad.
                 </p>
 
@@ -365,7 +365,7 @@ const AboutPage = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="mr-3">💬</span>
-                Let's Chat
+                let&apos;s Chat
               </motion.a>
             </div>
           </motion.div>

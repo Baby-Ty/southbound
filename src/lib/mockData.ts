@@ -1,5 +1,10 @@
 import { TripCard, FAQ } from '@/types/sanity';
 
+// Helper function to convert string to PortableTextBlock
+const textToPortableText = (text: string) => [
+  { _type: 'block', _key: 'text-block', children: [{ _type: 'span', _key: 'text-span', text }] }
+];
+
 // Mock trip data for when Sanity CMS is not available
 export const mockTrips: TripCard[] = [
   {
@@ -99,7 +104,7 @@ export const mockFaqs: FAQ[] = [
   {
     _id: 'faq-booking',
     question: 'How far in advance should I book my trip?',
-    answer: 'We recommend booking 2-8 weeks in advance for the best selection and pricing. However, we often have last-minute availability for spontaneous adventurers! Some popular destinations during peak seasons may require earlier booking.',
+    answer: textToPortableText('We recommend booking 2-8 weeks in advance for the best selection and pricing. However, we often have last-minute availability for spontaneous adventurers! Some popular destinations during peak seasons may require earlier booking.'),
     category: 'booking',
     order: 1,
     isActive: true,
@@ -107,23 +112,23 @@ export const mockFaqs: FAQ[] = [
   {
     _id: 'faq-included',
     question: 'What\'s included in the trip price?',
-    answer: 'Each trip includes accommodation, co-working spaces, welcome orientation, and community events. Most trips also include airport transfers and some meals. Flights, visa fees, and personal expenses are typically not included. Check each trip\'s detailed itinerary for specifics.',
-    category: 'trip-details',
+    answer: textToPortableText('Each trip includes accommodation, co-working spaces, welcome orientation, and community events. Most trips also include airport transfers and some meals. Flights, visa fees, and personal expenses are typically not included. Check each trip\'s detailed itinerary for specifics.'),
+    category: 'general',
     order: 2,
     isActive: true,
   },
   {
     _id: 'faq-solo',
     question: 'Can I travel solo?',
-    answer: 'Absolutely! About 70% of our travelers are solo adventurers. Our trips are designed to help you connect with like-minded people. You\'ll never feel alone - our community managers ensure everyone feels welcome and included.',
-    category: 'community',
+    answer: textToPortableText('Absolutely! About 70% of our travelers are solo adventurers. Our trips are designed to help you connect with like-minded people. You\'ll never feel alone - our community managers ensure everyone feels welcome and included.'),
+    category: 'general',
     order: 3,
     isActive: true,
   },
   {
     _id: 'faq-cancellation',
     question: 'What\'s your cancellation policy?',
-    answer: 'We offer flexible cancellation policies to give you peace of mind. Most trips can be cancelled up to 14 days before departure for a full refund (minus processing fees). Earlier cancellations may be eligible for partial refunds or trip credits.',
+    answer: textToPortableText('We offer flexible cancellation policies to give you peace of mind. Most trips can be cancelled up to 14 days before departure for a full refund (minus processing fees). Earlier cancellations may be eligible for partial refunds or trip credits.'),
     category: 'booking',
     order: 4,
     isActive: true,
@@ -131,16 +136,16 @@ export const mockFaqs: FAQ[] = [
   {
     _id: 'faq-wifi',
     question: 'How reliable is the internet for remote work?',
-    answer: 'All our accommodations and co-working spaces are tested for reliable high-speed internet (minimum 25+ Mbps). We also provide backup solutions and local SIM cards. Our community managers can recommend the best spots for important calls or deadlines.',
-    category: 'practical',
+    answer: textToPortableText('All our accommodations and co-working spaces are tested for reliable high-speed internet (minimum 25+ Mbps). We also provide backup solutions and local SIM cards. Our community managers can recommend the best spots for important calls or deadlines.'),
+    category: 'general',
     order: 5,
     isActive: true,
   },
   {
     _id: 'faq-age',
     question: 'Is there an age limit for trips?',
-    answer: 'Our trips are designed for adults 18+, with most travelers being between 25-45. We welcome anyone with a spirit of adventure and openness to new experiences! Our diverse community includes students, professionals, entrepreneurs, and remote workers.',
-    category: 'community',
+    answer: textToPortableText('Our trips are designed for adults 18+, with most travelers being between 25-45. We welcome anyone with a spirit of adventure and openness to new experiences! Our diverse community includes students, professionals, entrepreneurs, and remote workers.'),
+    category: 'general',
     order: 6,
     isActive: true,
   }

@@ -89,7 +89,7 @@ const PrelaunchModal: React.FC<PrelaunchModalProps> = ({ isOpen, onClose }) => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  We're Almost Ready!
+                  We&apos;re Almost Ready!
                 </motion.h3>
                 <motion.p 
                   className="text-orange-100 text-lg"
@@ -97,7 +97,7 @@ const PrelaunchModal: React.FC<PrelaunchModalProps> = ({ isOpen, onClose }) => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  Your adventure awaits - let's make it happen
+                  Your adventure awaits - let&apos;s make it happen
                 </motion.p>
               </div>
             </div>
@@ -121,7 +121,7 @@ const PrelaunchModal: React.FC<PrelaunchModalProps> = ({ isOpen, onClose }) => {
                     Final touches in progress...
                   </h4>
                   <p className="text-sb-navy-600 leading-relaxed">
-                    While we perfect our booking system, we're personally helping adventurers like you plan incredible remote work experiences. 
+                    While we perfect our booking system, We&apos;re personally helping adventurers like you plan incredible remote work experiences. 
                     Get VIP access and personalized trip planning right now!
                   </p>
                 </div>
