@@ -22,20 +22,20 @@ const PrelaunchModal: React.FC<PrelaunchModalProps> = ({ isOpen, onClose }) => {
     {
       id: 'custom-trip',
       icon: MapPin,
-      title: 'Custom Trip Planning',
-      description: 'Design a personalized workation'
+      title: 'Plan My Escape',
+      description: 'Let\'s design your perfect remote work trip, from flights to coworking spots.'
     },
     {
       id: 'group-booking',
       icon: Users,
-      title: 'Group Booking',
-      description: 'Travel with friends or colleagues'
+      title: 'Just Curious?',
+      description: 'Let\'s explore ideas together and see what\'s possible.'
     },
     {
       id: 'specific-dates',
       icon: Calendar,
-      title: 'Specific Dates',
-      description: 'I have exact travel dates in mind'
+      title: 'Lock in My Dates',
+      description: 'You\'ve got your travel window, we\'ll make the rest happen.'
     }
   ];
 
@@ -135,7 +135,7 @@ const PrelaunchModal: React.FC<PrelaunchModalProps> = ({ isOpen, onClose }) => {
               transition={{ delay: 0.5 }}
             >
               <h4 className="text-lg font-semibold text-sb-navy-700 mb-4 text-center">
-                What brings you here today? 🤔
+                What are you dreaming up? 🌍
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {quickOptions.map((option, index) => (
