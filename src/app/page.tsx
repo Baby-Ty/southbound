@@ -63,7 +63,7 @@ export default async function Home() {
       {/* Features Section */}
       <FeaturesSection />
 
-      {/* let&apos;s Chat Form */}
+      {/* Let's Chat Form */}
       <LetsChatForm />
 
       {/* FAQ Section */}

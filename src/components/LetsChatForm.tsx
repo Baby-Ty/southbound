@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import PrelaunchModal from './PrelaunchModal';
 
 interface FormData {
   name: string;
@@ -13,6 +14,7 @@ interface FormData {
 }
 
 const LetsChatForm: React.FC = () => {
+  const [prelaunchOpen, setPrelaunchOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -49,7 +51,8 @@ const LetsChatForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
-    // Handle form submission here
+    // Open prelaunch modal instead of form submission
+    setPrelaunchOpen(true);
   };
 
   return (
@@ -58,7 +61,7 @@ const LetsChatForm: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-teal-700 mb-4">
-            let&apos;s CHAT
+            Let's Chat
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             You can fill in as much or as little as you want – we can always discuss these details later
@@ -198,7 +201,7 @@ const LetsChatForm: React.FC = () => {
                   type="submit"
                   className="bg-teal-800 hover:bg-teal-900 text-white px-8 py-4 rounded-full text-lg font-medium transition-colors duration-300 shadow-lg hover:shadow-xl"
                 >
-                  let&apos;s CHAT
+                  Let's Chat
                 </button>
               </div>
             </form>
@@ -216,6 +219,9 @@ const LetsChatForm: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PrelaunchModal */}
+      <PrelaunchModal isOpen={prelaunchOpen} onClose={() => setPrelaunchOpen(false)} />
     </section>
   );
 };

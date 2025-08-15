@@ -368,7 +368,7 @@ const AboutPage = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="mr-3">💬</span>
-                let&apos;s Chat
+                Let's Chat
               </motion.button>
             </div>
           </motion.div>
