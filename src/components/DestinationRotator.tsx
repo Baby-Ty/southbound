@@ -38,28 +38,30 @@ const DestinationRotator = ({
   }
 
   return (
-    <div className="flex flex-col items-center space-y-2">
+    <div className="flex flex-col items-center space-y-3">
       {/* Now Boarding Label */}
-      <div className="text-xs uppercase tracking-wider text-gray-500 font-medium">
+      <div className="text-xs uppercase tracking-[0.2em] text-gray-500 font-medium">
         Now Boarding
       </div>
       
       {/* Destination Display */}
-      <div className="h-12 flex items-center justify-center">
-        <span 
-          className={`
-            font-mono text-2xl md:text-3xl font-bold text-gray-800
-            transition-opacity duration-300 ease-in-out
-            ${isVisible ? 'opacity-100' : 'opacity-0'}
-          `}
-        >
-          {destinations[currentIndex]}
-        </span>
+      <div className="h-12 sm:h-14 flex items-center justify-center w-full">
+        <div className="w-64 sm:w-72 md:w-80 flex items-center justify-center">
+          <span 
+            className={`
+              font-mono text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 uppercase tracking-[0.15em]
+              transition-opacity duration-300 ease-in-out
+              ${isVisible ? 'opacity-100' : 'opacity-0'}
+            `}
+          >
+            {destinations[currentIndex]}
+          </span>
+        </div>
       </div>
       
-      {/* Boarding Pass Style Decoration */}
-      <div className="w-24 h-0.5 bg-gray-300 relative">
-        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-300 rounded-full"></div>
+      {/* Boarding Pass Style Decoration with orange accent */}
+      <div className="w-28 h-[1px] bg-sb-orange-500 relative">
+        <div className="absolute -top-[3px] left-1/2 transform -translate-x-1/2 w-[6px] h-[6px] bg-sb-orange-500 rounded-full"></div>
       </div>
     </div>
   )

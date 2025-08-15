@@ -35,7 +35,8 @@ const Hero = () => {
           className="w-full h-full object-cover opacity-60"
           onError={(e) => {
             console.error('Video error:', e)
-            console.error('Video error details:', e.target?.error)
+            const target = e.target as HTMLVideoElement
+            console.error('Video error details:', target?.error)
           }}
           onLoadStart={() => console.log('Video loading started')}
           onCanPlay={() => console.log('Video can play')}
@@ -105,57 +106,88 @@ const Hero = () => {
               {/* Boarding Pass Container */}
               <div className="relative">
                 {/* Main Boarding Pass Card */}
-                <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-lg shadow-lg p-8 md:p-12 max-w-sm w-full relative">
-                  {/* Perforated Edge Effect */}
-                  <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2">
-                    <div className="flex flex-col space-y-2">
-                      {[...Array(12)].map((_, i) => (
-                        <div key={i} className="w-2 h-2 bg-sb-beige-100 rounded-full"></div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="bg-gradient-to-b from-white to-[#fff8f3] backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8 md:p-12 max-w-sm w-full relative overflow-hidden">
+                  {/* Paper texture overlay */}
+                  <div className="absolute inset-0 opacity-[0.02]" style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      45deg,
+                      transparent,
+                      transparent 2px,
+                      rgba(0,0,0,0.1) 2px,
+                      rgba(0,0,0,0.1) 4px
+                    )`
+                  }}></div>
+                  
+                  {/* Inner shadow for card depth */}
+                  <div className="absolute inset-0 rounded-xl shadow-inner pointer-events-none"></div>
+                  
+                  {/* Left side notch cutouts */}
+                  <div className="absolute -left-[2px] top-1/4 w-4 h-8 bg-sb-beige-100 rounded-r-full"></div>
+                  <div className="absolute -left-[2px] bottom-1/4 w-4 h-8 bg-sb-beige-100 rounded-r-full"></div>
+                  
+                  {/* Right side notch cutouts */}
+                  <div className="absolute -right-[2px] top-1/4 w-4 h-8 bg-sb-beige-100 rounded-l-full"></div>
+                  <div className="absolute -right-[2px] bottom-1/4 w-4 h-8 bg-sb-beige-100 rounded-l-full"></div>
 
                   {/* Boarding Pass Header */}
-                  <div className="text-center mb-8">
-                    <div className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+                  <div className="text-center mb-6 sm:mb-8 relative z-10">
+                    <div className="text-xs uppercase tracking-[0.2em] text-gray-700 font-medium mb-3">
                       Remote Work Pass
                     </div>
-                    <div className="w-16 h-0.5 bg-gray-300 mx-auto"></div>
+                    <div className="w-20 h-[1px] bg-sb-orange-500 mx-auto"></div>
                   </div>
 
                   {/* Destination Rotator */}
-                  <div className="mb-8">
+                  <div className="mb-6 sm:mb-8 relative z-10">
                     <DestinationRotator destinations={destinations} />
                   </div>
 
+                  {/* Dashed divider */}
+                  <div className="border-t border-dashed border-gray-300 my-6 sm:my-8 relative z-10"></div>
+
                   {/* Flight Details */}
-                  <div className="space-y-4 text-center">
+                  <div className="space-y-4 text-center relative z-10">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500">From</div>
-                        <div className="font-mono font-semibold">JNB</div>
+                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">From</div>
+                        <div className="font-mono font-bold text-gray-900">JNB</div>
                       </div>
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500">Class</div>
-                        <div className="font-mono font-semibold">REMOTE</div>
+                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">Class</div>
+                        <div className="font-mono font-bold text-gray-900">REMOTE</div>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500">Gate</div>
-                        <div className="font-mono font-semibold">A22</div>
+                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">Gate</div>
+                        <div className="font-mono font-bold text-gray-900">A22</div>
                       </div>
-                      <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500">Zone</div>
-                        <div className="font-mono font-semibold">ADVENTURE</div>
+                      <div className="flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1 flex items-center justify-center gap-1">
+                            Zone
+                            <svg className="w-3 h-3 text-sb-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3-3a1 1 0 00-1 1v5a1 1 0 102 0V9a1 1 0 00-1-1zm-2 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="font-mono font-bold text-gray-900">ADVENTURE</div>
+                        </div>
                       </div>
                     </div>
                     
                     <div className="border-t border-dashed border-gray-300 my-6"></div>
                     
-                    <div className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                      SOUTH BOUND
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-bold text-gray-900 uppercase tracking-[0.2em]">
+                        SOUTH BOUND
+                      </div>
+                      {/* Simple barcode representation */}
+                      <div className="flex space-x-[1px]">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className={`w-[2px] bg-gray-600 ${i % 2 === 0 ? 'h-4' : 'h-3'}`}></div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
