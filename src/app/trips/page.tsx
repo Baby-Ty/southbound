@@ -17,6 +17,12 @@ export const viewport = {
 // This function runs at build time for static generation
 async function getTrips(): Promise<TripCard[]> {
   try {
+    // Check if Sanity is properly configured
+    if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID === 'your-project-id') {
+      console.log('Sanity not configured, using mock data')
+      return mockTrips
+    }
+    
     const trips = await client.fetch(queries.allTrips)
     // Return mock data if no trips found or if Sanity is not configured
     return trips.length > 0 ? trips : mockTrips
