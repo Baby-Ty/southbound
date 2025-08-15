@@ -24,7 +24,7 @@ const Hero = () => {
   }, [])
 
   return (
-    <section className="min-h-screen bg-sb-beige-100 flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
@@ -32,17 +32,27 @@ const Hero = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-30"
+          className="w-full h-full object-cover opacity-60"
+          onError={(e) => {
+            console.error('Video error:', e)
+            console.error('Video error details:', e.target?.error)
+          }}
+          onLoadStart={() => console.log('Video loading started')}
+          onCanPlay={() => console.log('Video can play')}
+          onLoadedData={() => console.log('Video data loaded')}
         >
+          <source src="South Bound.mp4" type="video/mp4" />
           <source src="/South Bound.mp4" type="video/mp4" />
+          <source src="./South Bound.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
-        {/* Overlay to ensure content readability */}
-        <div className="absolute inset-0 bg-sb-beige-100 bg-opacity-70"></div>
+        {/* Subtle overlay for text readability */}
+        <div className="absolute inset-0 bg-sb-beige-100 bg-opacity-80"></div>
       </div>
 
       <div className="max-w-7xl w-full relative z-10">
         {/* Main Hero Card */}
-        <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
+        <div className="bg-white bg-opacity-75 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
           <div className="grid lg:grid-cols-2 min-h-[600px]">
             
             {/* Left Side - Content */}
