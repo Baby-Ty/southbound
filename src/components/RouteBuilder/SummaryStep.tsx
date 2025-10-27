@@ -1,3 +1,4 @@
+type RouteBuilderData = { region: string; lifestyle: string[]; workSetup: string[]; travelStyle: string; };
 
 
 interface SummaryStepProps {
@@ -166,3 +167,4 @@ const SummaryStep = ({ data, onStartOver, onPrevious }: SummaryStepProps) => {
 };
 
 export default SummaryStep;
+
