@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CalendarClock,
@@ -56,9 +55,11 @@ type PlannerState = {
 const STORAGE_KEY = "sb.routePlanner";
 
 function useInitialRegion(): RegionKey {
-  const params = useSearchParams();
-  const r = (params.get("region") || "latin-america") as string;
-  if (r === "europe" || r === "latin-america" || r === "southeast-asia") return r;
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    const r = (params.get("region") || "latin-america") as string;
+    if (r === "europe" || r === "latin-america" || r === "southeast-asia") return r;
+  }
   return "latin-america";
 }
 
