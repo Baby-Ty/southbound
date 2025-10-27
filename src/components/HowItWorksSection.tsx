@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import PrelaunchModal from './PrelaunchModal';
 import { motion } from 'framer-motion';
 
@@ -8,35 +9,35 @@ const HowItWorksSection: React.FC = () => {
   const steps = [
     {
       number: '01',
-      emoji: '✍️',
-      title: 'Share Your vibe',
-      description: 'Share your dream destinations, work style, and travel dates. We will design a remote work adventure that is all you.',
-      iconBg: 'bg-[#AEE6E6]',
-      icon: '🌟'
+      title: 'Find Your Vibe',
+      description:
+        'Choose your region, lifestyle, work setup, and travel style in our quick Route Builder. We’ll get a feel for how you like to live, work, and explore.',
+      iconBg: 'bg-sb-teal-100',
+      icon: '🧭'
     },
     {
       number: '02',
-      emoji: '🧰',
-      title: 'We Handle Everything',
-      description: 'Accommodation, Wi-Fi, co-working spaces, local SIM, and airport pickups are all sorted so you do not have to stress.',
-      iconBg: 'bg-[#FFA069]',
-      icon: '⚙️'
+      title: 'See Your Route',
+      description:
+        'We’ll show you a few handpicked routes. Think tropical coworking hubs, city escapes, and coastal towns that fit your budget and vibe.',
+      iconBg: 'bg-sb-orange-100',
+      icon: '🗺️'
     },
     {
       number: '03',
-      emoji: '📋',
-      title: 'Get your Roadmap',
-      description: 'A detailed itinerary with work-friendly stays, local experiences, and emergency contacts, ready in your inbox.',
-      iconBg: 'bg-[#C2F5D8]',
-      icon: '📋'
+      title: 'Personalize Your Trip',
+      description:
+        'Adjust your route, swap destinations, or add extras like surf lessons or wellness passes. We’ll handle the details and confirm your itinerary.',
+      iconBg: 'bg-sb-mint-100',
+      icon: '🎒'
     },
     {
       number: '04',
-      emoji: '✈️',
-      title: 'Pack & Plug in',
-      description: 'Grab your laptop and passport. Everything else is covered. Time to live your remote work dreams.',
-      iconBg: 'bg-[#FFD6C2]',
-      icon: '🎒'
+      title: 'Pack & Go',
+      description:
+        'Everything’s ready, just show up. We handle your stay, Wi‑Fi, SIM, airport pickup, and local support so you can focus on the adventure.',
+      iconBg: 'bg-sb-beige-200',
+      icon: '🌍'
     }
   ];
 
@@ -93,7 +94,7 @@ const HowItWorksSection: React.FC = () => {
           </h2>
           <div className="w-24 h-1 bg-sb-orange-500 rounded-full mx-auto mb-6"></div>
           <p className="text-xl text-sb-navy-600 leading-relaxed max-w-3xl mx-auto">
-            From dream to departure in 4 simple steps. We make remote work travel effortless so you can focus on what matters most.
+            From spark to route, here’s how we match you with your perfect remote work destination.
           </p>
         </motion.div>
 
@@ -147,7 +148,7 @@ const HowItWorksSection: React.FC = () => {
                 transition={{ delay: 0.6 }}
                 viewport={{ once: true }}
               >
-                <span className="text-2xl">{step.emoji}</span>
+                <span className="text-2xl">{step.icon}</span>
                 <h3 className="text-lg font-semibold text-sb-navy-700">
                   {step.title}
                 </h3>
@@ -183,18 +184,21 @@ const HowItWorksSection: React.FC = () => {
           <p className="text-sb-navy-600 mb-6 leading-relaxed">
             Work from anywhere, live fully, and turn your everyday into something unforgettable.
           </p>
-          <motion.button 
-            className="inline-flex items-center px-8 py-4 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all duration-300 shadow-medium hover:shadow-large hover:scale-105"
+          <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setPrelaunchOpen(true)}
           >
-            <span>🎯</span>
-            <span className="ml-2">let&apos;s Plan Your Trip</span>
-            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </motion.button>
+            <Link 
+              href="/route-builder"
+              className="inline-flex items-center px-8 py-4 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all duration-300 shadow-medium hover:shadow-large hover:scale-105"
+            >
+              <span>🎯</span>
+              <span className="ml-2">let&apos;s Plan Your Trip</span>
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Bottom Illustration */}
