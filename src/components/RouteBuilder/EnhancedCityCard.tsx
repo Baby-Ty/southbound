@@ -25,6 +25,7 @@ export interface StopPlan {
   city: string;
   country: string;
   weeks: number;
+  weeksEdited?: boolean;
   budgetCoins: 1 | 2 | 3;
   tags: string[];
   highlights: {
