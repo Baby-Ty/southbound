@@ -1,5 +1,4 @@
 "use client"
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import DestinationRotator from './DestinationRotator'
@@ -166,15 +165,7 @@ const Hero = () => {
             <div className="flex flex-col justify-center text-left text-white">
               
               {/* Logo - subtle and non-distracting */}
-              <div className="flex items-center gap-3 mb-8 opacity-90">
-                <div className="relative w-10 h-10">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="South Bound Logo" 
-                    fill
-                    className="object-contain invert brightness-0 filter" 
-                  />
-                </div>
+              <div className="mb-8 opacity-90">
                 <span className="font-bold tracking-[0.2em] text-sm uppercase text-white/80">South Bound</span>
               </div>
 
@@ -186,7 +177,7 @@ const Hero = () => {
 
               {/* Subheading */}
               <p className="text-lg md:text-xl text-stone-200 leading-relaxed mb-8 max-w-lg font-medium">
-                The remote work adventure for South Africans. We handle the logistics, you just show up.
+                The remote work adventure for South Africans. <br className="hidden md:block" />We handle the logistics, you just show up.
               </p>
 
               {/* CTA Buttons */}
@@ -211,7 +202,7 @@ const Hero = () => {
                         </div>
                     ))}
                  </div>
-                 <p>Join 500+ South African nomads</p>
+                 <p>Join other South African nomads</p>
               </div>
             </div>
 

@@ -39,10 +39,11 @@ const IntroSection = () => {
           </h2>
           <p className="text-xl text-stone-600 leading-relaxed mb-10 max-w-2xl mx-auto">
             Planning a multi-month trip while working full-time is a nightmare. 
+            <br className="hidden md:block" />
             Time zones? WiFi speeds? Safe neighborhoods? Community?
           </p>
           <p className="text-xl text-stone-900 font-bold leading-relaxed">
-            We sort it all out. You just book your flight and show up.
+            <span className="bg-[#E86B32] text-white px-2 py-1 -rotate-1 inline-block">We sort it all out.</span> You just book your flight and show up.
           </p>
         </motion.div>
       </div>
