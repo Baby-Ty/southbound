@@ -44,3 +44,4 @@ export { ExperiencesSection } from './sections/Experiences';
 export { HowItWorksSection as HowItWorksSectionNew } from './sections/HowItWorks';
 export { WorkReadySection } from './sections/WorkReady';
 export { FAQsSection } from './sections/FAQs';
+export { default as PreFooterCTA } from './sections/PreFooterCTA';
