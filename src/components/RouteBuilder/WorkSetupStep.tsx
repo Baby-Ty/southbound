@@ -52,13 +52,13 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold text-sb-navy-700">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold text-sb-navy-700">
           What does your ideal work setup look like?
         </h2>
-        <p className="text-lg text-sb-navy-500">
+        <p className="text-base text-sb-navy-500">
           Helps us match you with the right coworking and accommodation options.
         </p>
       </div>
@@ -68,7 +68,7 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
       >
         {workSetupOptions.map((option) => {
           const isSelected = data.workSetup?.includes(option.id);
@@ -79,13 +79,13 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
               onClick={() => handleWorkSetupToggle(option.id)}
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-300 h-full flex flex-col items-center justify-center text-center space-y-3 min-h-[140px] ${
+              className={`relative p-3 rounded-2xl border-2 text-left transition-all duration-300 h-full flex flex-col items-center justify-center text-center space-y-2 min-h-[110px] ${
                 isSelected
                   ? 'border-sb-orange-500 bg-sb-orange-50 shadow-md'
                   : 'border-gray-100 bg-white hover:border-sb-orange-200 hover:shadow-lg'
               }`}
             >
-              <span className="text-4xl mb-1">{option.icon}</span>
+              <span className="text-3xl mb-1">{option.icon}</span>
               <span className={`font-semibold text-sm leading-tight ${isSelected ? 'text-sb-orange-700' : 'text-sb-navy-700'}`}>
                 {option.name}
               </span>
@@ -107,7 +107,7 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
       </motion.div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-8 border-t border-gray-100">
+      <div className="flex justify-between pt-4 border-t border-gray-100">
         <button
           onClick={onPrevious}
           className="flex items-center space-x-2 px-6 py-3 rounded-full text-gray-500 hover:bg-gray-100 hover:text-sb-navy-700 transition-all duration-200 font-medium"

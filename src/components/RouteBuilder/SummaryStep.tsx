@@ -63,19 +63,19 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
         <motion.div 
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-sb-orange-400 to-sb-orange-600 rounded-full shadow-xl"
+          className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-sb-orange-400 to-sb-orange-600 rounded-full shadow-xl"
         >
-          <span className="text-3xl">✨</span>
+          <span className="text-xl">✨</span>
         </motion.div>
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-sb-navy-700 tracking-tight mb-1">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-sb-navy-700 tracking-tight mb-1">
             Your Perfect Route is Ready!
           </h2>
           <p className="text-base text-sb-navy-500 max-w-lg mx-auto">
@@ -92,9 +92,9 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
         className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 relative"
       >
         {/* Top Deco Bar */}
-        <div className="h-3 bg-gradient-to-r from-sb-orange-400 via-sb-orange-500 to-sb-teal-500" />
+        <div className="h-2 bg-gradient-to-r from-sb-orange-400 via-sb-orange-500 to-sb-teal-500" />
 
-        <div className="p-6 space-y-8">
+        <div className="p-4 space-y-5">
           
           {/* 1. The "What & How" Row */}
           <div className="flex flex-col md:flex-row gap-4">

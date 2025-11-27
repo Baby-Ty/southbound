@@ -131,11 +131,11 @@ const RouteBuilder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sb-beige-50 via-white to-sb-teal-50 py-8 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-sb-beige-50 via-white to-sb-teal-50 py-4 sm:py-8">
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Progress Indicator */}
-        <div className="mb-8 max-w-2xl mx-auto">
+        <div className="mb-4 max-w-2xl mx-auto">
           <div className="relative pt-1">
             <div className="flex mb-2 items-center justify-between">
               <div className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-sb-orange-600 bg-sb-orange-100">
@@ -159,8 +159,8 @@ const RouteBuilder = () => {
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative min-h-[600px]">
-          <div className="p-6 sm:p-10 h-full">
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative min-h-[500px]">
+          <div className="p-4 sm:p-8 h-full">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentStep}

@@ -60,13 +60,13 @@ const TravelStyleStep = ({ data, onUpdate, onNext, onPrevious }: TravelStyleStep
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold text-sb-navy-700">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold text-sb-navy-700">
           What's your travel style?
         </h2>
-        <p className="text-lg text-sb-navy-500">
+        <p className="text-base text-sb-navy-500">
           This helps us match your comfort level and accommodation preferences.
         </p>
       </div>
@@ -76,7 +76,7 @@ const TravelStyleStep = ({ data, onUpdate, onNext, onPrevious }: TravelStyleStep
         variants={container}
         initial="hidden"
         animate="show"
-        className="space-y-4"
+        className="space-y-3"
       >
         {travelStyles.map((style) => {
           const isSelected = data.travelStyle === style.id;
@@ -87,21 +87,21 @@ const TravelStyleStep = ({ data, onUpdate, onNext, onPrevious }: TravelStyleStep
               onClick={() => handleTravelStyleSelect(style.id)}
               whileHover={{ scale: 1.01, x: 5 }}
               whileTap={{ scale: 0.99 }}
-              className={`w-full p-6 rounded-2xl border-2 transition-all duration-300 text-left group ${
+              className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 text-left group ${
                 isSelected
                   ? 'border-sb-orange-500 bg-sb-orange-50 shadow-md'
                   : 'border-gray-100 bg-white hover:border-sb-orange-200 hover:shadow-lg'
               }`}
             >
-              <div className="flex items-start gap-5">
-                <div className={`p-4 rounded-xl text-3xl ${
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-xl text-2xl ${
                   isSelected ? 'bg-white shadow-sm' : 'bg-sb-teal-50 text-sb-teal-700'
                 }`}>
                   {style.icon}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className={`text-xl font-bold ${isSelected ? 'text-sb-orange-700' : 'text-sb-navy-700'}`}>
+                    <h3 className={`text-lg font-bold ${isSelected ? 'text-sb-orange-700' : 'text-sb-navy-700'}`}>
                       {style.name}
                     </h3>
                     {isSelected && (
@@ -137,7 +137,7 @@ const TravelStyleStep = ({ data, onUpdate, onNext, onPrevious }: TravelStyleStep
       </motion.div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-8 border-t border-gray-100">
+      <div className="flex justify-between pt-4 border-t border-gray-100">
         <button
           onClick={onPrevious}
           className="flex items-center space-x-2 px-6 py-3 rounded-full text-gray-500 hover:bg-gray-100 hover:text-sb-navy-700 transition-all duration-200 font-medium"

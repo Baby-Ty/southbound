@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { Navbar } from './Navbar';
 import Footer from './Footer';
 import FloatingWhatsAppButton from './FloatingWhatsAppButton';
 import { ScrollProgress } from './ScrollProgress';
@@ -218,9 +219,12 @@ const Layout = ({ children }: LayoutProps) => {
 
   const veilSettings = activeConfig.veil ?? defaultConfig.veil;
 
+  const isRouteBuilder = pathname?.startsWith('/route-builder');
+
   return (
     <div className="relative min-h-screen flex flex-col text-foreground">
-      <ScrollProgress />
+      {!isRouteBuilder && <Navbar />}
+      {!isRouteBuilder && <ScrollProgress />}
       <AnimatePresence mode="wait">
         <motion.div
           key={`gradient-${activeConfig.key}`}

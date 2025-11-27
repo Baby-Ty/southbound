@@ -143,13 +143,14 @@ const Hero = () => {
           loop
           muted
           playsInline
+          preload="auto"
+          poster="/images/hero-poster.jpg"
           className="w-full h-full object-cover opacity-60"
           style={{ 
             filter: 'contrast(1.1) brightness(0.9)'
           }}
         >
-          <source src="South Bound.mp4" type="video/mp4" />
-          <source src="/South Bound.mp4" type="video/mp4" />
+          <source src="/south-bound.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         
