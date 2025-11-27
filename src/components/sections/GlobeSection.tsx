@@ -33,12 +33,12 @@ const RegionCard: React.FC<RegionCardProps> = ({ region, isSelected, onClick }) 
       <div 
         className={`relative h-[420px] rounded-3xl overflow-hidden shadow-xl transition-all duration-500 ${
           isSelected 
-            ? 'ring-4 ring-offset-4 ring-offset-[#f0fdf4]' 
+            ? 'ring-offset-4 ring-offset-[#f0fdf4]' 
             : 'hover:shadow-2xl'
         }`}
-        style={{ 
-          ringColor: isSelected ? region.color : 'transparent'
-        }}
+        style={isSelected ? { 
+          boxShadow: `0 0 0 4px ${region.color}, 0 0 0 8px #f0fdf4`
+        } : undefined}
       >
         {/* Background Image */}
         <div 
