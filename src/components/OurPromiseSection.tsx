@@ -1,130 +1,115 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-import PrelaunchModal from './PrelaunchModal';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Container } from './ui/Container';
+import { Section } from './ui/Section';
 
-const OurPromiseSection: React.FC = () => {
-  const [prelaunchOpen, setPrelaunchOpen] = useState(false);
+interface OurPromiseSectionProps {
+  embedded?: boolean;
+}
 
-  return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-sky-200">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column - Promise Content */}
-          <div className="relative">
-            {/* Dashed Border Box */}
-            <div className="border-4 border-dashed border-gray-800 bg-white p-6 rounded-lg relative">
-              {/* Header */}
-              <div className="flex items-center mb-6">
-                <span className="text-2xl mr-4">🧡</span>
-                <h2 className="text-2xl font-bold text-gray-900">OUR PROMISE</h2>
-              </div>
+const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false }) => {
+  const Content = () => (
+    <div className={`${embedded ? 'w-full' : 'max-w-3xl mx-auto'} relative`}>
+      {/* Sticky Note Container */}
+      <motion.div 
+        className="relative"
+        initial={{ opacity: 0, rotate: -2, y: 20 }}
+        whileInView={{ opacity: 1, rotate: 0, y: 0 }}
+        transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+        viewport={{ once: true }}
+      >
+        {/* Pin Visual */}
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 filter drop-shadow-md">
+            <div className="w-6 h-6 rounded-full bg-[#E86B32] border-2 border-white shadow-sm"></div>
+        </div>
 
-              {/* Greeting */}
-              <p className="text-gray-900 font-medium mb-4">Howzit,</p>
+        {/* Washi Tape Visual (Top Right) */}
+        <div className="absolute -top-6 -right-6 w-32 h-8 bg-[#fef3c7] opacity-80 transform rotate-12 shadow-sm z-10 backdrop-blur-[1px]" style={{ clipPath: 'polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)' }}></div>
 
-              {/* Main Promise */}
-              <div className="space-y-4 mb-6">
-                <p className="text-gray-700 leading-relaxed">
-                  We are here to make working abroad simple, social, and unforgettable.
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  We take care of the logistics so you can focus on living, working, and exploring.
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  We have been in your shoes: sorting SIM cards, dealing with patchy Wi-Fi, and hunting for a decent apartment with a good desk and even better coffee. We built the service we wish we had, one that truly gets it.
-                </p>
-              </div>
+        {/* The Note Paper */}
+        <div 
+          className="bg-[#fef9c3] p-8 md:p-10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] relative text-[#1c1917] transform rotate-1"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, #94a3b840 31px, #94a3b840 32px)',
+            backgroundAttachment: 'local'
+          }}
+        >
+          {/* Red Margin Line */}
+          <div className="absolute left-8 md:left-12 top-0 bottom-0 w-[2px] bg-red-300/50 h-full"></div>
 
-              {/* What You Can Count On */}
-              <div className="mb-6">
-                <p className="text-gray-900 font-medium mb-3">Here is what you can count on:</p>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-teal-600 mr-4">▸</span>
-                    Epic spots to live, work, and explore
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-teal-600 mr-4">▸</span>
-                    A solid setup to stay productive
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-teal-600 mr-4">▸</span>
-                    A journey designed for growth, not just escape
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-teal-600 mr-4">▸</span>
-                    A crew that has your back
-                  </li>
-                </ul>
-              </div>
+          <div className="relative pl-8 md:pl-10 space-y-6">
+            
+            {/* Title */}
+            <h2 className="text-3xl md:text-4xl font-bold text-[#E86B32] font-handwritten -rotate-1 mb-6">
+              A Note from Us
+            </h2>
 
-              {/* Closing */}
-              <p className="text-gray-700 font-medium mb-6">
-                You focus on the experience. We will handle the rest.
+            {/* Greeting */}
+            <p className="font-handwritten text-xl font-bold">
+              Howzit,
+            </p>
+
+            {/* Body Text */}
+            <div className="font-handwritten text-lg space-y-6 leading-[32px]">
+              <p>
+                South Bound was built for remote workers who want a bit more out of life.
+              </p>
+              
+              <p>
+                We take care of the tricky stuff: accommodation, co-working, SIMs, experiences. You just focus on exploring, working, and enjoying your new home.
               </p>
 
-              {/* Signature */}
-              <div className="mb-6">
-                <p className="text-gray-900 font-medium">
-                  The South Bound Team <span className="ml-1">✈️ 🌍</span>
-                </p>
-              </div>
-
-              {/* CTA Button */}
-              <button 
-                onClick={() => setPrelaunchOpen(true)}
-                className="bg-teal-800 hover:bg-teal-900 text-white px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-lg"
-              >
-                CLICK TO CHAT
-              </button>
+              <p className="font-bold">
+                Less hassle. More living.
+              </p>
             </div>
-          </div>
 
-          {/* Right Column - Image */}
-          <div className="relative h-96 lg:h-[600px]">
-            <Image
-              src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60"
-              alt="Scenic mountain landscape with person overlooking valley"
-              fill
-              className="object-cover rounded-2xl shadow-2xl"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            
-            {/* Adventure Travel Badge */}
-            <div className="absolute bottom-8 right-8 w-32 h-32">
-              <div className="relative w-full h-full">
-                {/* Circular Badge Background */}
-                <div className="w-full h-full bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                  <div className="text-center">
-                    {/* Compass/Navigation Icon */}
-                    <div className="w-8 h-8 mx-auto mb-1 text-gray-700">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 5.5L14 4.5L12 6L10 4.5L9 5.5L3 7V9L9 7.5V21H11V12H13V21H15V7.5L21 9Z"/>
-                      </svg>
-                    </div>
-                    <div className="text-xs font-bold text-gray-700 leading-tight">
-                      ADVENTURE<br />TRAVEL
-                    </div>
-                  </div>
+            {/* Footer / Signature */}
+            <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+              <div>
+                <p className="font-handwritten text-lg mb-1">See you out there,</p>
+                <div className="font-handwritten text-xl font-bold flex items-center gap-2">
+                  – The Team <span>🌍</span>
                 </div>
-                
-                {/* Decorative dots around the badge */}
-                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full"></div>
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full"></div>
-                <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
+              </div>
+
+              {/* Stamp Graphic */}
+              <div className="border-4 border-[#e5e5e5] rounded-full w-20 h-20 flex items-center justify-center transform -rotate-12 opacity-70 font-sans font-bold text-[9px] tracking-widest text-stone-400 uppercase text-center leading-tight">
+                Official<br/>Promise<br/>Est. 2024
               </div>
             </div>
+
+            {/* CTA Button */}
+            <div className="mt-6">
+                <Link href="/contact" className="inline-block bg-[#E86B32] text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-[#d55a24] hover:-translate-y-0.5 transition-all font-sans text-sm">
+                    Let&apos;s Chat
+                </Link>
+            </div>
+
           </div>
         </div>
-      </div>
+        
+        {/* Washi Tape Visual (Bottom Left) */}
+        <div className="absolute -bottom-5 -left-4 w-24 h-8 bg-[#fef3c7] opacity-80 transform -rotate-6 shadow-sm z-10 backdrop-blur-[1px]"></div>
 
-      {/* PrelaunchModal */}
-      <PrelaunchModal isOpen={prelaunchOpen} onClose={() => setPrelaunchOpen(false)} />
-    </section>
+      </motion.div>
+    </div>
+  );
+
+  if (embedded) {
+    return <Content />;
+  }
+
+  return (
+    <Section className="bg-[#FFF8F0] relative overflow-hidden py-24">
+      <Container>
+        <Content />
+      </Container>
+    </Section>
   );
 };
 
-export default OurPromiseSection; 
+export default OurPromiseSection;

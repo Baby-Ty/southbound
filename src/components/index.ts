@@ -1,3 +1,4 @@
+// Legacy components
 export { default as Header } from './Header';
 export { default as Footer } from './Footer';
 export { default as Layout } from './Layout';
@@ -21,3 +22,25 @@ export { default as FloatingWhatsAppButton } from './FloatingWhatsAppButton';
 export { default as PrelaunchModal } from './PrelaunchModal';
 export { default as FAQPageClient } from './FAQPageClient';
 export { default as ContactPageClient } from './ContactPageClient';
+export { default as Globe3D } from './Globe3D';
+export { default as StylizedGlobe3D } from './StylizedGlobe3D';
+export { RegionInfoPanel } from './RegionInfoPanel';
+export { RegionCarousel } from './RegionCarousel';
+export { default as ActivitiesBentoGrid } from './ActivitiesBentoGrid';
+export { ScrollProgress } from './ScrollProgress';
+
+// New UI components
+export { Container } from './ui/Container';
+export { Section } from './ui/Section';
+export { Heading, Eyebrow } from './ui/Heading';
+export { Card } from './ui/Card';
+export { Button } from './ui/Button';
+
+// New section components
+export { HeroSection } from './sections/Hero';
+export { ShortCopySection } from './sections/ShortCopy';
+export { GlobeSection } from './sections/GlobeSection';
+export { ExperiencesSection } from './sections/Experiences';
+export { HowItWorksSection as HowItWorksSectionNew } from './sections/HowItWorks';
+export { WorkReadySection } from './sections/WorkReady';
+export { FAQsSection } from './sections/FAQs';

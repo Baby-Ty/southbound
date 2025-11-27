@@ -1,4 +1,5 @@
 "use client"
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import DestinationRotator from './DestinationRotator'
@@ -6,7 +7,10 @@ import DestinationRotator from './DestinationRotator'
 const Hero = () => {
   const destinations = ["BALI", "MEXICO", "GEORGIA", "CAPE TOWN"]
   const highlightRef = useRef<HTMLSpanElement | null>(null)
+  const boardingPassRef = useRef<HTMLDivElement | null>(null)
+  const backgroundRef = useRef<HTMLDivElement | null>(null)
 
+  // Highlight animation for "scenery" word
   useEffect(() => {
     const el = highlightRef.current
     if (!el) return
@@ -23,9 +27,117 @@ const Hero = () => {
     return () => observer.disconnect()
   }, [])
 
+  // Subtle parallax effect for the boarding pass card + decorative dots
+  useEffect(() => {
+    const card = boardingPassRef.current
+    if (!card) return
+
+    if (typeof window === 'undefined') return
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (prefersReducedMotion.matches) {
+      return
+    }
+
+    const pointerFineQuery = window.matchMedia('(pointer: fine)')
+    const isPointerFine = pointerFineQuery.matches
+
+    let frameId: number | null = null
+    let currentX = 0
+    let currentY = 0
+    let targetX = 0
+    let targetY = 0
+
+    const maxOffset = isPointerFine ? 3 : 1.5 // px, keep movement extremely minimal
+
+    const animate = () => {
+      const el = boardingPassRef.current
+      if (!el) return
+
+      // Ease towards the target for smooth movement
+      currentX += (targetX - currentX) * 0.1
+      currentY += (targetY - currentY) * 0.1
+
+      el.style.transform = `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`
+      frameId = window.requestAnimationFrame(animate)
+    }
+
+    const startAnimationLoop = () => {
+      if (frameId == null) {
+        frameId = window.requestAnimationFrame(animate)
+      }
+    }
+
+    const updateTarget = (x: number, y: number) => {
+      targetX = x
+      targetY = y
+      startAnimationLoop()
+    }
+
+    // Mouse-based parallax for pointer-accurate devices (desktop / laptops)
+    const handleMouseMove = (event: MouseEvent) => {
+      const el = boardingPassRef.current
+      if (!el) return
+
+      const rect = el.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) return
+
+      const relativeX = (event.clientX - rect.left) / rect.width - 0.5
+      const relativeY = (event.clientY - rect.top) / rect.height - 0.5
+
+      const clampedX = Math.max(-0.5, Math.min(0.5, relativeX))
+      const clampedY = Math.max(-0.5, Math.min(0.5, relativeY))
+
+      updateTarget(clampedX * maxOffset, clampedY * maxOffset)
+    }
+
+    // Scroll-based parallax fallback for touch / coarse pointer devices
+    const handleScroll = () => {
+      const el = boardingPassRef.current
+      if (!el) return
+
+      const rect = el.getBoundingClientRect()
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+      if (!viewportHeight) return
+
+      // Progress of the card passing through the viewport (-1 to 1)
+      const distanceFromCenter = (rect.top + rect.height / 2) - viewportHeight / 2
+      const progress = distanceFromCenter / viewportHeight
+      const clamped = Math.max(-1, Math.min(1, progress))
+
+      // Only apply a tiny vertical drift on scroll for mobile
+      updateTarget(0, -clamped * maxOffset)
+    }
+
+    // Choose interaction mode based on pointer type
+    if (isPointerFine) {
+      window.addEventListener('mousemove', handleMouseMove)
+    } else {
+      handleScroll() // Initialize position
+      window.addEventListener('scroll', handleScroll, { passive: true })
+    }
+
+    return () => {
+      if (isPointerFine) {
+        window.removeEventListener('mousemove', handleMouseMove)
+      } else {
+        window.removeEventListener('scroll', handleScroll)
+      }
+
+      if (frameId != null) {
+        window.cancelAnimationFrame(frameId)
+      }
+
+      const el = boardingPassRef.current
+      if (el) {
+        el.style.transform = ''
+      }
+    }
+  }, [])
+
   return (
-    <section className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Video Background */}
+    <section className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-stone-900">
+      {/* Lively Full-Color Video Background with Parallax */}
       <div className="absolute inset-0 z-0">
         <video
           autoPlay
@@ -33,182 +145,131 @@ const Hero = () => {
           muted
           playsInline
           className="w-full h-full object-cover opacity-60"
-          onError={(e) => {
-            console.error('Video error:', e)
-            const target = e.target as HTMLVideoElement
-            console.error('Video error details:', target?.error)
+          style={{ 
+            filter: 'contrast(1.1) brightness(0.9)'
           }}
-          onLoadStart={() => console.log('Video loading started')}
-          onCanPlay={() => console.log('Video can play')}
-          onLoadedData={() => console.log('Video data loaded')}
         >
           <source src="South Bound.mp4" type="video/mp4" />
           <source src="/South Bound.mp4" type="video/mp4" />
-          <source src="./South Bound.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Subtle overlay for text readability */}
-        <div className="absolute inset-0 bg-sb-beige-100 bg-opacity-80"></div>
+        
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent"></div>
       </div>
 
       <div className="max-w-7xl w-full relative z-10">
-        {/* Main Hero Card */}
-        <div className="bg-white bg-opacity-75 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
-          <div className="grid lg:grid-cols-2 min-h-[600px]">
+        <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-center">
             
             {/* Left Side - Content */}
-            <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-2 lg:order-1">
-              {/* Badge */}
-              <div className="inline-flex items-center space-x-2 mb-8 bg-gradient-to-r from-teal-50 to-rose-50 px-4 py-2 rounded-full border border-teal-100 w-fit">
-                <span className="text-lg">🌍</span>
-                <span className="text-sm font-medium text-gray-700">South Bound</span>
+            <div className="flex flex-col justify-center text-left text-white">
+              
+              {/* Logo - subtle and non-distracting */}
+              <div className="flex items-center gap-3 mb-8 opacity-90">
+                <div className="relative w-10 h-10">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="South Bound Logo" 
+                    fill
+                    className="object-contain invert brightness-0 filter" 
+                  />
+                </div>
+                <span className="font-bold tracking-[0.2em] text-sm uppercase text-white/80">South Bound</span>
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Ready for a change of{' '}
-                <span ref={highlightRef} className="sb-highlighter align-baseline px-2 py-1">
-                  <span className="font-bold sb-highlighter-content text-white">
-                    scenery
-                    <span className="inline-block align-baseline text-3xl md:text-4xl lg:text-5xl">?</span>
-                  </span>
-                </span>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-6 tracking-tight">
+                Work anywhere, <br/>
+                <span className="text-[#E86B32]">live everywhere.</span>
               </h1>
 
               {/* Subheading */}
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-lg">
-                South Bound helps South Africans live and work from inspiring destinations without the planning stress.
+              <p className="text-lg md:text-xl text-stone-200 leading-relaxed mb-8 max-w-lg font-medium">
+                The remote work adventure for South Africans. We handle the logistics, you just show up.
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
-                  href="#places-youll-see"
-                  className="inline-flex items-center px-8 py-4 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all duration-300 shadow-medium hover:shadow-large hover:scale-105"
+                  href="/route-builder"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-[#E86B32] hover:bg-[#d55a24] text-white font-bold rounded-full transition-all duration-300 shadow-lg hover:transform hover:-translate-y-1"
                 >
-                  <span>🗺️</span>
-                  <span className="ml-2">Places you'll see</span>
+                  <span>Start your journey</span>
                   <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Link>
-                <Link 
-                  href="#whos-this-for"
-                  className="bg-sb-teal-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-sb-teal-700 transition-colors duration-200 text-center"
-                >
-                  who&apos;s this for?
-                </Link>
+              </div>
+              
+              <div className="mt-8 flex items-center gap-4 text-sm text-stone-400">
+                 <div className="flex -space-x-2">
+                    {[1,2,3,4].map(i => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-stone-700 border-2 border-stone-900 flex items-center justify-center text-xs">
+                            {/* Placeholder avatars */}
+                            👤
+                        </div>
+                    ))}
+                 </div>
+                 <p>Join 500+ South African nomads</p>
               </div>
             </div>
 
             {/* Right Side - Boarding Pass */}
-            <div className="bg-gradient-to-br from-rose-50 to-teal-50 bg-opacity-80 backdrop-blur-sm flex items-center justify-center p-8 md:p-12 order-1 lg:order-2 relative">
+            <div className="hidden lg:flex items-center justify-center relative perspective-1000">
+              
               {/* Boarding Pass Container */}
-              <div className="relative">
-                {/* Main Boarding Pass Card */}
-                <div className="bg-gradient-to-b from-white to-[#fff8f3] backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8 md:p-12 max-w-sm w-full relative overflow-hidden">
-                  {/* Paper texture overlay */}
-                  <div className="absolute inset-0 opacity-[0.02]" style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      45deg,
-                      transparent,
-                      transparent 2px,
-                      rgba(0,0,0,0.1) 2px,
-                      rgba(0,0,0,0.1) 4px
-                    )`
-                  }}></div>
+              <div
+                ref={boardingPassRef}
+                className="relative z-10 will-change-transform transition-transform duration-100 ease-out"
+                aria-hidden="true"
+              >
+                {/* Clean Premium Boarding Pass */}
+                <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8 w-full max-w-sm relative overflow-hidden transform rotate-[-2deg] hover:rotate-0 transition-all duration-500">
                   
-                  {/* Inner shadow for card depth */}
-                  <div className="absolute inset-0 rounded-xl shadow-inner pointer-events-none"></div>
-                  
-                  {/* Left side notch cutouts */}
-                  <div className="absolute -left-[2px] top-1/4 w-4 h-8 bg-sb-beige-100 rounded-r-full"></div>
-                  <div className="absolute -left-[2px] bottom-1/4 w-4 h-8 bg-sb-beige-100 rounded-r-full"></div>
-                  
-                  {/* Right side notch cutouts */}
-                  <div className="absolute -right-[2px] top-1/4 w-4 h-8 bg-sb-beige-100 rounded-l-full"></div>
-                  <div className="absolute -right-[2px] bottom-1/4 w-4 h-8 bg-sb-beige-100 rounded-l-full"></div>
-
-                  {/* Boarding Pass Header */}
-                  <div className="text-center mb-6 sm:mb-8 relative z-10">
-                    <div className="text-xs uppercase tracking-[0.2em] text-gray-700 font-medium mb-3">
-                      Remote Work Pass
+                  {/* Decorative header */}
+                  <div className="flex justify-between items-center mb-8 border-b border-dashed border-stone-200 pb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[#E86B32] text-xl">✈️</span>
+                        <span className="font-bold text-stone-900 tracking-widest text-sm uppercase">Boarding Pass</span>
                     </div>
-                    <div className="w-20 h-[1px] bg-sb-orange-500 mx-auto"></div>
+                    <div className="text-xs font-mono text-stone-400">SB-2024</div>
                   </div>
 
                   {/* Destination Rotator */}
-                  <div className="mb-6 sm:mb-8 relative z-10">
+                  <div className="mb-8">
+                    <div className="text-xs uppercase tracking-widest text-stone-500 mb-2">Destination</div>
                     <DestinationRotator destinations={destinations} />
                   </div>
 
-                  {/* Dashed divider */}
-                  <div className="border-t border-dashed border-gray-300 my-6 sm:my-8 relative z-10"></div>
-
-                  {/* Flight Details */}
-                  <div className="space-y-4 text-center relative z-10">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                  {/* Flight Details Grid */}
+                  <div className="grid grid-cols-2 gap-6 mb-8">
                       <div>
-                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">From</div>
-                        <div className="font-mono font-bold text-gray-900">JNB</div>
+                        <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">From</div>
+                        <div className="font-mono text-2xl font-bold text-stone-900">ZAR</div>
                       </div>
                       <div>
-                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">Class</div>
-                        <div className="font-mono font-bold text-gray-900">REMOTE</div>
+                        <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">Class</div>
+                        <div className="font-mono text-sm font-bold text-[#E86B32] bg-[#E86B32]/10 inline-block px-2 py-1 rounded">PREMIUM REMOTE</div>
                       </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1">Gate</div>
-                        <div className="font-mono font-bold text-gray-900">A22</div>
+                         <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">Gate</div>
+                         <div className="font-mono text-xl font-bold text-stone-900">A01</div>
                       </div>
-                      <div className="flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-1 flex items-center justify-center gap-1">
-                            Zone
-                            <svg className="w-3 h-3 text-sb-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3-3a1 1 0 00-1 1v5a1 1 0 102 0V9a1 1 0 00-1-1zm-2 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div className="font-mono font-bold text-gray-900">ADVENTURE</div>
-                        </div>
+                      <div>
+                         <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">Boarding</div>
+                         <div className="font-mono text-xl font-bold text-stone-900">NOW</div>
                       </div>
-                    </div>
+                  </div>
                     
-                    <div className="border-t border-dashed border-gray-300 my-6"></div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-bold text-gray-900 uppercase tracking-[0.2em]">
-                        SOUTH BOUND
-                      </div>
-                      {/* Simple barcode representation */}
-                      <div className="flex space-x-[1px]">
-                        {[...Array(8)].map((_, i) => (
-                          <div key={i} className={`w-[2px] bg-gray-600 ${i % 2 === 0 ? 'h-4' : 'h-3'}`}></div>
-                        ))}
-                      </div>
-                    </div>
+                  {/* Barcode / Footer */}
+                  <div className="pt-6 border-t border-stone-100 flex justify-between items-end opacity-60">
+                      <div className="h-8 w-32 bg-stone-900/10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjQiIGZpbGw9IiMwMDAiLz48L3N2Zz4=')]"></div>
+                      <span className="text-[10px] text-stone-400">SOUTH BOUND AIRLINES</span>
                   </div>
                 </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute -top-4 -left-4 w-8 h-8 bg-rose-200 rounded-full opacity-60"></div>
-                <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-teal-200 rounded-full opacity-40"></div>
-                <div className="absolute top-1/2 -left-8 w-4 h-4 bg-rose-300 rounded-full opacity-50 transform -translate-y-1/2"></div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Optional: Floating Action Hint */}
-        <div className="text-center mt-8">
-          <div className="inline-flex items-center space-x-2 text-gray-600 text-sm bg-white bg-opacity-80 backdrop-blur-sm px-4 py-2 rounded-full">
-            <span>Scroll to explore destinations</span>
-            <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
         </div>
       </div>
     </section>

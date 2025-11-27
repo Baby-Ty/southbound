@@ -11,6 +11,14 @@ module.exports = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         // South Bound Custom Palette
+        'sb-blue': {
+          50: '#F4F7FF',
+          100: '#E4F0FF',
+          200: '#C9E0FF',
+        },
+        'sb-clay': {
+          200: '#E3B8A2',
+        },
         'sb-teal': {
           50: '#F0FEFE',
           100: '#E1FDFD', 
@@ -75,7 +83,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
         mono: ['var(--font-geist-mono)'],
-        handwritten: ['Kalam', 'Comic Sans MS', 'cursive'],
+        handwritten: ['var(--font-kalam)', 'Comic Sans MS', 'cursive'],
         inter: ['Inter', 'sans-serif'],
       },
       // Enhanced Typography
@@ -140,6 +148,7 @@ module.exports = {
         'sb-gradient': 'linear-gradient(135deg, #AEE6E6 0%, #C2F5D8 100%)',
         'sb-sunset': 'linear-gradient(135deg, #FFA069 0%, #FF8A47 100%)',
         'sb-hero': 'linear-gradient(135deg, #AEE6E6 0%, #FDF6EF 50%, #C2F5D8 100%)',
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },

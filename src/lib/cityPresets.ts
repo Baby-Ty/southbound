@@ -4,6 +4,7 @@ export type CityPreset = {
   flag: string;
   budgetCoins: 1 | 2 | 3;
   tags: string[];
+  imageUrl: string;
   highlights: {
     places: string[];
     accommodation: string;
@@ -28,6 +29,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇵🇹',
       budgetCoins: 2,
       tags: ['coastal', 'culture'],
+      imageUrl: 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Alfama', 'LX Factory', 'Miradouros'],
         accommodation: 'Apartment near cafés and coworking',
@@ -41,6 +43,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇪🇸',
       budgetCoins: 3,
       tags: ['city', 'design'],
+      imageUrl: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&auto=format&fit=crop',
       highlights: {
         places: ['El Born', 'Eixample', 'Barceloneta'],
         accommodation: 'Apartment near metro',
@@ -54,6 +57,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇭🇷',
       budgetCoins: 2,
       tags: ['coast', 'islands'],
+      imageUrl: 'https://images.unsplash.com/photo-1555990538-c3c52b21c548?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Old Town', 'Riva', 'Marjan'],
         accommodation: 'Apartment with AC',
@@ -69,6 +73,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇲🇽',
       budgetCoins: 2,
       tags: ['food', 'culture'],
+      imageUrl: 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Condesa', 'Roma', 'Coyoacán'],
         accommodation: 'Apartment with desk',
@@ -82,6 +87,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇨🇴',
       budgetCoins: 1,
       tags: ['mild climate', 'community'],
+      imageUrl: 'https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=800&auto=format&fit=crop',
       highlights: {
         places: ['El Poblado', 'Laureles'],
         accommodation: 'Apartment near cafés',
@@ -95,6 +101,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇧🇷',
       budgetCoins: 2,
       tags: ['beach', 'festivals'],
+      imageUrl: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Ipanema', 'Leblon', 'Botafogo'],
         accommodation: 'Near beach and metro',
@@ -110,6 +117,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇮🇩',
       budgetCoins: 1,
       tags: ['tropical', 'creative'],
+      imageUrl: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Berawa', 'Batu Bolong', 'Pererenan'],
         accommodation: 'Villa or guesthouse with desk',
@@ -123,6 +131,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇹🇭',
       budgetCoins: 1,
       tags: ['calm', 'walkable'],
+      imageUrl: 'https://images.unsplash.com/photo-1598965675045-13e5a5c5bf1f?w=800&auto=format&fit=crop',
       highlights: {
         places: ['Nimman', 'Old City'],
         accommodation: 'Condo near Nimman',
@@ -136,6 +145,7 @@ export const CITY_PRESETS: Record<RegionKey, CityPreset[]> = {
       flag: '🇻🇳',
       budgetCoins: 1,
       tags: ['beach', 'easy'],
+      imageUrl: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&auto=format&fit=crop',
       highlights: {
         places: ['My An', 'An Thuong'],
         accommodation: 'Apartment near beach',

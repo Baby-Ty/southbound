@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 type RouteBuilderData = { region: string; lifestyle: string[]; workSetup: string[]; travelStyle: string; };
 
 interface WorkSetupStepProps {
@@ -34,61 +36,99 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
     }
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-sb-navy-700">
+      <div className="text-center space-y-3">
+        <h2 className="text-3xl font-bold text-sb-navy-700">
           What does your ideal work setup look like?
         </h2>
-        <p className="text-sb-navy-500">
+        <p className="text-lg text-sb-navy-500">
           Helps us match you with the right coworking and accommodation options.
         </p>
       </div>
 
       {/* Work Setup Options */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {workSetupOptions.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => handleWorkSetupToggle(option.id)}
-            className={`p-3 rounded-xl border-2 transition-all duration-300 text-left hover:scale-105 hover:shadow-lg ${
-              data.workSetup?.includes(option.id)
-                ? 'border-sb-orange-400 bg-sb-orange-50 shadow-md scale-105'
-                : 'border-gray-200 bg-white hover:border-sb-orange-300 hover:shadow-sm'
-            }`}
-          >
-            <div className="flex flex-col items-center space-y-1 text-center">
-              <span className="text-xl">{option.icon}</span>
-              <span className="font-medium text-sb-navy-700 text-xs">
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {workSetupOptions.map((option) => {
+          const isSelected = data.workSetup?.includes(option.id);
+          return (
+            <motion.button
+              key={option.id}
+              variants={item}
+              onClick={() => handleWorkSetupToggle(option.id)}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-300 h-full flex flex-col items-center justify-center text-center space-y-3 min-h-[140px] ${
+                isSelected
+                  ? 'border-sb-orange-500 bg-sb-orange-50 shadow-md'
+                  : 'border-gray-100 bg-white hover:border-sb-orange-200 hover:shadow-lg'
+              }`}
+            >
+              <span className="text-4xl mb-1">{option.icon}</span>
+              <span className={`font-semibold text-sm leading-tight ${isSelected ? 'text-sb-orange-700' : 'text-sb-navy-700'}`}>
                 {option.name}
               </span>
-            </div>
-          </button>
-        ))}
-      </div>
+              
+              {isSelected && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute top-3 right-3 text-sb-orange-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </motion.div>
+              )}
+            </motion.button>
+          );
+        })}
+      </motion.div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-between pt-8 border-t border-gray-100">
         <button
           onClick={onPrevious}
-          className="flex items-center space-x-2 px-4 py-2 rounded-full border-2 border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+          className="flex items-center space-x-2 px-6 py-3 rounded-full text-gray-500 hover:bg-gray-100 hover:text-sb-navy-700 transition-all duration-200 font-medium"
         >
           <span>←</span>
           <span>Back</span>
         </button>
 
-        <button
+        <motion.button
           onClick={handleNext}
           disabled={!data.workSetup || data.workSetup.length === 0}
-          className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+          whileHover={{ scale: data.workSetup && data.workSetup.length > 0 ? 1.05 : 1 }}
+          whileTap={{ scale: 0.95 }}
+          className={`px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-200 ${
             data.workSetup && data.workSetup.length > 0
-              ? 'bg-sb-orange-500 text-white hover:bg-sb-orange-600 hover:scale-105 shadow-lg'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-sb-orange-500 text-white hover:bg-sb-orange-600 hover:shadow-xl'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
           }`}
         >
           Next: Travel Style
-        </button>
+        </motion.button>
       </div>
     </div>
   );
