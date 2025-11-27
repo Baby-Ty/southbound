@@ -17,6 +17,8 @@ export interface RouteBuilderData {
   lifestyle: string[];
   workSetup: string[];
   travelStyle: string;
+  tripLength?: string;
+  countries?: string[];
 }
 
 const RouteBuilder = () => {
@@ -27,6 +29,8 @@ const RouteBuilder = () => {
     lifestyle: [],
     workSetup: [],
     travelStyle: '',
+    tripLength: '3',
+    countries: [],
   });
 
   const totalSteps = 5;
@@ -116,6 +120,7 @@ const RouteBuilder = () => {
         return (
           <SummaryStep
             data={routeData}
+            onUpdate={handleDataUpdate}
             onStartOver={handleStartOver}
             onPrevious={handlePrevious}
           />

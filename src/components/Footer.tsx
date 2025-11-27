@@ -28,7 +28,7 @@ const Footer = () => {
           <div className="col-span-1">
             <Link href="./" className="flex items-center space-x-2 group">
               <img 
-                src="images/logo.png" 
+                src="/images/logo.png" 
                 alt="Southbound Logo" 
                 className="h-8 w-8 object-contain"
               />

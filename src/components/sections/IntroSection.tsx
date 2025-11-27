@@ -38,7 +38,7 @@ const IntroSection = () => {
             <span className="text-stone-400">Now get the lifestyle.</span>
           </h2>
           <p className="text-xl text-stone-600 leading-relaxed mb-10 max-w-2xl mx-auto">
-            Planning a 3-month trip while working full-time is a nightmare. 
+            Planning a multi-month trip while working full-time is a nightmare. 
             Time zones? WiFi speeds? Safe neighborhoods? Community?
           </p>
           <p className="text-xl text-stone-900 font-bold leading-relaxed">

@@ -25,7 +25,7 @@ const Header = () => {
           <div className="flex-shrink-0">
             <Link href="./" className="flex items-center space-x-3 text-xl font-bold text-slate-900 hover:text-teal-600 transition-colors duration-300">
               <img 
-                src="images/logo.png" 
+                src="/images/logo.png" 
                 alt="Southbound Logo" 
                 className="h-10 w-10 object-contain"
               />
