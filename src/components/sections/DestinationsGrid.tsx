@@ -110,6 +110,14 @@ const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
           </div>
         </div>
 
+        {/* Click for more indicator - mobile only */}
+        {!isExpanded && (
+          <div className="flex items-center gap-2 text-white/90 text-sm font-medium mb-2 md:hidden">
+            <span>Click for more</span>
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+          </div>
+        )}
+
         {/* Expandable Stats Area */}
         <div className={`grid transition-[grid-template-rows] duration-500 ease-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
           <div className="overflow-hidden">
