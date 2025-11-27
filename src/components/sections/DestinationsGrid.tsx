@@ -23,45 +23,45 @@ const destinations = [
   },
   {
     id: 2,
-    name: 'Lisbon, Portugal',
-    tag: 'European Summer',
-    image: 'https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=800&q=80',
-    price: 'R35,000/mo',
-    vibe: 'City & Culture',
+    name: 'Ko Samui, Thailand',
+    tag: 'Tropical Paradise',
+    image: 'https://images.unsplash.com/photo-1738921993722-988364cd90ee?auto=format&fit=crop&w=800&q=80',
+    price: 'R28,000/mo',
+    vibe: 'Beach & Relaxation',
     stats: {
-      internet: '100 Mbps',
-      safety: '4.9/5',
-      weather: '22°C',
+      internet: '60 Mbps',
+      safety: '4.6/5',
+      weather: '30°C',
     },
-    bestFor: 'History & Nightlife'
+    bestFor: 'Beaches & Wellness'
   },
   {
     id: 3,
-    name: 'Cape Town, SA',
-    tag: 'Local Legend',
-    image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80',
-    price: 'R20,000/mo',
-    vibe: 'Mountain & Sea',
+    name: 'Buenos Aires, Argentina',
+    tag: 'Latin Culture',
+    image: 'https://images.unsplash.com/photo-1637580980556-085dee659c7e?auto=format&fit=crop&w=800&q=80',
+    price: 'R18,000/mo',
+    vibe: 'City & Tango',
     stats: {
-      internet: '80 Mbps',
-      safety: '4.0/5',
-      weather: '24°C',
+      internet: '70 Mbps',
+      safety: '4.3/5',
+      weather: '20°C',
     },
-    bestFor: 'Hiking & Wine'
+    bestFor: 'Culture & Nightlife'
   },
   {
     id: 4,
-    name: 'Medellin, Colombia',
-    tag: 'Digital Nomad Hub',
-    image: 'https://images.unsplash.com/photo-1599553642826-712a364f9623?auto=format&fit=crop&w=800&q=80',
-    price: 'R22,000/mo',
-    vibe: 'Urban & Green',
+    name: 'Playa del Carmen, Mexico',
+    tag: 'Caribbean Coast',
+    image: 'https://images.unsplash.com/photo-1726147417354-cf82fb0548af?auto=format&fit=crop&w=800&q=80',
+    price: 'R24,000/mo',
+    vibe: 'Beach & Adventure',
     stats: {
-      internet: '60 Mbps',
-      safety: '4.2/5',
-      weather: '25°C',
+      internet: '55 Mbps',
+      safety: '4.4/5',
+      weather: '28°C',
     },
-    bestFor: 'Community & Salsa'
+    bestFor: 'Diving & Cenotes'
   }
 ];
 
