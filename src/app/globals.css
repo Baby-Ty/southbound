@@ -13,7 +13,7 @@
   /* Typography - Updated for adventure feel */
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
   --font-heading: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  --font-handwritten: 'Caveat', cursive;
+  --font-handwritten: var(--font-caveat), cursive;
   
   /* Unified Spacing System */
   --container-max: 1280px; /* max-w-7xl */

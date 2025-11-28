@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Kalam } from "next/font/google";
+import { Geist, Geist_Mono, Caveat } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/Layout";
 
@@ -13,10 +13,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const kalam = Kalam({
-  weight: ["300", "400", "700"],
+const caveat = Caveat({
   subsets: ["latin"],
-  variable: "--font-kalam",
+  variable: "--font-caveat",
 });
 
 export const metadata: Metadata = {
@@ -39,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kalam.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} antialiased`}
       >
         <Layout>
           {children}
