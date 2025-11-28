@@ -1,5 +1,5 @@
 /* Typography - Adventure-inspired font stack */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,7 +13,7 @@
   /* Typography - Updated for adventure feel */
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
   --font-heading: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  --font-handwritten: var(--font-caveat), cursive;
+  /* Font variables are defined in layout.tsx on the body element */
   
   /* Unified Spacing System */
   --container-max: 1280px; /* max-w-7xl */
@@ -98,7 +98,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Handwritten font utility */
 .font-handwritten {
-  font-family: var(--font-handwritten);
+  font-family: var(--font-caveat), 'Comic Sans MS', cursive;
 }
 
 /* Serif fallback for specific elements */
