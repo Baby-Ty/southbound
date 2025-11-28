@@ -43,17 +43,17 @@ const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false 
           <div className="relative pl-8 md:pl-10 space-y-6">
             
             {/* Title */}
-            <h2 className="text-3xl md:text-4xl font-bold text-[#E86B32] font-handwritten -rotate-1 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#E86B32] font-handwritten -rotate-1 mb-6">
               A Note from Us
             </h2>
 
             {/* Greeting */}
-            <p className="font-handwritten text-xl font-bold">
+            <p className="font-handwritten text-2xl font-bold">
               Howzit,
             </p>
 
             {/* Body Text */}
-            <div className="font-handwritten text-lg space-y-6 leading-[32px]">
+            <div className="font-handwritten text-xl space-y-6 leading-[38px]">
               <p>
                 South Bound was built for remote workers who want a bit more out of life.
               </p>
@@ -70,8 +70,8 @@ const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false 
             {/* Footer / Signature */}
             <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
               <div>
-                <p className="font-handwritten text-lg mb-1">See you out there,</p>
-                <div className="font-handwritten text-xl font-bold flex items-center gap-2">
+                <p className="font-handwritten text-xl mb-1">See you out there,</p>
+                <div className="font-handwritten text-2xl font-bold flex items-center gap-2">
                   – The Team <span>🌍</span>
                 </div>
               </div>

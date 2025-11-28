@@ -178,7 +178,7 @@ const Hero = () => {
 
               {/* Subheading */}
               <p className="text-lg md:text-xl text-stone-200 leading-relaxed mb-8 max-w-lg font-medium">
-                The remote work adventure for South Africans. <br className="hidden md:block" />We handle the logistics, you just show up.
+                A remote work adventure for South Africans. <br className="hidden md:block" />We handle the logistics, you just show up.
               </p>
 
               {/* CTA Buttons */}
