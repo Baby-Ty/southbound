@@ -83,7 +83,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
         mono: ['var(--font-geist-mono)'],
-        handwritten: ['var(--font-caveat)', 'Comic Sans MS', 'cursive'],
+        handwritten: ['var(--font-handwritten)', 'Patrick Hand', 'Comic Sans MS', 'cursive'],
         inter: ['Inter', 'sans-serif'],
       },
       // Enhanced Typography

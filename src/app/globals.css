@@ -1,5 +1,5 @@
 /* Typography - Adventure-inspired font stack */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Patrick+Hand&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -98,7 +98,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Handwritten font utility */
 .font-handwritten {
-  font-family: 'Caveat', var(--font-caveat), 'Comic Sans MS', cursive;
+  font-family: 'Patrick Hand', var(--font-handwritten), 'Comic Sans MS', cursive;
 }
 
 /* Serif fallback for specific elements */
