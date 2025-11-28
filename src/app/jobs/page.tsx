@@ -163,7 +163,7 @@ export default function JobsPage() {
                 Have questions about the role or want to apply? Send us a message on WhatsApp and we'll get back to you quickly.
               </p>
               <a
-                href="https://wa.me/27872500972?text=Hi%2C%20I%27m%20interested%20in%20the%20Customer%20Success%20role%20at%20South%20Bound.%20Could%20you%20tell%20me%20more%3F"
+                href="https://wa.me/27784407830?text=Hi%2C%20I%27m%20interested%20in%20the%20Customer%20Success%20role%20at%20South%20Bound.%20Could%20you%20tell%20me%20more%3F"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-lg"

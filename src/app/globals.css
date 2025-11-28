@@ -114,13 +114,34 @@ a {
 
 /* Enhanced smooth scrolling with easing */
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; - Disabled in favor of Lenis */
   scroll-padding-top: 2rem;
+}
+
+/* Lenis Recommended CSS */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   html {
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; - Disabled in favor of Lenis */
   }
 }
 

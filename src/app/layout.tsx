@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Patrick_Hand } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/Layout";
+import SmoothScrolling from "@/components/SmoothScrolling";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,10 +21,35 @@ const patrickHand = Patrick_Hand({
 });
 
 export const metadata: Metadata = {
-  title: "Southbnd - Discover Amazing Travel Experiences",
-  description: "Explore popular trips, local getaways, and create lasting memories with Southbnd's curated travel experiences.",
-  keywords: ["travel", "trips", "getaways", "vacation", "adventure", "experiences"],
+  metadataBase: new URL("https://southbnd.com"),
+  title: "Southbnd - Work Anywhere. Live Fully.",
+  description: "We make remote work travel effortless for South Africans. Discover curated work-friendly stays, co-working access, and authentic local experiences.",
+  keywords: ["remote work", "digital nomad", "travel", "south africa", "workation", "co-working", "adventure", "experiences", "travel community"],
   authors: [{ name: "Southbnd" }],
+  icons: {
+    icon: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
+  openGraph: {
+    title: "Southbnd - Work Anywhere. Live Fully.",
+    description: "We make remote work travel effortless for South Africans. Discover curated work-friendly stays, co-working access, and authentic local experiences.",
+    siteName: "Southbnd",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 800,
+        height: 600,
+        alt: "Southbnd Logo",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Southbnd - Work Anywhere. Live Fully.",
+    description: "We make remote work travel effortless for South Africans. Discover curated work-friendly stays, co-working access, and authentic local experiences.",
+    images: ["/images/logo.png"],
+  },
 };
 
 export const viewport = {
@@ -41,9 +67,11 @@ export default function RootLayout({
       <body
         className="antialiased"
       >
-        <Layout>
-          {children}
-        </Layout>
+        <SmoothScrolling>
+          <Layout>
+            {children}
+          </Layout>
+        </SmoothScrolling>
       </body>
     </html>
   );
