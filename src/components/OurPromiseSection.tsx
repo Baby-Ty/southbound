@@ -33,27 +33,27 @@ const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false 
         <div 
           className="bg-[#fef9c3] p-8 md:p-10 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] relative text-[#1c1917] transform rotate-1"
           style={{
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, #94a3b840 31px, #94a3b840 32px)',
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 39px, #94a3b840 39px, #94a3b840 40px)',
             backgroundAttachment: 'local'
           }}
         >
           {/* Red Margin Line */}
           <div className="absolute left-8 md:left-12 top-0 bottom-0 w-[2px] bg-red-300/50 h-full"></div>
 
-          <div className="relative pl-8 md:pl-10 space-y-6">
+          <div className="relative pl-8 md:pl-10 space-y-[40px]">
             
             {/* Title */}
-            <h2 className="text-4xl md:text-5xl font-bold text-[#E86B32] font-handwritten -rotate-1 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#E86B32] font-handwritten -rotate-1 mb-6 leading-[40px]">
               A Note from Us
             </h2>
 
             {/* Greeting */}
-            <p className="font-handwritten text-2xl font-bold">
+            <p className="font-handwritten text-2xl font-bold leading-[40px]">
               Howzit,
             </p>
 
             {/* Body Text */}
-            <div className="font-handwritten text-xl space-y-6 leading-[38px]">
+            <div className="font-handwritten text-xl font-medium space-y-[40px] leading-[40px]">
               <p>
                 South Bound was built for remote workers who want a bit more out of life.
               </p>
