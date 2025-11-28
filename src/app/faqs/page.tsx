@@ -231,7 +231,7 @@ const sampleFaqs: FAQ[] = [
           {
             _type: 'span',
             _key: 'faq-bring-partner-family-span',
-            text: 'Yes. In most destinations we can arrange partner or family-friendly accommodation. Just let us know when you enquire.',
+            text: 'Yes. While our main audience is solo travelers, we can plan to include partners or groups. In most destinations we can arrange partner, group or family-friendly accommodation. Just let us know when you enquire.',
             marks: []
           }
         ],

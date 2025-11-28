@@ -16,7 +16,7 @@ const faqs = [
   {
     id: 2,
     question: 'Can I travel with friends or a partner?',
-    answer: 'Right now, our trips are designed for individual travelers. We focus on solo remote workers who want to meet other nomads and build community along the way.'
+    answer: 'Yes. While our main audience is solo travelers, we can plan to include partners or groups. In most destinations we can arrange partner, group or family-friendly accommodation. Just let us know when you enquire.'
   },
   {
     id: 3,
