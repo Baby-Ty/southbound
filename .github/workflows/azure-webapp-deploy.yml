@@ -25,11 +25,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Clean old build
+        run: rm -rf .next
+
       - name: Build
         run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
           NEXT_PUBLIC_FUNCTIONS_URL: https://southbound-functions.azurewebsites.net
+
+      - name: Verify new build
+        run: |
+          echo "=== Hub routes page chunk ==="
+          ls -la .next/static/chunks/app/hub/routes/
+          echo "=== Checking for hardcoded URL in build ==="
+          grep -r "southbound-functions" .next/static/chunks/app/hub/routes/ || echo "URL not found in routes chunk!"
 
       - name: Prepare deployment package
         run: |
