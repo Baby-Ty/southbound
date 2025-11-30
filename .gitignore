@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Azure publish profiles (contain sensitive credentials)
+*-publish-profile.xml
+webapp-publish-profile.xml
+functions-publish-profile.xml
+
 # vercel
 .vercel
 

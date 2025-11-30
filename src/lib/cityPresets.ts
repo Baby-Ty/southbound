@@ -4,7 +4,8 @@ export type CityPreset = {
   flag: string;
   budgetCoins: 1 | 2 | 3;
   tags: string[];
-  imageUrl: string;
+  imageUrl: string; // Primary image (first from imageUrls array)
+  imageUrls?: string[]; // Array of images for rotation
   highlights: {
     places: string[];
     accommodation: string;
@@ -1132,3 +1133,41 @@ export const VIBES = [
   'City walks',
   'Gym',
 ] as const;
+
+export const ACCOMMODATION_DETAILS: Record<string, { desc: string, img: string, pros: string[] }> = {
+  'Private Apartment': {
+    desc: 'Your own private sanctuary in the heart of the city.',
+    img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
+    pros: ['Privacy', 'Kitchen', 'Work friendly']
+  },
+  'Coliving Space': {
+    desc: 'Instant community and reliable workspace.',
+    img: 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80',
+    pros: ['Community', 'Networking', 'Events']
+  },
+  'Villa': {
+    desc: 'Luxury living with tropical vibes and often a pool.',
+    img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b91d?auto=format&fit=crop&w=800&q=80',
+    pros: ['Space', 'Pool', 'Relaxation']
+  },
+  'Hotel': {
+    desc: 'Hassle-free comfort with full amenities.',
+    img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+    pros: ['Service', 'Amenities', 'Security']
+  },
+  'Guesthouse': {
+    desc: 'Affordable, cozy, and often family-run.',
+    img: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=800&q=80',
+    pros: ['Value', 'Local vibe', 'Friendly']
+  },
+  'Hostel': {
+    desc: 'Social vibes on a budget, great for meeting people.',
+    img: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80',
+    pros: ['Budget', 'Social', 'Tours']
+  },
+  'Homestay': {
+    desc: 'Live like a local with a host family.',
+    img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+    pros: ['Culture', 'Meals', 'Language']
+  }
+};

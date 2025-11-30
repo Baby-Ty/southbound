@@ -50,7 +50,11 @@ const RegionCard = ({ region, isSelected, onSelect }: RegionCardProps) => {
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
-          onError={() => setImgFallbackIndex(prev => prev + 1)}
+          onError={() => {
+             if (region.fallbacks && imgFallbackIndex < region.fallbacks.length - 1) {
+               setImgFallbackIndex(prev => prev + 1);
+             }
+          }}
         />
         
         {/* Selected Checkmark - Smaller */}

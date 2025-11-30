@@ -1,0 +1,61 @@
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { corsHeaders, createCorsResponse } from '../shared/cors';
+
+export async function imagesSearch(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  // Handle CORS preflight
+  if (request.method === 'OPTIONS') {
+    return {
+      status: 204,
+      headers: corsHeaders,
+    };
+  }
+
+  const query = request.query.get('query');
+
+  if (!query) {
+    return createCorsResponse({ error: 'Query required' }, 400);
+  }
+
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  
+  if (!accessKey) {
+    context.log.warn("UNSPLASH_ACCESS_KEY is missing");
+    return createCorsResponse([], 200);
+  }
+
+  try {
+    const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=20&orientation=landscape`, {
+      headers: {
+        Authorization: `Client-ID ${accessKey}`
+      }
+    });
+    
+    if (!res.ok) {
+      context.log.error("Unsplash API error:", await res.text());
+      throw new Error("Unsplash API error");
+    }
+
+    const data = await res.json();
+    
+    const images = (data.results || []).map((img: any) => ({
+      id: img.id,
+      url: img.urls.regular,
+      thumb: img.urls.small,
+      alt: img.alt_description,
+      photographer: img.user.name,
+      photographerUrl: img.user.links.html
+    }));
+
+    return createCorsResponse(images);
+  } catch (error: any) {
+    context.log.error(error);
+    return createCorsResponse({ error: 'Failed to fetch images' }, 500);
+  }
+}
+
+app.http('images-search', {
+  methods: ['GET', 'OPTIONS'],
+  authLevel: 'anonymous',
+  handler: imagesSearch,
+});
+

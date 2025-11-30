@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'export',
+  // Removed 'output: export' to enable API routes
+  // If you need static export, you'll need a separate backend for API routes
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
@@ -31,6 +32,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.blob.core.windows.net',
         port: '',
         pathname: '/**',
       },

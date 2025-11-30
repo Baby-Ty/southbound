@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Patrick_Hand } from "next/font/google";
+import { Geist, Geist_Mono, Patrick_Hand, DM_Sans, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/Layout";
 import SmoothScrolling from "@/components/SmoothScrolling";
@@ -18,6 +18,24 @@ const patrickHand = Patrick_Hand({
   weight: ["400"],
   subsets: ["latin"],
   variable: "--font-handwritten",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -63,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${patrickHand.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${patrickHand.variable} ${dmSans.variable} ${plusJakartaSans.variable} ${playfair.variable}`}>
       <body
         className="antialiased"
       >

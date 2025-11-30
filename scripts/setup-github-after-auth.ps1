@@ -1,0 +1,103 @@
+# Configure GitHub Secrets after authentication
+# Run this after completing gh auth login
+
+param(
+    [string]$WebAppName = "southbound-app",
+    [string]$FunctionsAppName = "southbound-functions",
+    [string]$ResourceGroupName = "southbound-rg"
+)
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+Write-Host "🔐 Configuring GitHub Secrets" -ForegroundColor Cyan
+Write-Host ""
+
+# Check authentication
+Write-Host "Checking GitHub authentication..." -ForegroundColor Yellow
+$authStatus = gh auth status 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Not authenticated. Please run: gh auth login" -ForegroundColor Red
+    exit 1
+}
+Write-Host "✅ Authenticated to GitHub" -ForegroundColor Green
+Write-Host ""
+
+# Get publish profiles
+Write-Host "📄 Getting publish profiles from Azure..." -ForegroundColor Yellow
+
+$webAppProfile = az webapp deployment list-publishing-profiles `
+    --name $WebAppName `
+    --resource-group $ResourceGroupName `
+    --xml `
+    --output tsv
+
+if (-not $webAppProfile) {
+    Write-Host "❌ Failed to get Web App publish profile" -ForegroundColor Red
+    exit 1
+}
+
+$functionsProfile = az functionapp deployment list-publishing-profiles `
+    --name $FunctionsAppName `
+    --resource-group $ResourceGroupName `
+    --xml `
+    --output tsv
+
+if (-not $functionsProfile) {
+    Write-Host "❌ Failed to get Functions App publish profile" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✅ Publish profiles retrieved" -ForegroundColor Green
+Write-Host ""
+
+# Set GitHub secrets
+Write-Host "🔐 Setting GitHub secrets..." -ForegroundColor Yellow
+Write-Host ""
+
+Write-Host "Setting AZURE_WEBAPP_PUBLISH_PROFILE..." -ForegroundColor Gray
+echo $webAppProfile | gh secret set AZURE_WEBAPP_PUBLISH_PROFILE
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ AZURE_WEBAPP_PUBLISH_PROFILE set" -ForegroundColor Green
+} else {
+    Write-Host "❌ Failed to set AZURE_WEBAPP_PUBLISH_PROFILE" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Setting AZURE_FUNCTIONS_PUBLISH_PROFILE..." -ForegroundColor Gray
+echo $functionsProfile | gh secret set AZURE_FUNCTIONS_PUBLISH_PROFILE
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ AZURE_FUNCTIONS_PUBLISH_PROFILE set" -ForegroundColor Green
+} else {
+    Write-Host "❌ Failed to set AZURE_FUNCTIONS_PUBLISH_PROFILE" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Setting AZURE_WEBAPP_NAME..." -ForegroundColor Gray
+echo $WebAppName | gh secret set AZURE_WEBAPP_NAME
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ AZURE_WEBAPP_NAME set" -ForegroundColor Green
+} else {
+    Write-Host "❌ Failed to set AZURE_WEBAPP_NAME" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Setting AZURE_FUNCTIONS_NAME..." -ForegroundColor Gray
+echo $FunctionsAppName | gh secret set AZURE_FUNCTIONS_NAME
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ AZURE_FUNCTIONS_NAME set" -ForegroundColor Green
+} else {
+    Write-Host "❌ Failed to set AZURE_FUNCTIONS_NAME" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ""
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+Write-Host "✅ All GitHub Secrets Configured Successfully!" -ForegroundColor Green
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Next Steps:" -ForegroundColor Yellow
+Write-Host "   1. Configure environment variables in Azure Portal" -ForegroundColor White
+Write-Host "   2. Push to master branch to trigger deployment" -ForegroundColor White
+Write-Host "   3. Configure custom domains" -ForegroundColor White
+Write-Host ""
+
