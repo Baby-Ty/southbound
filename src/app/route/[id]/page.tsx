@@ -15,7 +15,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
-import EnhancedCityCard, { StopPlan } from '@/components/RouteBuilder/EnhancedCityCard';
+import EnhancedCityCard, { StopPlan, HighlightItem } from '@/components/RouteBuilder/EnhancedCityCard';
 import { CITY_PRESETS, RegionKey, CityPreset } from '@/lib/cityPresets';
 
 export default function RouteViewPage() {
@@ -265,7 +265,19 @@ export default function RouteViewPage() {
                   </div>
                 )}
                 <EnhancedCityCard
-                  stop={stop}
+                  stop={{
+                    ...stop,
+                    highlights: {
+                      ...stop.highlights,
+                      places: (() => {
+                        const places = stop.highlights.places;
+                        if (Array.isArray(places) && places.length > 0 && typeof places[0] === 'string') {
+                          return (places as string[]).map((p): HighlightItem => ({ title: p }));
+                        }
+                        return places as HighlightItem[];
+                      })()
+                    }
+                  }}
                   cityPreset={cityPreset}
                   index={index}
                   isEditing={false}
