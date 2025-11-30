@@ -595,9 +595,15 @@ function TripOptionsContent() {
                             ...stop.highlights,
                             places: (() => {
                               const places = stop.highlights.places;
-                              if (Array.isArray(places) && places.length > 0 && typeof places[0] === 'string') {
-                                return (places as string[]).map((p): HighlightItem => ({ title: p }));
+                              // Type guard: check if first element is a string
+                              if (Array.isArray(places) && places.length > 0) {
+                                const first = places[0];
+                                if (typeof first === 'string') {
+                                  // Safe to cast after type guard - use unknown intermediate
+                                  return (places as unknown as string[]).map((p: string): HighlightItem => ({ title: p }));
+                                }
                               }
+                              // Already HighlightItem[] or empty array
                               return places as HighlightItem[];
                             })()
                           }
