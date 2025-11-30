@@ -32,10 +32,18 @@ jobs:
         working-directory: functions
         run: npm run build
 
+      - name: Create deployment package
+        working-directory: functions
+        run: |
+          # Create zip of built functions
+          zip -r ../functions-deploy.zip . -x "node_modules/*" -x "*.ts" -x "tsconfig.json"
+          
       - name: Deploy to Azure Functions
         uses: azure/functions-action@v1
         with:
           app-name: ${{ secrets.AZURE_FUNCTIONS_NAME }}
-          package: functions
+          package: ./functions-deploy.zip
           publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
 
