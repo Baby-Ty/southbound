@@ -272,7 +272,7 @@ export default function RouteViewPage() {
                       places: (() => {
                         const places = stop.highlights.places;
                         if (Array.isArray(places) && places.length > 0 && typeof places[0] === 'string') {
-                          return (places as string[]).map((p): HighlightItem => ({ title: p }));
+                          return (places as unknown as string[]).map((p): HighlightItem => ({ title: p }));
                         }
                         return places as HighlightItem[];
                       })()
