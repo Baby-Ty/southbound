@@ -27,7 +27,7 @@ import {
 import { REGION_HUBS, RegionKey, CityPreset } from "@/lib/cityPresets";
 import { getCitiesForRegion } from "@/lib/cityData";
 import { CITY_PRESETS } from "@/lib/cityPresets"; // Keep for fallback
-import EnhancedCityCard, { StopPlan } from "@/components/RouteBuilder/EnhancedCityCard";
+import EnhancedCityCard, { StopPlan, HighlightItem } from "@/components/RouteBuilder/EnhancedCityCard";
 import { EditStopModal } from "@/components/RouteBuilder/EditStopModal";
 import SaveRouteModal from "@/components/RouteBuilder/SaveRouteModal";
 
@@ -589,7 +589,19 @@ function TripOptionsContent() {
                       }}
                     >
                       <EnhancedCityCard
-                        stop={stop}
+                        stop={{
+                          ...stop,
+                          highlights: {
+                            ...stop.highlights,
+                            places: (() => {
+                              const places = stop.highlights.places;
+                              if (Array.isArray(places) && places.length > 0 && typeof places[0] === 'string') {
+                                return (places as string[]).map((p): HighlightItem => ({ title: p }));
+                              }
+                              return places as HighlightItem[];
+                            })()
+                          }
+                        }}
                         cityPreset={cityPreset}
                         index={i}
                         isEditing={editingStop === i}
