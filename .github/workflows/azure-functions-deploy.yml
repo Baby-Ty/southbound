@@ -35,17 +35,23 @@ jobs:
       - name: Prepare deployment package
         working-directory: functions
         run: |
-          # Copy host.json and package.json to dist
+          # Copy host.json to dist
           cp host.json dist/
-          cp package.json dist/
           cp package-lock.json dist/
+          
+          # Create corrected package.json with main pointing to index.js (not dist/index.js)
+          # because we're deploying from inside the dist folder
+          cat package.json | sed 's/"main": "dist\/index.js"/"main": "index.js"/' > dist/package.json
           
           # Install production dependencies in dist
           cd dist
           npm ci --omit=dev
           
           echo "✓ Deployment package prepared"
+          echo "Contents of dist folder:"
           ls -la
+          echo "package.json main entry:"
+          grep '"main"' package.json
 
       - name: Deploy to Azure Functions
         uses: azure/functions-action@v1
