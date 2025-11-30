@@ -66,10 +66,14 @@ jobs:
               "start": "node server.js"
             },
             "engines": {
-              "node": ">=20"
+              "node": "20.x"
             }
           }
           EOF
+          
+          # Create .deployment file for Azure
+          echo "[config]" > deploy/.deployment
+          echo "command = node server.js" >> deploy/.deployment
           
           # Create web.config for IIS on Windows Azure
           cat > deploy/web.config << 'EOF'
