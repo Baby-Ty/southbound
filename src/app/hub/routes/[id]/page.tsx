@@ -230,7 +230,15 @@ export default function RouteDetailPage() {
                       </div>
                     )}
                     <EnhancedCityCard
-                      stop={stop}
+                      stop={{
+                        ...stop,
+                        highlights: {
+                          ...stop.highlights,
+                          places: Array.isArray(stop.highlights.places) && stop.highlights.places.length > 0 && typeof stop.highlights.places[0] === 'string'
+                            ? stop.highlights.places.map((p: string) => ({ title: p }))
+                            : stop.highlights.places
+                        }
+                      } as any}
                       cityPreset={cityPreset}
                       index={index}
                       isEditing={false}

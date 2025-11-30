@@ -104,6 +104,12 @@ export interface SavedRoute {
   adminNotes?: string;
 }
 
+export interface HighlightItem {
+  title: string;
+  imageUrl?: string;
+  isCustom?: boolean;
+}
+
 export interface StopPlan {
   id: string;
   city: string;
@@ -113,7 +119,7 @@ export interface StopPlan {
   budgetCoins: 1 | 2 | 3;
   tags: string[];
   highlights: {
-    places: string[];
+    places: HighlightItem[] | string[]; // Support both formats for compatibility
     accommodation: string;
     activities: string[];
     notes: string;
