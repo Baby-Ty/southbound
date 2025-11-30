@@ -2,8 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // Standalone output for Azure deployment
-  output: 'standalone',
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
