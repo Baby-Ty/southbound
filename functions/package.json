@@ -12,12 +12,12 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.9.0",
+    "@azure/functions": "^4.5.1",
     "@azure/storage-blob": "^12.29.1",
     "openai": "^4.104.0",
     "nanoid": "^5.1.6"
   },
   "devDependencies": {
-    "@azure/functions": "^4.5.1",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   }
