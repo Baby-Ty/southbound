@@ -53,8 +53,16 @@ export default function RoutesPage() {
         params.append('status', statusFilter);
       }
       
-      const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl(`routes?${params.toString()}`));
+      // Direct runtime URL detection for production
+      const hostname = window.location.hostname;
+      const isProduction = hostname.includes('azurewebsites.net') || hostname.includes('southbound');
+      const baseUrl = isProduction 
+        ? 'https://southbound-functions.azurewebsites.net' 
+        : '';
+      const url = `${baseUrl}/api/routes?${params.toString()}`;
+      
+      console.log('[Routes] Loading from:', url);
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load routes');
       
       const data = await response.json();
