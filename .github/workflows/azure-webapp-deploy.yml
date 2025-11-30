@@ -42,30 +42,59 @@ jobs:
           mkdir -p deploy
           
           # Copy standalone server files
-          # Next.js standalone output structure: .next/standalone/server.js, node_modules, etc.
           cp -r .next/standalone/* deploy/
           
-          # Copy static files - must be at .next/static relative to server.js location
+          # Copy static files
           if [ -d ".next/static" ]; then
             mkdir -p deploy/.next
             cp -r .next/static deploy/.next/static
             echo "✓ Copied .next/static"
-          else
-            echo "Warning: .next/static not found"
           fi
           
-          # Copy public folder - must be at public/ relative to server.js location
+          # Copy public folder
           if [ -d "public" ]; then
             cp -r public deploy/public
             echo "✓ Copied public folder"
-          else
-            echo "Warning: public folder not found"
           fi
+          
+          # Create package.json for Azure to detect Node.js app
+          cat > deploy/package.json << 'EOF'
+          {
+            "name": "southbound-app",
+            "version": "1.0.0",
+            "scripts": {
+              "start": "node server.js"
+            },
+            "engines": {
+              "node": ">=20"
+            }
+          }
+          EOF
+          
+          # Create web.config for IIS on Windows Azure
+          cat > deploy/web.config << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="iisnode" path="server.js" verb="*" modules="iisnode"/>
+              </handlers>
+              <rewrite>
+                <rules>
+                  <rule name="DynamicContent">
+                    <match url="/*" />
+                    <action type="Rewrite" url="server.js"/>
+                  </rule>
+                </rules>
+              </rewrite>
+              <iisnode node_env="production" nodeProcessCommandLine="node" />
+            </system.webServer>
+          </configuration>
+          EOF
           
           # Verify critical files exist
           if [ ! -f "deploy/server.js" ]; then
             echo "Error: server.js not found in deployment package"
-            echo "Contents of deploy directory:"
             ls -la deploy/
             exit 1
           fi
@@ -74,10 +103,19 @@ jobs:
           echo "Package size:"
           du -sh deploy/
 
+      - name: Create deployment zip
+        run: |
+          cd deploy
+          zip -r ../deploy.zip .
+          cd ..
+          echo "Zip file size:"
+          ls -lh deploy.zip
+
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./deploy
+          package: ./deploy.zip
+          type: zip
 
