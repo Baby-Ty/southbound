@@ -63,7 +63,7 @@ async function getContainerClient(): Promise<ContainerClient> {
           // Verify and update access level if needed
           try {
             const properties = await client.getProperties();
-            if (properties.publicAccess !== 'blob') {
+            if (properties.blobPublicAccess !== 'blob') {
               console.log(`Updating container access level to 'blob' for public access`);
               await client.setAccessPolicy({
                 access: 'blob',
