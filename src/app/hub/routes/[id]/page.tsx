@@ -20,7 +20,7 @@ import {
   User,
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
-import EnhancedCityCard, { StopPlan } from '@/components/RouteBuilder/EnhancedCityCard';
+import EnhancedCityCard, { StopPlan, HighlightItem } from '@/components/RouteBuilder/EnhancedCityCard';
 import { CITY_PRESETS, RegionKey, CityPreset } from '@/lib/cityPresets';
 
 const STATUS_OPTIONS: SavedRoute['status'][] = ['draft', 'submitted', 'in-review', 'confirmed'];
@@ -234,11 +234,15 @@ export default function RouteDetailPage() {
                         ...stop,
                         highlights: {
                           ...stop.highlights,
-                          places: Array.isArray(stop.highlights.places) && stop.highlights.places.length > 0 && typeof stop.highlights.places[0] === 'string'
-                            ? stop.highlights.places.map((p: string) => ({ title: p }))
-                            : stop.highlights.places
+                          places: (() => {
+                            const places = stop.highlights.places;
+                            if (Array.isArray(places) && places.length > 0 && typeof places[0] === 'string') {
+                              return (places as string[]).map((p): HighlightItem => ({ title: p }));
+                            }
+                            return places as HighlightItem[];
+                          })()
                         }
-                      } as any}
+                      }}
                       cityPreset={cityPreset}
                       index={index}
                       isEditing={false}
