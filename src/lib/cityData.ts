@@ -40,7 +40,7 @@ export async function getCitiesForRegion(region: RegionKey): Promise<CityPreset[
           // Convert CityData to CityPreset
           const presets = data.cities.map((city: CityData) => cityDataToPreset(city));
           // Log blob URL usage
-          const blobCount = presets.filter(p => p.imageUrl?.includes('.blob.core.windows.net')).length;
+          const blobCount = presets.filter((p: CityPreset) => p.imageUrl?.includes('.blob.core.windows.net')).length;
           console.log(`[getCitiesForRegion] ${blobCount}/${presets.length} cities using blob URLs`);
           return presets;
         } else {
