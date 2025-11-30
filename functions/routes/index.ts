@@ -22,7 +22,14 @@ export async function routes(request: HttpRequest, context: InvocationContext): 
 
   try {
     if (request.method === 'POST') {
-      const body = await request.json();
+      const body = await request.json() as {
+        name?: string;
+        email?: string;
+        region?: string;
+        stops?: any;
+        preferences?: any;
+        notes?: string;
+      };
       
       const { name, email, region, stops, preferences, notes } = body;
 
@@ -87,7 +94,7 @@ export async function routes(request: HttpRequest, context: InvocationContext): 
       return createCorsResponse({ error: 'Method not allowed' }, 405);
     }
   } catch (error: any) {
-    context.log.error('Error processing routes request:', error);
+    context.log(`Error processing routes request: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { 
         error: error.message || 'Failed to process request',

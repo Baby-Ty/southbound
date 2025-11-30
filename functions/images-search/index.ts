@@ -19,7 +19,7 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   
   if (!accessKey) {
-    context.log.warn("UNSPLASH_ACCESS_KEY is missing");
+    context.log("UNSPLASH_ACCESS_KEY is missing");
     return createCorsResponse([], 200);
   }
 
@@ -31,7 +31,8 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
     });
     
     if (!res.ok) {
-      context.log.error("Unsplash API error:", await res.text());
+      const errorText = await res.text();
+      context.log(`Unsplash API error: ${errorText}`);
       throw new Error("Unsplash API error");
     }
 
@@ -48,7 +49,7 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
 
     return createCorsResponse(images);
   } catch (error: any) {
-    context.log.error(error);
+    context.log(`Error: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse({ error: 'Failed to fetch images' }, 500);
   }
 }

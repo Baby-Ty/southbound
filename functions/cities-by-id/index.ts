@@ -27,7 +27,7 @@ export async function citiesById(request: HttpRequest, context: InvocationContex
 
       return createCorsResponse({ city });
     } else if (request.method === 'PATCH') {
-      const body = await request.json();
+      const body = await request.json() as any;
       const city = await updateCity(id, body);
       return createCorsResponse({ city });
     } else if (request.method === 'DELETE') {
@@ -37,7 +37,7 @@ export async function citiesById(request: HttpRequest, context: InvocationContex
       return createCorsResponse({ error: 'Method not allowed' }, 405);
     }
   } catch (error: any) {
-    context.log.error('Error processing city request:', error);
+    context.log(`Error processing city request: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500

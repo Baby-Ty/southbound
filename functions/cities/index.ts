@@ -24,7 +24,7 @@ export async function cities(request: HttpRequest, context: InvocationContext): 
     
     return createCorsResponse({ cities });
   } catch (error: any) {
-    context.log.error('[API] Unexpected error:', error);
+    context.log(`[API] Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse({ cities: [] });
   }
 }

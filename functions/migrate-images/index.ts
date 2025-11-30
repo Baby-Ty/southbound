@@ -109,7 +109,10 @@ export async function migrateImages(request: HttpRequest, context: InvocationCon
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      cityId?: string;
+      dryRun?: boolean;
+    };
     const { cityId, dryRun = false } = body;
 
     if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
@@ -222,7 +225,7 @@ export async function migrateImages(request: HttpRequest, context: InvocationCon
       });
     }
   } catch (error: any) {
-    context.log.error('Migration error:', error);
+    context.log(`Migration error: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { 
         error: error.message || 'Failed to migrate images',

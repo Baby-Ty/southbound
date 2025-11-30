@@ -12,7 +12,12 @@ export async function uploadImage(request: HttpRequest, context: InvocationConte
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      imageUrl?: string;
+      imageData?: string;
+      category?: string;
+      filename?: string;
+    };
     const { imageUrl, imageData, category, filename } = body;
 
     if (!imageUrl && !imageData) {
@@ -64,7 +69,7 @@ export async function uploadImage(request: HttpRequest, context: InvocationConte
       message: 'Image uploaded successfully',
     });
   } catch (error: any) {
-    context.log.error('Error uploading image:', error);
+      context.log(`Error uploading image: ${error instanceof Error ? error.message : String(error)}`);
     
     return createCorsResponse(
       { 

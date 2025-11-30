@@ -13,7 +13,11 @@ export async function routesSendLink(request: HttpRequest, context: InvocationCo
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as {
+      routeId?: string;
+      email?: string;
+      routeUrl?: string;
+    };
     const { routeId, email, routeUrl } = body;
 
     if (!routeId || !email || !routeUrl) {
@@ -40,7 +44,7 @@ export async function routesSendLink(request: HttpRequest, context: InvocationCo
 
     return createCorsResponse({ success: true });
   } catch (error: any) {
-    context.log.error('Error sending email:', error);
+      context.log(`Error sending email: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { error: error.message || 'Failed to send email' },
       500

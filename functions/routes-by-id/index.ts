@@ -44,7 +44,13 @@ export async function routesById(request: HttpRequest, context: InvocationContex
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
 
-      const body = await request.json();
+      const body = await request.json() as {
+        status?: SavedRoute['status'];
+        stops?: any;
+        preferences?: any;
+        notes?: string;
+        adminNotes?: string;
+      };
       
       const allowedUpdates: Partial<SavedRoute> = {};
       
@@ -77,7 +83,7 @@ export async function routesById(request: HttpRequest, context: InvocationContex
       return createCorsResponse({ error: 'Method not allowed' }, 405);
     }
   } catch (error: any) {
-    context.log.error('Error processing route request:', error);
+      context.log(`Error processing route request: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500

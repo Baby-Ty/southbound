@@ -20,7 +20,7 @@ export async function imagesGenerate(request: HttpRequest, context: InvocationCo
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as { prompt?: string };
     const { prompt } = body;
 
     if (!prompt) {
@@ -38,7 +38,7 @@ export async function imagesGenerate(request: HttpRequest, context: InvocationCo
 
     return createCorsResponse({ url: response.data[0].url });
   } catch (error: any) {
-    context.log.error("OpenAI Error:", error);
+    context.log(`OpenAI Error: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse({ error: 'Failed to generate image' }, 500);
   }
 }
