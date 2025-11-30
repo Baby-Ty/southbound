@@ -2,14 +2,29 @@
  * API utility functions for calling Azure Functions
  */
 
-import { FUNCTIONS_URL } from './config';
+// Azure Functions URL for production
+const AZURE_FUNCTIONS_URL = 'https://southbound-functions.azurewebsites.net';
 
 /**
  * Get the base URL for API calls
- * Uses FUNCTIONS_URL from config (captured at build time)
+ * Runtime detection: if on Azure Web App, use Azure Functions URL
  */
 export function getApiUrl(): string {
-  return FUNCTIONS_URL;
+  // Runtime detection - check if we're on the Azure Web App
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    console.log('[API] Hostname:', hostname);
+    
+    // If on Azure Web App, use the Functions URL
+    if (hostname.includes('azurewebsites.net') || hostname.includes('southbound')) {
+      console.log('[API] Using Azure Functions URL:', AZURE_FUNCTIONS_URL);
+      return AZURE_FUNCTIONS_URL;
+    }
+  }
+  
+  // Fallback for local development
+  console.log('[API] Using local /api');
+  return '/api';
 }
 
 /**
