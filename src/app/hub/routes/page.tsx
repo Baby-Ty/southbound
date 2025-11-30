@@ -1,6 +1,6 @@
 'use client';
 
-// Force rebuild: v2
+// Force rebuild: v4 - Hardcoded Functions URL
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

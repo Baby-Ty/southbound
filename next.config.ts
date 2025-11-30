@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/hub/routes',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
     ];
   },
   images: {
