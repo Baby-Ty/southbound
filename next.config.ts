@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // Removed 'output: export' to enable API routes
-  // If you need static export, you'll need a separate backend for API routes
+  // Standalone output for Azure deployment
+  output: 'standalone',
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
