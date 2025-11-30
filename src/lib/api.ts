@@ -2,18 +2,14 @@
  * API utility functions for calling Azure Functions
  */
 
+import { FUNCTIONS_URL } from './config';
+
 /**
  * Get the base URL for API calls
- * Uses NEXT_PUBLIC_FUNCTIONS_URL if set, otherwise falls back to /api for local development
+ * Uses FUNCTIONS_URL from config (captured at build time)
  */
 export function getApiUrl(): string {
-  if (typeof window === 'undefined') {
-    // Server-side: use environment variable or default to /api
-    return process.env.NEXT_PUBLIC_FUNCTIONS_URL || '/api';
-  }
-  
-  // Client-side: use environment variable or default to /api
-  return process.env.NEXT_PUBLIC_FUNCTIONS_URL || '/api';
+  return FUNCTIONS_URL;
 }
 
 /**
