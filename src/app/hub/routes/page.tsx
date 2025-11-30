@@ -46,6 +46,9 @@ export default function RoutesPage() {
     loadRoutes();
   }, [statusFilter]);
 
+  // API URL - HARDCODED for production
+  const FUNCTIONS_API_URL = 'https://southbound-functions.azurewebsites.net';
+  
   async function loadRoutes() {
     try {
       setLoading(true);
@@ -54,22 +57,21 @@ export default function RoutesPage() {
         params.append('status', statusFilter);
       }
       
-      // Direct runtime URL detection for production
-      const hostname = window.location.hostname;
-      const isProduction = hostname.includes('azurewebsites.net') || hostname.includes('southbound');
-      const baseUrl = isProduction 
-        ? 'https://southbound-functions.azurewebsites.net' 
-        : '';
-      const url = `${baseUrl}/api/routes?${params.toString()}`;
+      // Use Functions URL directly - no more detection needed
+      const url = `${FUNCTIONS_API_URL}/api/routes?${params.toString()}`;
       
-      console.log('[Routes] Loading from:', url);
+      console.log('[Routes v3] Loading from:', url);
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to load routes');
+      if (!response.ok) {
+        console.error('[Routes v3] API error:', response.status);
+        throw new Error('Failed to load routes');
+      }
       
       const data = await response.json();
+      console.log('[Routes v3] Loaded:', data.routes?.length || 0, 'routes');
       setRoutes(data.routes || []);
     } catch (error) {
-      console.error('Error loading routes:', error);
+      console.error('[Routes v3] Error loading routes:', error);
     } finally {
       setLoading(false);
     }
