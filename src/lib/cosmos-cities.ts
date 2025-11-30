@@ -101,11 +101,9 @@ export async function getAllCities(region?: RegionKey): Promise<CityData[]> {
       parameters: params,
     };
 
-    // Enable cross-partition query if no region filter
-    const feedOptions = !region ? { enableCrossPartitionQuery: true } : undefined;
-
+    // Cross-partition queries are enabled by default in newer SDK versions
     console.log('[getAllCities] Executing query:', query);
-    const { resources } = await container.items.query(querySpec, feedOptions).fetchAll();
+    const { resources } = await container.items.query(querySpec).fetchAll();
     console.log('[getAllCities] Query successful, found', resources.length, 'cities');
 
     return resources as CityData[];
@@ -136,15 +134,13 @@ export async function getCity(cityId: string): Promise<CityData | null> {
     const container = await getContainer(CITIES_CONTAINER_ID);
     // Use query instead of direct read since partition key is /region, not /id
     // We need to query across partitions to find the city by ID
-    const { resources } = await container.items.query(
-      {
-        query: 'SELECT * FROM c WHERE c.id = @cityId',
-        parameters: [
-          { name: '@cityId', value: cityId }
-        ],
-      },
-      { enableCrossPartitionQuery: true }
-    ).fetchAll();
+    // Cross-partition queries are enabled by default in newer SDK versions
+    const { resources } = await container.items.query({
+      query: 'SELECT * FROM c WHERE c.id = @cityId',
+      parameters: [
+        { name: '@cityId', value: cityId }
+      ],
+    }).fetchAll();
     
     return resources[0] as CityData | null;
   } catch (error: any) {
