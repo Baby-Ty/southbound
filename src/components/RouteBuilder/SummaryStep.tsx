@@ -212,7 +212,7 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
             whileTap={{ scale: 0.95 }}
             className="w-full sm:w-auto px-8 py-3 bg-sb-orange-500 text-white rounded-xl font-bold text-base shadow-lg hover:bg-sb-orange-600 hover:shadow-xl flex items-center justify-center gap-2 transition-all"
           >
-            🚀 See Your Matches
+            🚀 Build My Trip
           </motion.a>
         </div>
       </motion.div>

@@ -30,9 +30,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ACTIVITIES, ACCOMMODATION_TYPES, RegionKey } from '@/lib/cityPresets';
-import { CityData } from '@/lib/cosmos-cities';
+import { CityData, HighlightPlace } from '@/lib/cosmos-cities';
 import CityImageManager from '@/components/hub/CityImageManager';
 import ImageGenerator from '@/components/hub/ImageGenerator';
+import HighlightManager from '@/components/hub/HighlightManager';
 import { PromptContext } from '@/lib/dallePrompts';
 
 const CLIMATE_OPTIONS = [
@@ -84,7 +85,7 @@ export default function CityEditPage() {
     activityImages: [] as string[],
     accommodationImages: [] as string[],
     highlights: {
-      places: [] as string[],
+      places: [] as (string | HighlightPlace)[],
       accommodation: '',
       activities: [] as string[],
       notesHint: '',
@@ -120,13 +121,23 @@ export default function CityEditPage() {
     try {
       setLoading(true);
       const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl(`cities/${cityId}`));
+      const url = apiUrl(`cities/${cityId}`);
+      console.log('[CityEdit] Loading city from URL:', url);
+      const response = await fetch(url);
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CityEdit] Failed to load city:', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          error: errorText,
+        });
         if (response.status === 404) {
+          alert(`City not found. The city with ID "${cityId}" may not exist in the database.`);
           router.push('/hub/destinations/cities');
           return;
         }
-        throw new Error('Failed to load city');
+        throw new Error(`Failed to load city: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
@@ -148,7 +159,9 @@ export default function CityEditPage() {
         activityImages: cityData.activityImages || [],
         accommodationImages: cityData.accommodationImages || [],
         highlights: {
-          places: cityData.highlights?.places || [],
+          places: (cityData.highlights?.places || []).map(p => 
+            typeof p === 'string' ? p : p
+          ),
           accommodation: cityData.highlights?.accommodation || '',
           activities: cityData.highlights?.activities || [],
           notesHint: cityData.highlights?.notesHint || '',
@@ -673,39 +686,24 @@ export default function CityEditPage() {
               Highlights & Tips
             </h3>
             
-            {/* Places */}
+            {/* Highlights with Images */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-stone-700 mb-2">Key Places / Neighborhoods</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.highlights.places.map(place => (
-                  <span
-                    key={place}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                  >
-                    <MapPin className="w-3 h-3" />
-                    {place}
-                    <button onClick={() => removePlace(place)} className="hover:text-blue-900 ml-1">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newPlace}
-                  onChange={(e) => setNewPlace(e.target.value)}
-                  placeholder="Add a place..."
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPlace())}
-                  className="flex-1 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
-                />
-                <button
-                  onClick={addPlace}
-                  className="px-4 py-2 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-200 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">
+                Key Places / Highlights (with Images)
+              </label>
+              <p className="text-xs text-stone-500 mb-3">
+                These highlights will appear in the route builder with images. Users can override images for their own routes.
+              </p>
+              <HighlightManager
+                highlights={formData.highlights.places}
+                onUpdate={(updated) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    highlights: { ...prev.highlights, places: updated }
+                  }));
+                }}
+                cityName={formData.city}
+              />
             </div>
 
             {/* Accommodation Suggestion */}

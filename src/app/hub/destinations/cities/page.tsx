@@ -109,7 +109,8 @@ export default function CitiesManagementPage() {
 
   const toggleCityEnabled = async (cityId: string, currentEnabled: boolean) => {
     try {
-      const response = await fetch(`/api/cities/${cityId}`, {
+      const { apiUrl } = await import('@/lib/api');
+      const response = await fetch(apiUrl(`cities/${cityId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: !currentEnabled }),

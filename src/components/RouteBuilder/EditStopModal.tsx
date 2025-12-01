@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -46,6 +46,28 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
   const [genPrompt, setGenPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Auto-search when search tab is opened with a populated query
+  useEffect(() => {
+    if (activeTab === 'search' && searchQuery.trim() && searchResults.length === 0 && !isSearching) {
+      // Small delay to avoid immediate search on tab switch
+      const timer = setTimeout(async () => {
+        if (!searchQuery.trim()) return;
+        setIsSearching(true);
+        try {
+          const { apiUrl } = await import('@/lib/api');
+          const res = await fetch(apiUrl(`images/search?query=${encodeURIComponent(searchQuery)}`));
+          const data = await res.json();
+          setSearchResults(Array.isArray(data) ? data : []);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, searchQuery]);
+
   // Helpers
   const resetForm = () => {
     setEditTitle("");
@@ -56,6 +78,7 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
     setSearchQuery("");
     setSearchResults([]);
     setGenPrompt("");
+    setActiveTab('library'); // Reset to library tab
   };
 
   const startEdit = (index: number) => {
@@ -63,10 +86,15 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
     const item = places[index];
     if (!item) return;
     
-    setEditTitle(typeof item === 'string' ? item : item.title);
-    setEditImage(typeof item === 'string' ? '' : (item.imageUrl || ''));
+    const title = typeof item === 'string' ? item : item.title;
+    setEditTitle(title);
+    // Use user's custom image if available, otherwise use admin default
+    const imageUrl = typeof item === 'string' ? '' : (item.imageUrl || '');
+    setEditImage(imageUrl);
     setEditingIndex(index);
     setIsAdding(true);
+    // Auto-populate search query with highlight title when editing
+    setSearchQuery(title);
   };
 
   const saveHighlight = () => {
@@ -249,15 +277,32 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
                                 {/* Image Preview/Add */}
                                 <div className="flex-shrink-0">
                                     {editImage ? (
-                                        <div className="w-24 h-24 rounded-lg relative overflow-hidden group cursor-pointer" onClick={() => setShowImagePicker(true)}>
+                                        <div 
+                                            className="w-24 h-24 rounded-lg relative overflow-hidden group cursor-pointer" 
+                                            onClick={() => {
+                                              setShowImagePicker(true);
+                                              // Auto-populate search query with highlight title when editing image
+                                              if (editTitle.trim()) {
+                                                setSearchQuery(editTitle.trim());
+                                                setActiveTab('search');
+                                              }
+                                            }}
+                                        >
                                             <Image src={editImage} alt="Preview" fill className="object-cover" />
                                             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                                 <Edit3 className="w-5 h-5 text-white" />
                             </div>
                         </div>
                     ) : (
-                        <button 
-                                            onClick={() => setShowImagePicker(true)}
+                                    <button 
+                                            onClick={() => {
+                                              setShowImagePicker(true);
+                                              // Auto-populate search query with highlight title when opening image picker
+                                              if (editTitle.trim()) {
+                                                setSearchQuery(editTitle.trim());
+                                                setActiveTab('search');
+                                              }
+                                            }}
                                             className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-sb-teal-400 hover:text-sb-teal-600 hover:bg-sb-teal-50 transition-all"
                         >
                                             <ImageIcon className="w-6 h-6" />
@@ -283,6 +328,9 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
                                             className="px-4 py-2 bg-sb-navy-700 text-white text-sm font-bold rounded-lg hover:bg-sb-navy-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                         >
                                             {editingIndex !== null ? 'Update' : 'Add'} Highlight
+                                            {editImage && (
+                                              <span className="ml-1 text-xs opacity-75">(with image)</span>
+                                            )}
                                         </button>
                                     <button 
                                             onClick={resetForm}
@@ -291,6 +339,12 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
                                             Cancel
                                     </button>
                                     </div>
+                                    {editImage && (
+                                      <p className="text-xs text-green-600 flex items-center gap-1">
+                                        <Check className="w-3 h-3" />
+                                        Image selected - click &quot;{editingIndex !== null ? 'Update' : 'Add'} Highlight&quot; to save
+                                      </p>
+                                    )}
                                     </div>
                                 </div>
                                 
@@ -305,7 +359,13 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
                                             Library
                                         </button>
                                         <button 
-                                            onClick={() => setActiveTab('search')}
+                                            onClick={() => {
+                                              setActiveTab('search');
+                                              // Auto-search if there's a query and no results yet
+                                              if (searchQuery.trim() && searchResults.length === 0) {
+                                                handleSearch();
+                                              }
+                                            }}
                                             className={`pb-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'search' ? 'border-sb-teal-500 text-sb-teal-700' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                         >
                                             <Search className="w-3 h-3 inline mr-1" /> Search
@@ -344,9 +404,23 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
                                                         {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                                                     </button>
                                                 </div>
+                                                {/* Auto-search when search tab is opened with a query */}
+                                                {searchQuery && searchResults.length === 0 && !isSearching && (
+                                                  <div className="text-xs text-gray-500 text-center py-2">
+                                                    Click search or press Enter to find images
+                                                  </div>
+                                                )}
                                                 <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto custom-scrollbar">
                                                     {searchResults.map((img: any) => (
-                                                        <button key={img.id} onClick={() => setEditImage(img.url)} className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 ring-sb-teal-400 transition-all group">
+                                                        <button 
+                                                            key={img.id} 
+                                                            onClick={() => {
+                                                                setEditImage(img.url);
+                                                                // Optionally close image picker after selection for better UX
+                                                                // setShowImagePicker(false);
+                                                            }} 
+                                                            className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 ring-sb-teal-400 transition-all group"
+                                                        >
                                                             <Image src={img.thumb} alt={img.alt} fill className="object-cover" />
                                                         </button>
                                                     ))}

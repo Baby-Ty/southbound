@@ -54,12 +54,24 @@ export function getApiUrl(): string {
 
 /**
  * Build a full API endpoint URL
+ * Prefers local Next.js API routes when available, falls back to Azure Functions
  */
 export function apiUrl(path: string): string {
-  const baseUrl = getApiUrl();
   // Remove leading slash from path if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
+  // Check if we have a local Next.js API route available
+  // For client-side code, always use relative /api routes which will be handled by Next.js
+  // This allows Next.js API routes to proxy to Azure Functions or call CosmosDB directly
+  if (typeof window !== 'undefined') {
+    // Client-side: use relative URL to Next.js API routes
+    const finalUrl = `/api/${cleanPath}`;
+    console.log('[apiUrl] Using local Next.js API route:', finalUrl);
+    return finalUrl;
+  }
+  
+  // Server-side: use Azure Functions or configured API URL
+  const baseUrl = getApiUrl();
   let finalUrl: string;
   
   // If baseUrl ends with /api, don't add another /api

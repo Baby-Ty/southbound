@@ -16,10 +16,8 @@ import {
   Clock,
   AlertCircle,
   XCircle,
-  User,
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
-import { apiUrl } from '@/lib/api';
 
 const STATUS_COLORS: Record<SavedRoute['status'], string> = {
   draft: 'bg-gray-100 text-gray-700',
@@ -45,7 +43,7 @@ export default function RoutesPage() {
   useEffect(() => {
     loadRoutes();
   }, [statusFilter]);
-  
+
   async function loadRoutes() {
     try {
       setLoading(true);
@@ -54,42 +52,13 @@ export default function RoutesPage() {
         params.append('status', statusFilter);
       }
       
-      const url = `${apiUrl('routes')}?${params.toString()}`;
-      
-      console.log('[Routes] Fetching from URL:', url);
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      console.log('[Routes] Response status:', response.status);
-      console.log('[Routes] Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Routes] API error:', response.status, errorText);
-        throw new Error(`Failed to load routes: ${response.status}`);
-      }
+      const response = await fetch(`/api/routes?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to load routes');
       
       const data = await response.json();
-      console.log('[Routes] Received data:', { routesCount: data.routes?.length || 0, data });
-      
-      if (!data.routes) {
-        console.warn('[Routes] Response missing routes array:', data);
-        setRoutes([]);
-        return;
-      }
-      
-      setRoutes(data.routes);
-      console.log('[Routes] Successfully loaded', data.routes.length, 'routes');
-    } catch (error: any) {
-      console.error('[Routes] Error loading routes:', error);
-      console.error('[Routes] Error name:', error.name);
-      console.error('[Routes] Error message:', error.message);
-      console.error('[Routes] Error stack:', error.stack);
-      setRoutes([]);
+      setRoutes(data.routes || []);
+    } catch (error) {
+      console.error('Error loading routes:', error);
     } finally {
       setLoading(false);
     }
@@ -97,7 +66,6 @@ export default function RoutesPage() {
 
   const filteredRoutes = routes.filter((route) => {
     const matchesSearch =
-      (route.name && route.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       route.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       route.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
       route.stops.some((stop) =>
@@ -202,12 +170,6 @@ export default function RoutesPage() {
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-stone-600 mb-3">
-                        {route.name && (
-                          <div className="flex items-center gap-1.5">
-                            <User className="w-4 h-4" />
-                            {route.name}
-                          </div>
-                        )}
                         <div className="flex items-center gap-1.5">
                           <Mail className="w-4 h-4" />
                           {route.email}

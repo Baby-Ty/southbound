@@ -1,6 +1,14 @@
 import { getContainer } from './cosmos';
 import { CityPreset, RegionKey } from './cityPresets';
 
+// Highlight place with image support
+export interface HighlightPlace {
+  title: string;
+  imageUrl?: string; // Primary/default image URL
+  imageLibrary?: string[]; // Array of image URLs available for this highlight
+  isDefault?: boolean; // Whether this is the admin default
+}
+
 // City data stored in CosmosDB
 export interface CityData {
   id: string;
@@ -15,11 +23,11 @@ export interface CityData {
   // Legacy support - will be migrated to imageUrls
   imageUrl?: string;
   // AI-generated image arrays
-  highlightImages?: string[];      // Array of URLs for highlight photos
+  highlightImages?: string[];      // Array of URLs for highlight photos (legacy)
   activityImages?: string[];       // Array of URLs for activity photos
   accommodationImages?: string[];  // Array of URLs for accommodation photos
   highlights: {
-    places: string[];
+    places: (string | HighlightPlace)[];
     accommodation: string;
     activities: string[];
     notesHint: string;
@@ -326,7 +334,11 @@ export function cityDataToPreset(city: CityData): CityPreset {
     imageUrl, // Primary image (first in array, prioritized to be blob URL if available)
     imageUrls: finalImageUrls.length > 1 ? finalImageUrls : undefined, // Only include if multiple images
     highlights: {
-      places: city.highlights.places,
+      // Convert HighlightPlace objects to strings for CityPreset compatibility
+      // Users will see admin defaults but can override in their builder
+      places: city.highlights.places.map(p => 
+        typeof p === 'string' ? p : p.title
+      ),
       accommodation: city.highlights.accommodation,
       activities: city.highlights.activities,
       notesHint: city.highlights.notesHint,
