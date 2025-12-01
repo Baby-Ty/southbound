@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 
+// Route Builder Summary Step - Updated UI
 type RouteBuilderData = { 
   region: string; 
   lifestyle: string[]; 
