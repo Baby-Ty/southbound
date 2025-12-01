@@ -6,6 +6,8 @@ import './cities-by-id/index';
 import './routes/index';
 import './routes-by-id/index';
 import './routes-send-link/index';
+import './leads/index';
+import './leads-by-id/index';
 import './images-search/index';
 import './images-generate/index';
 import './upload-image/index';

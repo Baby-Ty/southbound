@@ -54,6 +54,7 @@ export async function getContainer(containerId: string): Promise<Container> {
       'savedRoutes': { paths: ['/id'] },
       'activities': { paths: ['/id'] },
       'accommodationTypes': { paths: ['/id'] },
+      'leads': { paths: ['/id'] },
     };
     
     const partitionKey = partitionKeys[containerId] || { paths: ['/id'] };
@@ -190,6 +191,100 @@ export async function getAllRoutes(filters?: {
 export async function deleteRoute(routeId: string): Promise<void> {
   const container = await getContainer(ROUTES_CONTAINER_ID);
   await container.item(routeId, routeId).delete();
+}
+
+// Lead Types and CRUD Operations
+export interface Lead {
+  id: string;
+  name: string;
+  destination: string;
+  stage: 'New' | 'Warm' | 'Sent Builder' | 'Closed' | 'Lost';
+  notes: string;
+  lastContact: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const LEADS_CONTAINER_ID = 'leads';
+
+export async function saveLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> {
+  const { nanoid } = await import('nanoid');
+  const container = await getContainer(LEADS_CONTAINER_ID);
+  
+  const lead: Lead = {
+    ...leadData,
+    id: nanoid(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { resource } = await container.items.create(lead);
+  return resource as Lead;
+}
+
+export async function getLead(leadId: string): Promise<Lead | null> {
+  try {
+    const container = await getContainer(LEADS_CONTAINER_ID);
+    const { resource } = await container.item(leadId, leadId).read();
+    return resource as Lead | null;
+  } catch (error: any) {
+    if (error.code === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function updateLead(leadId: string, updates: Partial<Lead>): Promise<Lead> {
+  const container = await getContainer(LEADS_CONTAINER_ID);
+  
+  const existing = await getLead(leadId);
+  if (!existing) {
+    throw new Error(`Lead ${leadId} not found`);
+  }
+
+  const updated: Lead = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { resource } = await container.item(leadId, leadId).replace(updated);
+  return resource as Lead;
+}
+
+export async function getAllLeads(filters?: {
+  stage?: Lead['stage'];
+  destination?: string;
+}): Promise<Lead[]> {
+  const container = await getContainer(LEADS_CONTAINER_ID);
+  
+  let query = 'SELECT * FROM c WHERE 1=1';
+  const params: any[] = [];
+  
+  if (filters?.stage) {
+    query += ' AND c.stage = @stage';
+    params.push({ name: '@stage', value: filters.stage });
+  }
+  
+  if (filters?.destination) {
+    query += ' AND c.destination = @destination';
+    params.push({ name: '@destination', value: filters.destination });
+  }
+  
+  query += ' ORDER BY c.lastContact DESC, c.createdAt DESC';
+
+  const { resources } = await container.items.query({
+    query,
+    parameters: params,
+  }).fetchAll();
+
+  return resources as Lead[];
+}
+
+export async function deleteLead(leadId: string): Promise<void> {
+  const container = await getContainer(LEADS_CONTAINER_ID);
+  await container.item(leadId, leadId).delete();
 }
 
 

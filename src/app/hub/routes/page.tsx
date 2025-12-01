@@ -47,12 +47,13 @@ export default function RoutesPage() {
   async function loadRoutes() {
     try {
       setLoading(true);
+      const { apiUrl } = await import('@/lib/api');
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
       
-      const response = await fetch(`/api/routes?${params.toString()}`);
+      const response = await fetch(`${apiUrl('routes')}?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to load routes');
       
       const data = await response.json();

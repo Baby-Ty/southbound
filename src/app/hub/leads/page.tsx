@@ -32,7 +32,8 @@ export default function LeadsPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/leads');
+      const { apiUrl } = await import('@/lib/api');
+      const response = await fetch(apiUrl('leads'));
       if (!response.ok) {
         throw new Error('Failed to load leads');
       }
@@ -56,7 +57,8 @@ export default function LeadsPage() {
       try {
           setSaving(true);
           setError(null);
-          const response = await fetch('/api/leads', {
+          const { apiUrl } = await import('@/lib/api');
+          const response = await fetch(apiUrl('leads'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -92,7 +94,8 @@ export default function LeadsPage() {
       try {
           setDeleting(id);
           setError(null);
-          const response = await fetch(`/api/leads/${id}`, {
+          const { apiUrl } = await import('@/lib/api');
+          const response = await fetch(apiUrl(`leads/${id}`), {
               method: 'DELETE',
           });
 
