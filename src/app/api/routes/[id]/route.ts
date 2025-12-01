@@ -21,10 +21,10 @@ export async function OPTIONS() {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await context.params;
 
     console.log('[API /api/routes/[id]] Fetching route', routeId);
     console.log('[API /api/routes/[id]] CosmosDB endpoint:', process.env.COSMOSDB_ENDPOINT ? 'SET' : 'NOT SET');
@@ -53,10 +53,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await context.params;
     const body = await request.json();
 
     console.log('[API /api/routes/[id]] Updating route', routeId, body);
