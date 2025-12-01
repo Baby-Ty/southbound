@@ -1,6 +1,5 @@
 'use client';
 
-// Force rebuild: v4 - Hardcoded Functions URL
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +19,7 @@ import {
   User,
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
+import { apiUrl } from '@/lib/api';
 
 const STATUS_COLORS: Record<SavedRoute['status'], string> = {
   draft: 'bg-gray-100 text-gray-700',
@@ -45,9 +45,6 @@ export default function RoutesPage() {
   useEffect(() => {
     loadRoutes();
   }, [statusFilter]);
-
-  // API URL - HARDCODED for production
-  const FUNCTIONS_API_URL = 'https://southbound-functions.azurewebsites.net';
   
   async function loadRoutes() {
     try {
@@ -57,21 +54,42 @@ export default function RoutesPage() {
         params.append('status', statusFilter);
       }
       
-      // Use Functions URL directly - no more detection needed
-      const url = `${FUNCTIONS_API_URL}/api/routes?${params.toString()}`;
+      const url = `${apiUrl('routes')}?${params.toString()}`;
       
-      console.log('[Routes v3] Loading from:', url);
-      const response = await fetch(url);
+      console.log('[Routes] Fetching from URL:', url);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('[Routes] Response status:', response.status);
+      console.log('[Routes] Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        console.error('[Routes v3] API error:', response.status);
-        throw new Error('Failed to load routes');
+        const errorText = await response.text();
+        console.error('[Routes] API error:', response.status, errorText);
+        throw new Error(`Failed to load routes: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('[Routes v3] Loaded:', data.routes?.length || 0, 'routes');
-      setRoutes(data.routes || []);
-    } catch (error) {
-      console.error('[Routes v3] Error loading routes:', error);
+      console.log('[Routes] Received data:', { routesCount: data.routes?.length || 0, data });
+      
+      if (!data.routes) {
+        console.warn('[Routes] Response missing routes array:', data);
+        setRoutes([]);
+        return;
+      }
+      
+      setRoutes(data.routes);
+      console.log('[Routes] Successfully loaded', data.routes.length, 'routes');
+    } catch (error: any) {
+      console.error('[Routes] Error loading routes:', error);
+      console.error('[Routes] Error name:', error.name);
+      console.error('[Routes] Error message:', error.message);
+      console.error('[Routes] Error stack:', error.stack);
+      setRoutes([]);
     } finally {
       setLoading(false);
     }

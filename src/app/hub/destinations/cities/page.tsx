@@ -12,6 +12,7 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { RegionKey } from '@/lib/cityPresets';
 import { CityData } from '@/lib/cosmos-cities';
@@ -22,6 +23,7 @@ export default function CitiesManagementPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [regionFilter, setRegionFilter] = useState<RegionKey | 'all'>('all');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     loadCities();
@@ -31,19 +33,65 @@ export default function CitiesManagementPage() {
     try {
       setLoading(true);
       const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl('cities'));
+      const url = apiUrl('cities');
+      
+      // Log prominently so it's easy to see
+      console.log('========================================');
+      console.log('[Cities] FETCHING FROM URL:', url);
+      console.log('[Cities] Full URL:', url);
+      console.log('========================================');
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('[Cities] Response status:', response.status);
+      console.log('[Cities] Response URL:', response.url);
+      console.log('[Cities] Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('API Error:', response.status, errorData);
-        throw new Error(errorData.error || `Failed to load cities: ${response.status}`);
+        const errorText = await response.text();
+        console.error('========================================');
+        console.error('[Cities] API ERROR:', response.status);
+        console.error('[Cities] Requested URL:', url);
+        console.error('[Cities] Response URL:', response.url);
+        console.error('[Cities] Error response:', errorText);
+        console.error('========================================');
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || `Failed to load cities: ${response.status}` };
+        }
+        throw new Error(`Failed to load cities: ${response.status}. URL: ${url}. Response: ${errorText.substring(0, 200)}`);
       }
       
       const data = await response.json();
-      setCities(data.cities || []);
+      console.log('[Cities] Received data:', { citiesCount: data.cities?.length || 0, data });
+      
+      if (!data.cities) {
+        console.warn('[Cities] Response missing cities array:', data);
+        setCities([]);
+        return;
+      }
+      
+      setCities(data.cities);
+      console.log('[Cities] Successfully loaded', data.cities.length, 'cities');
+      setErrorMessage(''); // Clear any previous errors
     } catch (error: any) {
-      console.error('Error loading cities:', error);
-      console.error('Error details:', error.message);
+      console.error('[Cities] Error loading cities:', error);
+      console.error('[Cities] Error name:', error.name);
+      console.error('[Cities] Error message:', error.message);
+      console.error('[Cities] Error stack:', error.stack);
+      
+      // Set error message with URL info
+      const { apiUrl } = await import('@/lib/api');
+      const attemptedUrl = apiUrl('cities');
+      setErrorMessage(`Failed to load cities. Attempted URL: ${attemptedUrl}. Error: ${error.message}`);
+      
       // Fallback to empty array - this is okay, means CosmosDB isn't configured yet
       setCities([]);
     } finally {
@@ -95,6 +143,19 @@ export default function CitiesManagementPage() {
 
   return (
     <div className="space-y-6">
+      {/* Error Message */}
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-red-800 font-semibold mb-1">Error Loading Cities</h3>
+              <p className="text-red-700 text-sm font-mono break-all">{errorMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
