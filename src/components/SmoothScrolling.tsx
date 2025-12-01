@@ -12,3 +12,4 @@ function SmoothScrolling({ children }: { children: React.ReactNode }) {
 export default SmoothScrolling;
 
 
+

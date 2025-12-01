@@ -116,3 +116,4 @@ export async function deleteCity(cityId: string): Promise<void> {
   await container.item(cityId, cityId).delete();
 }
 
+

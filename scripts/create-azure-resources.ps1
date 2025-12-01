@@ -148,3 +148,4 @@ Write-Host "   2. Configure environment variables in Azure Portal" -ForegroundCo
 Write-Host "   3. Configure custom domains" -ForegroundColor White
 Write-Host ""
 
+

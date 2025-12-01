@@ -38,3 +38,4 @@ Unsplash API free tier includes:
 If you don't want to use Unsplash API, the app will automatically use default city images when the API key is not configured. These are predefined images for common cities.
 
 
+

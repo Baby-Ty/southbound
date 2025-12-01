@@ -142,3 +142,4 @@ Write-Host "   3. Configure environment variables in Azure Portal" -ForegroundCo
 Write-Host ""
 
 
+

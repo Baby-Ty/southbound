@@ -101,3 +101,4 @@ gh run view <run-id> --log
 3. **Check environment variables** in Azure Portal
 4. **Test Functions locally** if needed
 
+

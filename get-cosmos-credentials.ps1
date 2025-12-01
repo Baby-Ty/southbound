@@ -21,3 +21,4 @@ Write-Host "COSMOSDB_DATABASE_ID=southbound" -ForegroundColor White
 Write-Host ""
 
 
+

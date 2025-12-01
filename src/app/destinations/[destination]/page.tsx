@@ -14,7 +14,22 @@ interface DestinationPageProps {
 // This function runs at build time for static generation
 async function getDestinationTrips(destinationSlug: string): Promise<{trips: TripCard[], destination: string}> {
   try {
-    const trips = await client.fetch(queries.allTrips)
+    // Check if Sanity is properly configured
+    if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID === 'your-project-id') {
+      console.log('[DestinationPage] Sanity not configured, using fallback data')
+      // Convert slug back to destination name
+      const destinationName = destinationSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      // Return empty trips array - page will still render but show empty state
+      return {
+        trips: [],
+        destination: destinationName
+      }
+    }
+    
+    const trips = await client.fetch(queries.allTrips).catch((err) => {
+      console.error('[DestinationPage] Error fetching trips from Sanity:', err)
+      return []
+    })
     
     // Convert slug back to destination name
     const destinationName = destinationSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -24,8 +39,13 @@ async function getDestinationTrips(destinationSlug: string): Promise<{trips: Tri
       trip.destination.toLowerCase() === destinationName.toLowerCase()
     )
     
+    // Don't call notFound() during build - just return empty array
+    // The page will render but show empty state
     if (destinationTrips.length === 0) {
-      notFound()
+      return {
+        trips: [],
+        destination: destinationName
+      }
     }
     
     return {
@@ -33,8 +53,13 @@ async function getDestinationTrips(destinationSlug: string): Promise<{trips: Tri
       destination: destinationTrips[0].destination
     }
   } catch (error) {
-    console.error('Error fetching destination trips:', error)
-    notFound()
+    console.error('[DestinationPage] Error fetching destination trips:', error)
+    // Convert slug back to destination name for fallback
+    const destinationName = destinationSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return {
+      trips: [],
+      destination: destinationName
+    }
   }
 }
 

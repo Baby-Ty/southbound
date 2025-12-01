@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCities } from '@/lib/cosmos-cities';
+import { RegionKey } from '@/lib/cityPresets';
 
 /**
  * Next.js API route for fetching cities
@@ -21,7 +22,13 @@ export async function OPTIONS() {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const region = searchParams.get('region') || undefined;
+    const regionParam = searchParams.get('region');
+    
+    // Validate region is a valid RegionKey
+    const validRegions: RegionKey[] = ['europe', 'latin-america', 'southeast-asia'];
+    const region: RegionKey | undefined = regionParam && validRegions.includes(regionParam as RegionKey) 
+      ? (regionParam as RegionKey) 
+      : undefined;
 
     console.log('[API /api/cities] Fetching cities, region:', region);
     console.log('[API /api/cities] CosmosDB endpoint:', process.env.COSMOSDB_ENDPOINT ? 'SET' : 'NOT SET');

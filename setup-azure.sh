@@ -127,3 +127,4 @@ echo "   3. Configure environment variables in Azure Portal"
 echo ""
 
 
+
