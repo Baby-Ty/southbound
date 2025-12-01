@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Heading } from '@/components/ui/Heading';
 import { Card } from '@/components/ui/Card';
-import { Plus, Trash2, Save, X } from 'lucide-react';
+import { Plus, Trash2, Save, X, Loader2 } from 'lucide-react';
 
 interface Lead {
     id: string;
@@ -14,51 +14,99 @@ interface Lead {
     lastContact: string;
 }
 
-const initialLeads: Lead[] = [
-    { id: '1', name: 'Sarah Jenkins', destination: 'Southeast Asia', stage: 'New', notes: 'Interested in Bali, 3 months.', lastContact: '2023-11-28' },
-    { id: '2', name: 'Mike Ross', destination: 'South America', stage: 'Sent Builder', notes: 'Budget is tight.', lastContact: '2023-11-25' },
-];
-
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [newLead, setNewLead] = useState<Partial<Lead>>({ stage: 'New' });
 
-  // Load from localStorage on mount
+  // Load leads from API on mount
   useEffect(() => {
-      const saved = localStorage.getItem('sb_leads');
-      if (saved) {
-          setLeads(JSON.parse(saved));
-      } else {
-          setLeads(initialLeads);
-      }
+    loadLeads();
   }, []);
 
-  // Save to localStorage whenever leads change
-  useEffect(() => {
-      if (leads.length > 0) { // Prevent overwriting with empty array on initial hydration if not careful
-           localStorage.setItem('sb_leads', JSON.stringify(leads));
+  async function loadLeads() {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/leads');
+      if (!response.ok) {
+        throw new Error('Failed to load leads');
       }
-  }, [leads]);
+      const data = await response.json();
+      setLeads(data.leads || []);
+    } catch (err: any) {
+      console.error('Error loading leads:', err);
+      setError(err.message || 'Failed to load leads');
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const handleAddLead = () => {
-      if (!newLead.name) return;
-      const lead: Lead = {
-          id: Date.now().toString(),
-          name: newLead.name || '',
-          destination: newLead.destination || '',
-          stage: newLead.stage || 'New',
-          notes: newLead.notes || '',
-          lastContact: new Date().toISOString().split('T')[0]
-      };
-      setLeads([lead, ...leads]);
-      setNewLead({ stage: 'New' });
-      setIsAdding(false);
+  const handleAddLead = async () => {
+      if (!newLead.name || !newLead.destination) {
+          setError('Name and destination are required');
+          return;
+      }
+
+      try {
+          setSaving(true);
+          setError(null);
+          const response = await fetch('/api/leads', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  name: newLead.name,
+                  destination: newLead.destination,
+                  stage: newLead.stage || 'New',
+                  notes: newLead.notes || '',
+              }),
+          });
+
+          if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.error || 'Failed to save lead');
+          }
+
+          const data = await response.json();
+          setLeads([data.lead, ...leads]);
+          setNewLead({ stage: 'New' });
+          setIsAdding(false);
+      } catch (err: any) {
+          console.error('Error saving lead:', err);
+          setError(err.message || 'Failed to save lead');
+      } finally {
+          setSaving(false);
+      }
   };
 
-  const handleDelete = (id: string) => {
-      if (confirm('Are you sure?')) {
+  const handleDelete = async (id: string) => {
+      if (!confirm('Are you sure you want to delete this lead?')) {
+          return;
+      }
+
+      try {
+          setDeleting(id);
+          setError(null);
+          const response = await fetch(`/api/leads/${id}`, {
+              method: 'DELETE',
+          });
+
+          if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.error || 'Failed to delete lead');
+          }
+
           setLeads(leads.filter(l => l.id !== id));
+      } catch (err: any) {
+          console.error('Error deleting lead:', err);
+          setError(err.message || 'Failed to delete lead');
+      } finally {
+          setDeleting(null);
       }
   };
 
@@ -76,6 +124,12 @@ export default function LeadsPage() {
             <Plus className="w-5 h-5" /> Add Lead
         </button>
       </div>
+
+      {error && (
+          <Card className="p-4 bg-red-50 border-red-200">
+              <p className="text-red-700 text-sm">{error}</p>
+          </Card>
+      )}
 
       {isAdding && (
           <Card className="p-4 bg-orange-50 border-orange-200 mb-6">
@@ -115,58 +169,99 @@ export default function LeadsPage() {
                   />
               </div>
               <div className="flex gap-2 justify-end">
-                  <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-stone-600 hover:bg-stone-200 rounded">Cancel</button>
-                  <button onClick={handleAddLead} className="px-4 py-2 bg-[#E86B32] text-white rounded hover:bg-[#F1783A]">Save Lead</button>
+                  <button 
+                      onClick={() => {
+                          setIsAdding(false);
+                          setNewLead({ stage: 'New' });
+                          setError(null);
+                      }} 
+                      className="px-4 py-2 text-stone-600 hover:bg-stone-200 rounded"
+                      disabled={saving}
+                  >
+                      Cancel
+                  </button>
+                  <button 
+                      onClick={handleAddLead} 
+                      className="px-4 py-2 bg-[#E86B32] text-white rounded hover:bg-[#F1783A] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={saving || !newLead.name || !newLead.destination}
+                  >
+                      {saving ? (
+                          <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Saving...
+                          </>
+                      ) : (
+                          <>
+                              <Save className="w-4 h-4" />
+                              Save Lead
+                          </>
+                      )}
+                  </button>
               </div>
           </Card>
       )}
 
       <Card className="bg-white border-stone-200 overflow-hidden">
-        <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-stone-600">
-                <thead className="bg-stone-100 text-stone-800 font-semibold">
-                    <tr>
-                        <th className="p-4">Name</th>
-                        <th className="p-4">Interest</th>
-                        <th className="p-4">Stage</th>
-                        <th className="p-4">Notes</th>
-                        <th className="p-4">Last Contact</th>
-                        <th className="p-4 w-10"></th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100">
-                    {leads.length === 0 ? (
+        {loading ? (
+            <div className="p-12 text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-sb-orange-500 mx-auto mb-4" />
+                <p className="text-stone-600">Loading leads...</p>
+            </div>
+        ) : (
+            <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-stone-600">
+                    <thead className="bg-stone-100 text-stone-800 font-semibold">
                         <tr>
-                            <td colSpan={6} className="p-8 text-center text-stone-400">No leads yet. Add one above!</td>
+                            <th className="p-4">Name</th>
+                            <th className="p-4">Interest</th>
+                            <th className="p-4">Stage</th>
+                            <th className="p-4">Notes</th>
+                            <th className="p-4">Last Contact</th>
+                            <th className="p-4 w-10"></th>
                         </tr>
-                    ) : (
-                        leads.map((lead) => (
-                            <tr key={lead.id} className="hover:bg-stone-50 transition-colors">
-                                <td className="p-4 font-medium text-stone-900">{lead.name}</td>
-                                <td className="p-4">{lead.destination}</td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                                        lead.stage === 'New' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                        lead.stage === 'Closed' ? 'bg-green-50 text-green-700 border-green-100' :
-                                        lead.stage === 'Lost' ? 'bg-stone-100 text-stone-500 border-stone-200' :
-                                        'bg-orange-50 text-orange-700 border-orange-100'
-                                    }`}>
-                                        {lead.stage}
-                                    </span>
-                                </td>
-                                <td className="p-4 max-w-xs truncate" title={lead.notes}>{lead.notes}</td>
-                                <td className="p-4 text-xs text-stone-400">{lead.lastContact}</td>
-                                <td className="p-4">
-                                    <button onClick={() => handleDelete(lead.id)} className="text-stone-400 hover:text-red-500">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </td>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                        {leads.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="p-8 text-center text-stone-400">No leads yet. Add one above!</td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
+                        ) : (
+                            leads.map((lead) => (
+                                <tr key={lead.id} className="hover:bg-stone-50 transition-colors">
+                                    <td className="p-4 font-medium text-stone-900">{lead.name}</td>
+                                    <td className="p-4">{lead.destination}</td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                                            lead.stage === 'New' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                            lead.stage === 'Closed' ? 'bg-green-50 text-green-700 border-green-100' :
+                                            lead.stage === 'Lost' ? 'bg-stone-100 text-stone-500 border-stone-200' :
+                                            'bg-orange-50 text-orange-700 border-orange-100'
+                                        }`}>
+                                            {lead.stage}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 max-w-xs truncate" title={lead.notes}>{lead.notes}</td>
+                                    <td className="p-4 text-xs text-stone-400">{lead.lastContact}</td>
+                                    <td className="p-4">
+                                        <button 
+                                            onClick={() => handleDelete(lead.id)} 
+                                            className="text-stone-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={deleting === lead.id}
+                                        >
+                                            {deleting === lead.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        )}
       </Card>
     </div>
   );
