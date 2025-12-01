@@ -7,10 +7,10 @@ import { getCity, updateCity, deleteCity } from '@/lib/cosmos-cities';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     
     if (!id) {
       return NextResponse.json({ error: 'City ID is required' }, { status: 400 });
@@ -35,10 +35,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     
     if (!id) {
       return NextResponse.json({ error: 'City ID is required' }, { status: 400 });
@@ -61,10 +61,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     
     if (!id) {
       return NextResponse.json({ error: 'City ID is required' }, { status: 400 });
