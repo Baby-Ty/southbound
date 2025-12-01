@@ -102,7 +102,7 @@ export default function SaveRouteModal({
       if (contactType === 'email') {
         // Call API to send email
         try {
-          await fetch(apiUrl('routes/send-link'), {
+          await fetch(apiUrl('routes-send-link'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

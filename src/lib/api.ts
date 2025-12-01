@@ -54,35 +54,26 @@ export function getApiUrl(): string {
 
 /**
  * Build a full API endpoint URL
- * Prefers local Next.js API routes when available, falls back to Azure Functions
+ * Uses Azure Functions when NEXT_PUBLIC_FUNCTIONS_URL is set, otherwise falls back to local /api routes
  */
 export function apiUrl(path: string): string {
   // Remove leading slash from path if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
-  // Check if we have a local Next.js API route available
-  // For client-side code, always use relative /api routes which will be handled by Next.js
-  // This allows Next.js API routes to proxy to Azure Functions or call CosmosDB directly
-  if (typeof window !== 'undefined') {
-    // Client-side: use relative URL to Next.js API routes
-    const finalUrl = `/api/${cleanPath}`;
-    console.log('[apiUrl] Using local Next.js API route:', finalUrl);
+  // Get the base API URL (checks NEXT_PUBLIC_FUNCTIONS_URL first)
+  const baseUrl = getApiUrl();
+  
+  // If we have an external API URL (not starting with /), use it
+  if (!baseUrl.startsWith('/')) {
+    // External URL (Azure Functions)
+    const finalUrl = `${baseUrl}/api/${cleanPath}`;
+    console.log('[apiUrl] Using external API URL:', finalUrl);
     return finalUrl;
   }
   
-  // Server-side: use Azure Functions or configured API URL
-  const baseUrl = getApiUrl();
-  let finalUrl: string;
-  
-  // If baseUrl ends with /api, don't add another /api
-  if (baseUrl.endsWith('/api')) {
-    finalUrl = `${baseUrl}/${cleanPath}`;
-  } else {
-    // Otherwise, add /api prefix
-    finalUrl = `${baseUrl}/api/${cleanPath}`;
-  }
-  
-  console.log('[apiUrl] Constructed URL:', { baseUrl, path, cleanPath, finalUrl });
+  // Otherwise use local /api routes (for development or when no external URL is set)
+  const finalUrl = `/api/${cleanPath}`;
+  console.log('[apiUrl] Using local Next.js API route:', finalUrl);
   return finalUrl;
 }
 

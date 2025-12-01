@@ -48,7 +48,7 @@ export default function HighlightManager({
     if (!searchQuery.trim()) return;
     setIsSearching(true);
     try {
-      const res = await fetch(apiUrl(`images/search?query=${encodeURIComponent(searchQuery)}`));
+      const res = await fetch(apiUrl(`images-search?query=${encodeURIComponent(searchQuery)}`));
       const data = await res.json();
       setSearchResults(Array.isArray(data) ? data : []);
     } catch (e) {

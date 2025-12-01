@@ -3,6 +3,15 @@ name: Deploy to Azure Web App
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'src/app/hub/**'
+      - 'src/components/**'
+      - 'src/lib/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'next.config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/azure-webapp-deploy.yml'
   workflow_dispatch:
 
 permissions:

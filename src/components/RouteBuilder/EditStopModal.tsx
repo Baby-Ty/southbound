@@ -55,7 +55,7 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
         setIsSearching(true);
         try {
           const { apiUrl } = await import('@/lib/api');
-          const res = await fetch(apiUrl(`images/search?query=${encodeURIComponent(searchQuery)}`));
+          const res = await fetch(apiUrl(`images-search?query=${encodeURIComponent(searchQuery)}`));
           const data = await res.json();
           setSearchResults(Array.isArray(data) ? data : []);
         } catch (e) {
@@ -143,7 +143,7 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
     setIsSearching(true);
     try {
       const { apiUrl } = await import('@/lib/api');
-      const res = await fetch(apiUrl(`images/search?query=${encodeURIComponent(searchQuery)}`));
+      const res = await fetch(apiUrl(`images-search?query=${encodeURIComponent(searchQuery)}`));
       const data = await res.json();
       setSearchResults(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -158,7 +158,7 @@ export const EditStopModal = ({ stop, cityPreset, onClose, onUpdate }: EditStopM
     setIsGenerating(true);
     try {
       const { apiUrl } = await import('@/lib/api');
-      const res = await fetch(apiUrl('images/generate'), {
+      const res = await fetch(apiUrl('images-generate'), {
         method: 'POST',
         body: JSON.stringify({ prompt: genPrompt + ` in ${stop.city}` }),
       });

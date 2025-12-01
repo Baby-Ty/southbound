@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'standalone',
+  output: process.env.BUILD_TARGET === 'static' ? 'export' : 'standalone',
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
