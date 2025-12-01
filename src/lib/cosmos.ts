@@ -1,5 +1,4 @@
 import { CosmosClient, Database, Container } from '@azure/cosmos';
-import { nanoid } from 'nanoid';
 
 // CosmosDB connection configuration
 // Use function to get env vars to avoid issues with Next.js env loading
@@ -139,6 +138,7 @@ const LEADS_CONTAINER_ID = 'leads';
 export async function saveRoute(routeData: Omit<SavedRoute, 'id' | 'createdAt' | 'updatedAt'>): Promise<SavedRoute> {
   try {
     const container = await getContainer(ROUTES_CONTAINER_ID);
+    const { nanoid } = await import('nanoid');
     
     const route: SavedRoute = {
       ...routeData,
@@ -246,6 +246,7 @@ export interface Lead {
 export async function saveLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> {
   try {
     const container = await getContainer(LEADS_CONTAINER_ID);
+    const { nanoid } = await import('nanoid');
     
     const lead: Lead = {
       ...leadData,
