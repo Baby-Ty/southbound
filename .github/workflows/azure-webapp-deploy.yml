@@ -123,6 +123,19 @@ jobs:
           echo "Package size:"
           du -sh deploy/
 
+      - name: Verify button text BEFORE zipping (should say "Build My Trip")
+        run: |
+          echo "=== Checking SummaryStep.tsx button text ==="
+          if [ -f "deploy/.next/server/app/route-builder/page.js" ]; then
+            echo "Checking server page.js..."
+            grep -o "Build My Trip\|See Your Matches" deploy/.next/server/app/route-builder/page.js || echo "Text not found in server page"
+          fi
+          echo "=== Checking static chunks ==="
+          find deploy/.next/static/chunks -name "*.js" -exec grep -l "Build My Trip\|See Your Matches" {} \; | head -5
+          echo "=== Sampling chunk content ==="
+          find deploy/.next/static/chunks -name "*.js" -exec grep -o "Build My Trip\|See Your Matches" {} \; | sort | uniq -c || echo "No matches found"
+          echo "=== Done ==="
+
       - name: Create deployment zip
         run: |
           cd deploy
@@ -138,6 +151,8 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./deploy.zip
           type: zip
+          clean: true
         env:
           SCM_DO_BUILD_DURING_DEPLOYMENT: false
+          WEBSITE_RUN_FROM_PACKAGE: 1
 
