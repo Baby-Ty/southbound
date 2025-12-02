@@ -28,28 +28,12 @@ export function getApiUrl(): string {
     console.log('[API] Hostname:', hostname);
     
     // If on Azure Web App or custom domain, use the Functions URL
-    // Check for custom domain first (southbnd.co.za or hub.southbnd.co.za)
-    if (hostname.includes('southbnd.co.za')) {
-      const functionsUrl = 'https://api.southbnd.co.za';
-      console.log('[API] Using custom domain Functions URL:', functionsUrl);
-      return functionsUrl;
-    }
-    
-    // Fallback: check if on Azure Web App
-    if (hostname.includes('azurewebsites.net')) {
-      // Try to infer Functions URL from Web App name
-      // If Web App is southbound-app, Functions should be southbound-functions
-      const appName = hostname.split('.')[0];
-      let functionsUrl: string;
-      
-      if (appName.includes('-app')) {
-        functionsUrl = `https://${appName.replace('-app', '-functions')}.azurewebsites.net`;
-      } else {
-        // Fallback: assume Functions app follows naming convention
-        functionsUrl = 'https://southbound-functions.azurewebsites.net';
-      }
-      
-      console.log('[API] Using inferred Functions URL:', functionsUrl);
+    // Always use the actual Functions URL (southbound-functions.azurewebsites.net)
+    // This works whether accessing via azurewebsites.net or custom domain
+    if (hostname.includes('southbnd.co.za') || hostname.includes('azurewebsites.net')) {
+      // Use the actual Functions URL - works for both custom domain and azurewebsites.net
+      const functionsUrl = 'https://southbound-functions.azurewebsites.net';
+      console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
     }
   }

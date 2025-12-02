@@ -38,7 +38,7 @@ jobs:
         run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
-          NEXT_PUBLIC_FUNCTIONS_URL: https://api.southbnd.co.za
+          NEXT_PUBLIC_FUNCTIONS_URL: https://southbound-functions.azurewebsites.net
           # Add build timestamp to force cache invalidation
           BUILD_TIMESTAMP: ${{ github.run_id }}-${{ github.run_number }}
           NEXT_BUILD_ID: ${{ github.run_id }}
