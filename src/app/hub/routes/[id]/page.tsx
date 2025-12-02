@@ -21,6 +21,13 @@ import {
 import { SavedRoute } from '@/lib/cosmos';
 import { apiUrl } from '@/lib/api';
 
+// Required for static export - tells Next.js which routes to pre-generate
+// Since routes are loaded dynamically from API, return empty array
+// The page will still work client-side
+export async function generateStaticParams() {
+  return [];
+}
+
 const STATUS_COLORS: Record<SavedRoute['status'], string> = {
   draft: 'bg-gray-100 text-gray-700',
   submitted: 'bg-blue-100 text-blue-700',
