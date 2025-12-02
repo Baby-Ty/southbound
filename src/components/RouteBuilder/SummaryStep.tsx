@@ -208,7 +208,7 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
           </button>
 
           <motion.a
-            href={`/trip-options?region=${encodeURIComponent(data.region)}&lifestyle=${encodeURIComponent((data.lifestyle||[]).join(','))}&work=${encodeURIComponent((data.workSetup||[]).join(','))}&style=${encodeURIComponent(data.travelStyle)}&duration=${encodeURIComponent(data.tripLength || '3')}`}
+            href={`/trip-options?region=${encodeURIComponent(data.region)}&lifestyle=${encodeURIComponent((data.lifestyle||[]).join(','))}&work=${encodeURIComponent((data.workSetup||[]).join(','))}&style=${encodeURIComponent(data.travelStyle)}&duration=${encodeURIComponent(data.tripLength || '3')}&v=2`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="w-full sm:w-auto px-8 py-3 bg-sb-orange-500 text-white rounded-xl font-bold text-base shadow-lg hover:bg-sb-orange-600 hover:shadow-xl flex items-center justify-center gap-2 transition-all"
