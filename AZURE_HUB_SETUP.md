@@ -13,6 +13,11 @@
 - ✅ Hub leads page now uses `apiUrl('leads')`
 - ✅ All other Hub pages already use `apiUrl()`
 
+### Azure Functions
+- ✅ Cities endpoint created and deployed
+- ✅ Leads endpoint created and deployed (GET, POST, PATCH, DELETE)
+- ✅ All endpoints registered and working
+
 ## ⚠️ Required Environment Variables
 
 ### Azure Web App (`southbound-app`) - Hub Frontend
@@ -72,21 +77,7 @@ After pushing changes to `master`:
 
 - ✅ **Routes Page** (`/hub/routes`) - Should load routes from CosmosDB
 - ✅ **Cities Page** (`/hub/destinations/cities`) - Should load cities from CosmosDB
-- ⚠️ **Leads Page** (`/hub/leads`) - Needs Azure Function (see below)
-
-## ⚠️ Missing: Leads Azure Function
-
-The Hub leads page (`/hub/leads`) calls `apiUrl('leads')` but there's no Azure Function for it yet.
-
-**Options:**
-1. **Create the leads Azure Function** (if leads need to be stored)
-2. **Disable/remove the leads page** (if it's not needed yet)
-3. **Use local storage** (temporary solution)
-
-**If creating leads function:**
-- Create `functions/leads/index.ts` and `functions/leads-by-id/index.ts`
-- Store leads in CosmosDB (new container: `leads`)
-- Register in `functions/index.ts`
+- ✅ **Leads Page** (`/hub/leads`) - Full CRUD support via Azure Functions
 
 ## 🔧 Quick Setup Script
 
@@ -102,9 +93,13 @@ Or manually set in Azure Portal (see steps above).
 
 1. ✅ Verify environment variables are set in Azure Portal
 2. ✅ Push Hub code changes (already done)
-3. ⏳ Create leads Azure Function (if needed)
-4. ⏳ Configure custom domain `hub.southbnd.co.za` in Azure Portal
-5. ⏳ Test all Hub features after deployment
+3. ✅ Create leads Azure Function (completed!)
+4. ✅ Deploy Azure Functions (completed!)
+5. ⏳ Deploy Hub to Azure Web App (trigger deployment)
+6. ⏳ Configure custom domain `hub.southbnd.co.za` in Azure Portal
+7. ⏳ Test all Hub features after deployment
+
+**See `NEXT_STEPS.md` for detailed instructions**
 
 ## 🔗 Useful Links
 
