@@ -5,11 +5,8 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
   
-  // Check if this is the hub subdomain (more specific check)
-  const isHubDomain = hostname === 'hub.southbnd.co.za' || 
-                      hostname.startsWith('hub.') ||
-                      hostname.includes('.hub.') ||
-                      (hostname.includes('hub') && hostname.includes('southbnd'));
+  // Only apply hub restrictions to hub.southbnd.co.za (exact match)
+  const isHubDomain = hostname === 'hub.southbnd.co.za' || hostname === 'hub.southbnd.co.za:443';
   
   if (isHubDomain) {
     // Allow hub routes and static assets
@@ -22,30 +19,16 @@ export function middleware(request: NextRequest) {
     ) {
       // If root path on hub domain, redirect to /hub
       if (pathname === '/') {
-        const response = NextResponse.redirect(new URL('/hub', request.url));
-        // Add cache-busting headers
-        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return response;
+        return NextResponse.redirect(new URL('/hub', request.url));
       }
-      const response = NextResponse.next();
-      // Add cache-busting headers for hub routes
-      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      return response;
+      return NextResponse.next();
     }
     
     // Redirect everything else to hub home
-    const response = NextResponse.redirect(new URL('/hub', request.url));
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return response;
+    return NextResponse.redirect(new URL('/hub', request.url));
   }
   
-  // For non-hub domains, add cache-busting headers to route-builder
-  if (pathname.startsWith('/route-builder')) {
-    const response = NextResponse.next();
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    return response;
-  }
-  
+  // For all other domains, allow everything
   return NextResponse.next();
 }
 
