@@ -136,6 +136,12 @@ const sampleFaqs: FAQ[] = [
 // This function runs at build time for static generation
 async function getFaqs(): Promise<FAQ[]> {
   try {
+    // Check if Sanity is properly configured
+    if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID === 'your-project-id') {
+      console.log('[ContactPage] Sanity not configured, using sample FAQs')
+      return sampleFaqs
+    }
+    
     const faqs = await client.fetch(queries.allFaqs);
     return faqs.length > 0 ? faqs : sampleFaqs;
   } catch (error) {

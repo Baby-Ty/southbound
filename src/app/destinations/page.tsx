@@ -7,6 +7,12 @@ import { urlFor } from '@/lib/sanity'
 // This function runs at build time for static generation
 async function getDestinations(): Promise<TripCard[]> {
   try {
+    // Check if Sanity is properly configured
+    if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID === 'your-project-id') {
+      console.log('[DestinationsPage] Sanity not configured, returning empty array')
+      return []
+    }
+    
     const trips = await client.fetch(queries.allTrips)
     
     // Group by destination to show unique destinations
