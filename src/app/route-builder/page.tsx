@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+// Route Builder - Rebuild trigger for GitHub Pages deployment
+
 // Step Components
 import RegionStep from '@/components/RouteBuilder/RegionStep';
 import LifestyleStep from '@/components/RouteBuilder/LifestyleStep';
