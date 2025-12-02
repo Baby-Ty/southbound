@@ -107,6 +107,18 @@ jobs:
             exit 1
           fi
           
+          # Remove source files - they're not needed for runtime
+          rm -rf deploy/src
+          rm -rf deploy/*.ts
+          rm -rf deploy/*.tsx
+          rm -rf deploy/tsconfig.json
+          rm -rf deploy/tailwind.config.ts
+          rm -rf deploy/postcss.config.mjs
+          
+          # Tell Azure NOT to rebuild - this is critical!
+          echo "[config]" > deploy/.deployment
+          echo "SCM_DO_BUILD_DURING_DEPLOYMENT=false" >> deploy/.deployment
+          
           echo "✓ Deployment package prepared successfully"
           echo "Package size:"
           du -sh deploy/
@@ -126,4 +138,6 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./deploy.zip
           type: zip
+        env:
+          SCM_DO_BUILD_DURING_DEPLOYMENT: false
 
