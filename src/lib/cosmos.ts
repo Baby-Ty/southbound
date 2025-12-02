@@ -315,7 +315,8 @@ export async function getAllLeads(filters?: {
     params.push({ name: '@destination', value: filters.destination });
   }
   
-  query += ' ORDER BY c.lastContact DESC, c.createdAt DESC';
+  // Order by createdAt only (single field doesn't require composite index)
+  query += ' ORDER BY c.createdAt DESC';
 
   const { resources } = await container.items.query({
     query,
