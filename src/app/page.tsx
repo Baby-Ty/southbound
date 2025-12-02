@@ -10,7 +10,6 @@ import { TornPaperDivider } from '@/components/ui/TornPaperDivider';
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-stone-900 font-sans selection:bg-[#E86B32] selection:text-white">
-      
       <main>
         <Hero />
         <IntroSection />
