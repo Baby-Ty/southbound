@@ -22,13 +22,20 @@ export function getApiUrl(): string {
     return functionsUrl;
   }
 
-  // Runtime detection - check if we're on the Azure Web App
+  // Runtime detection - check if we're on the Azure Web App or custom domain
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     console.log('[API] Hostname:', hostname);
     
-    // If on Azure Web App, use the Functions URL
-    // Default Functions app name is southbound-functions
+    // If on Azure Web App or custom domain, use the Functions URL
+    // Check for custom domain first (southbnd.co.za or hub.southbnd.co.za)
+    if (hostname.includes('southbnd.co.za')) {
+      const functionsUrl = 'https://api.southbnd.co.za';
+      console.log('[API] Using custom domain Functions URL:', functionsUrl);
+      return functionsUrl;
+    }
+    
+    // Fallback: check if on Azure Web App
     if (hostname.includes('azurewebsites.net')) {
       // Try to infer Functions URL from Web App name
       // If Web App is southbound-app, Functions should be southbound-functions
