@@ -121,10 +121,8 @@ jobs:
           echo "SCM_DO_BUILD_DURING_DEPLOYMENT=false" >> deploy/.deployment
           
           # Method 2: Create oryx-manifest to mark as pre-built
-          cat > deploy/oryx-manifest.toml << 'ORYX'
-[build]
-skip = true
-ORYX
+          echo '[build]' > deploy/oryx-manifest.toml
+          echo 'skip = true' >> deploy/oryx-manifest.toml
 
           # Method 3: Marker file
           touch deploy/.oryx-disable
