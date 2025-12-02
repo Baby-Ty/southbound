@@ -28,10 +28,17 @@ export function getApiUrl(): string {
     console.log('[API] Hostname:', hostname);
     
     // If on Azure Web App or custom domain, use the Functions URL
-    // Always use the actual Functions URL (southbound-functions.azurewebsites.net)
-    // This works whether accessing via azurewebsites.net or custom domain
-    if (hostname.includes('southbnd.co.za') || hostname.includes('azurewebsites.net')) {
-      // Use the actual Functions URL - works for both custom domain and azurewebsites.net
+    // Check for custom domain first (southbnd.co.za or hub.southbnd.co.za)
+    // Use api.southbnd.co.za if available (set up in GoDaddy DNS)
+    if (hostname.includes('southbnd.co.za')) {
+      const functionsUrl = 'https://api.southbnd.co.za';
+      console.log('[API] Using custom domain Functions URL:', functionsUrl);
+      return functionsUrl;
+    }
+    
+    // Fallback: check if on Azure Web App (azurewebsites.net)
+    if (hostname.includes('azurewebsites.net')) {
+      // Use the actual Functions URL
       const functionsUrl = 'https://southbound-functions.azurewebsites.net';
       console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
