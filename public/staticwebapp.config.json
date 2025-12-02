@@ -1,0 +1,31 @@
+{
+  "routes": [
+    {
+      "route": "/hub",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/hub/*",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/login",
+      "allowedRoles": ["anonymous", "authenticated"]
+    }
+  ],
+  "responseOverrides": {
+    "401": {
+      "redirect": "/login",
+      "statusCode": 302
+    }
+  },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*", "/_next/*", "/favicon.ico"]
+  },
+  "globalHeaders": {
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff"
+  }
+}
+
