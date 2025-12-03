@@ -83,8 +83,13 @@ export async function getAllCities(region?: string): Promise<CityData[]> {
 export async function getCity(cityId: string): Promise<CityData | null> {
   try {
     const container = await getContainer(CITIES_CONTAINER_ID);
-    const { resource } = await container.item(cityId, cityId).read();
-    return resource as CityData | null;
+    // Use cross-partition query since we don't know the region (partition key)
+    const { resources } = await container.items.query({
+      query: 'SELECT * FROM c WHERE c.id = @cityId',
+      parameters: [{ name: '@cityId', value: cityId }],
+    }).fetchAll();
+    
+    return resources[0] as CityData | null;
   } catch (error: any) {
     if (error.code === 404) {
       return null;
@@ -107,13 +112,22 @@ export async function updateCity(cityId: string, updates: Partial<CityData>): Pr
     updatedAt: new Date().toISOString(),
   };
 
-  const { resource } = await container.item(cityId, cityId).replace(updated);
+  // Use region as partition key
+  const { resource } = await container.item(cityId, existing.region).replace(updated);
   return resource as CityData;
 }
 
 export async function deleteCity(cityId: string): Promise<void> {
   const container = await getContainer(CITIES_CONTAINER_ID);
-  await container.item(cityId, cityId).delete();
+  
+  // First get the city to find its region (partition key)
+  const existing = await getCity(cityId);
+  if (!existing) {
+    throw new Error(`City ${cityId} not found`);
+  }
+  
+  // Use region as partition key
+  await container.item(cityId, existing.region).delete();
 }
 
 
