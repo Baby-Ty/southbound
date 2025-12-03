@@ -50,33 +50,57 @@ export default function RouteDetailClient() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
 
   useEffect(() => {
-    if (routeId) {
-      loadRoute();
+    // Ensure we have a routeId before attempting to load
+    if (!routeId) {
+      setError('Route ID is missing');
+      setLoading(false);
+      return;
     }
+    
+    loadRoute();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeId]);
 
   async function loadRoute() {
+    if (!routeId) {
+      setError('Route ID is missing');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(apiUrl(`routes/${routeId}`));
+      
+      const url = apiUrl(`routes/${routeId}`);
+      console.log('[RouteDetail] Loading route from:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
         if (response.status === 404) {
           setError('Route not found');
         } else {
-          throw new Error('Failed to load route');
+          const errorText = await response.text();
+          console.error('[RouteDetail] API error:', response.status, errorText);
+          throw new Error(`Failed to load route: ${response.status}`);
         }
+        setLoading(false);
         return;
       }
       
       const data = await response.json();
+      
+      if (!data || !data.route) {
+        throw new Error('Invalid response from server');
+      }
+      
       setRoute(data.route);
       setNewStatus(data.route.status);
       setAdminNotes(data.route.adminNotes || '');
     } catch (err: any) {
-      console.error('Error loading route:', err);
-      setError(err.message || 'Failed to load route');
+      console.error('[RouteDetail] Error loading route:', err);
+      setError(err.message || 'Failed to load route. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -141,14 +165,25 @@ export default function RouteDetailClient() {
     return stops.reduce((acc, stop) => acc + (stop.weeks || 0), 0);
   };
 
+  // Show loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-sb-orange-500" />
+      <div className="space-y-4">
+        <Link
+          href="/hub/routes"
+          className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Routes
+        </Link>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-sb-orange-500" />
+        </div>
       </div>
     );
   }
 
+  // Show error state - don't redirect, just show error
   if (error || !route) {
     return (
       <div className="space-y-4">
@@ -164,9 +199,14 @@ export default function RouteDetailClient() {
           <p className="text-lg font-medium text-red-900 mb-2">
             {error || 'Route not found'}
           </p>
-          <p className="text-sm text-red-700">
+          <p className="text-sm text-red-700 mb-4">
             The route you're looking for doesn't exist or has been deleted.
           </p>
+          {routeId && (
+            <p className="text-xs text-red-600 font-mono">
+              Route ID: {routeId}
+            </p>
+          )}
         </div>
       </div>
     );
