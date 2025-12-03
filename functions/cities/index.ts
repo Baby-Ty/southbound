@@ -1,6 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getAllCities } from '../shared/cosmos-cities';
-import { corsHeaders, createCorsResponse } from '../shared/cors';
+import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 
 function isCosmosDBConfigured(): boolean {
   return !!(
@@ -12,6 +12,9 @@ function isCosmosDBConfigured(): boolean {
 }
 
 export async function cities(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const origin = request.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return {
@@ -29,21 +32,22 @@ export async function cities(request: HttpRequest, context: InvocationContext): 
       if (region && !validRegions.includes(region)) {
         return createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
-          400
+          400,
+          origin
         );
       }
 
       if (!isCosmosDBConfigured()) {
         context.log('[cities] CosmosDB not configured, returning empty array');
-        return createCorsResponse({ cities: [] });
+        return createCorsResponse({ cities: [] }, 200, origin);
       }
 
       const cities = await getAllCities(region || undefined);
       context.log(`[cities] Retrieved ${cities.length} cities${region ? ` for region: ${region}` : ''}`);
       
-      return createCorsResponse({ cities });
+      return createCorsResponse({ cities }, 200, origin);
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      return createCorsResponse({ error: 'Method not allowed' }, 405, origin);
     }
   } catch (error: any) {
     context.log(`[cities] Error processing cities request: ${error instanceof Error ? error.message : String(error)}`);
@@ -52,7 +56,8 @@ export async function cities(request: HttpRequest, context: InvocationContext): 
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
-      500
+      500,
+      origin
     );
   }
 }

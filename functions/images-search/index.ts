@@ -1,7 +1,10 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { corsHeaders, createCorsResponse } from '../shared/cors';
+import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 
 export async function imagesSearch(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const origin = request.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return {
@@ -13,14 +16,14 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
   const query = request.query.get('query');
 
   if (!query) {
-    return createCorsResponse({ error: 'Query required' }, 400);
+    return createCorsResponse({ error: 'Query required' }, 400, origin);
   }
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   
   if (!accessKey) {
     context.log("UNSPLASH_ACCESS_KEY is missing");
-    return createCorsResponse([], 200);
+    return createCorsResponse([], 200, origin);
   }
 
   try {
@@ -47,10 +50,10 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
       photographerUrl: img.user.links.html
     }));
 
-    return createCorsResponse(images);
+    return createCorsResponse(images, 200, origin);
   } catch (error: any) {
     context.log(`Error: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse({ error: 'Failed to fetch images' }, 500);
+    return createCorsResponse({ error: 'Failed to fetch images' }, 500, origin);
   }
 }
 

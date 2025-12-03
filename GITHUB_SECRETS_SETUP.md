@@ -81,3 +81,4 @@ az functionapp deployment list-publishing-profiles --name southbound-functions -
 - Check GitHub Actions logs for specific errors
 
 
+

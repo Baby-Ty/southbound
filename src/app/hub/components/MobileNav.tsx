@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Home, Map, BookOpen, Users, MessageSquare } from 'lucide-react';
+import { Menu, X, Home, Map, BookOpen, Users, MessageSquare, Linkedin } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', href: '/hub', icon: Home },
   { name: 'Destinations', href: '/hub/destinations', icon: Map },
   { name: 'Playbook', href: '/hub/playbook', icon: BookOpen },
   { name: 'Leads', href: '/hub/leads', icon: Users },
+  { name: 'LinkedIn', href: '/hub/linkedin', icon: Linkedin },
   { name: 'Ask SB', href: '/hub/ask', icon: MessageSquare },
 ];
 
