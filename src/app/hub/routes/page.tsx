@@ -154,7 +154,7 @@ export default function RoutesPage() {
                 <div
                   key={route.id}
                   className="p-6 hover:bg-stone-50 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/hub/routes/${route.id}`)}
+                  onClick={() => router.push(`/hub/routes/${route.id}/`)}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
