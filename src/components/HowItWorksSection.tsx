@@ -9,19 +9,19 @@ const HowItWorksSection: React.FC = () => {
     {
       number: '01',
       title: 'Pick your vibe',
-      description: 'Tell us what you’re into—surf, city, mountains, or chill. We’ll match you with the best spots for your budget and lifestyle.',
+      description: 'Tell us what you\'re into. We match you with places that fit your lifestyle and budget.',
       icon: '✨'
     },
     {
       number: '02',
       title: 'Book your trip',
-      description: 'We sort the flights, accommodation, and workspace. You get a single itinerary with everything confirmed.',
+      description: 'We lock in your stay, workspace, and a few local experiences. One simple itinerary. No admin.',
       icon: '📅'
     },
     {
       number: '03',
       title: 'Just show up',
-      description: 'Arrive and thrive. High-speed WiFi, community events, and local support are ready from day one.',
+      description: 'Arrive and settle in. Fast Wi-Fi, a smooth setup, and local support from day one.',
       icon: '🚀'
     }
   ];
@@ -34,7 +34,7 @@ const HowItWorksSection: React.FC = () => {
             How it works
           </h2>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto">
-            We’ve stripped away the stress of planning so you can focus on living.
+            We\'ve stripped away the stress of planning so you can focus on living.
           </p>
         </div>
 
