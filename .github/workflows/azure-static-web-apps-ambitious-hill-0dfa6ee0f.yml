@@ -27,6 +27,17 @@ jobs:
         run: npm ci
         timeout-minutes: 5
 
+      - name: Verify required files exist
+        run: |
+          echo "Checking for required files..."
+          test -f src/lib/defaultTripsStorage.ts || { echo "ERROR: defaultTripsStorage.ts missing"; exit 1; }
+          test -f src/lib/defaultTripsSeed.ts || { echo "ERROR: defaultTripsSeed.ts missing"; exit 1; }
+          test -f src/components/RouteBuilder/AccommodationModal.tsx || { echo "ERROR: AccommodationModal.tsx missing"; exit 1; }
+          test -f src/components/RouteBuilder/ActivityDetailsModal.tsx || { echo "ERROR: ActivityDetailsModal.tsx missing"; exit 1; }
+          test -f src/components/RouteBuilder/CustomActivityModal.tsx || { echo "ERROR: CustomActivityModal.tsx missing"; exit 1; }
+          test -f src/components/RouteBuilder/ActivityPickerModal.tsx || { echo "ERROR: ActivityPickerModal.tsx missing"; exit 1; }
+          echo "✓ All required files present"
+
       - name: Build
         run: |
           echo "Starting Next.js build..."
