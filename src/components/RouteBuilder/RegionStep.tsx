@@ -162,82 +162,57 @@ const RegionCard = ({ region, isSelected, onSelect, onDiscover }: RegionCardProp
           )}
         </AnimatePresence>
 
-        {/* Header with Region Name */}
-        <div className="absolute top-0 left-0 w-full p-5 z-10">
-          <div className="flex items-center justify-between mb-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
-              <span className="text-sm">{region.icon}</span>
-              <span>{region.name.toUpperCase()}</span>
-            </div>
-            
-            {/* Info Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDiscover(e);
-              }}
-              className="w-7 h-7 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors border border-white/20"
+        {/* Top Content */}
+        <div className="absolute top-0 left-0 w-full p-6 z-10 flex justify-between items-start">
+             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold shadow-sm border border-white/10">
+                <span>{region.icon}</span> {region.vibe}
+             </div>
+             
+             {/* Info Button */}
+             <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDiscover(e);
+                }}
+                className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-sb-navy-900 transition-colors border border-white/10"
             >
-              <Info size={14} strokeWidth={2.5} />
+                <Info size={16} strokeWidth={2.5} />
             </button>
-          </div>
         </div>
 
         {/* Bottom Content */}
         <div className="absolute bottom-0 left-0 w-full p-6 z-10 text-white">
-          <h3 className="text-2xl font-bold mb-1.5 tracking-tight">
-            {region.name}
-          </h3>
-          <p className="text-white/90 text-sm font-medium leading-relaxed mb-4">
-            {region.tagline}
-          </p>
+            <h3 className="text-3xl font-extrabold mb-2 tracking-tight">
+                {region.name}
+            </h3>
+            <p className="text-white/90 text-sm font-medium leading-relaxed mb-4 line-clamp-2">
+                {region.tagline}
+            </p>
 
-          {/* Tags Row */}
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            {/* Budget Tag */}
-            <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-              region.budget === '$' ? 'bg-green-500/90 text-white' :
-              region.budget === '$$' ? 'bg-green-500/90 text-white' :
-              'bg-green-500/90 text-white'
-            }`}>
-              {region.budget} {region.budgetLabel}
-            </div>
-            
-            {/* Timezone Tag */}
-            <div className="px-2.5 py-1 rounded-full bg-blue-500/90 text-white text-[10px] font-bold">
-              {region.timezone}
-            </div>
-          </div>
-
-          {/* Features List */}
-          {region.highlights && region.highlights.length > 0 && (
-            <div className="space-y-1.5 mb-4">
-              {region.highlights.slice(0, 3).map((highlight, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-xs text-white/90">
-                  <span className="text-white/60 mt-0.5">•</span>
-                  <span>{highlight}</span>
+            {/* Quick Stats */}
+            <div className="flex items-center gap-3">
+                <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
+                    <span className="text-[10px] uppercase tracking-wider opacity-70 block">Budget</span>
+                    <span className="text-sm font-bold">{region.budget}</span>
                 </div>
-              ))}
+                 <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
+                    <span className="text-[10px] uppercase tracking-wider opacity-70 block">Timezone</span>
+                    <span className="text-sm font-bold">{region.timezone}</span>
+                </div>
             </div>
-          )}
 
-          {/* Vibe Badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-[10px] font-bold border border-white/20">
-            <span>{region.vibe}</span>
-          </div>
-
-          {/* Selected Indicator */}
-          {isSelected && (
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="absolute bottom-6 right-6 bg-sb-orange-500 text-white p-2 rounded-full shadow-lg z-20"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </motion.div>
-          )}
+             {/* Selected Indicator */}
+            {isSelected && (
+                <motion.div 
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute bottom-6 right-6 bg-sb-orange-500 text-white p-2 rounded-full shadow-lg"
+                >
+                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                </motion.div>
+            )}
         </div>
       </div>
     </motion.div>
