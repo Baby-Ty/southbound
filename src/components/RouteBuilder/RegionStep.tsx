@@ -1,10 +1,13 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BedDouble, BriefcaseBusiness, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { getCitiesForRegion } from '@/lib/cityData';
+import { CityPreset, RegionKey, REGION_HUBS } from '@/lib/cityPresets';
 
 interface RouteBuilderData {
   region: string;
-  lifestyle: string[];
+  template?: string;
   workSetup: string[];
   travelStyle: string;
 }
@@ -19,10 +22,98 @@ interface RegionCardProps {
   region: any;
   isSelected: boolean;
   onSelect: () => void;
+  onDiscover: (e: React.MouseEvent) => void;
 }
 
-const RegionCard = ({ region, isSelected, onSelect }: RegionCardProps) => {
+// Improved Modal Component
+const RegionModal = ({ region, onClose }: { region: any; onClose: () => void }) => {
+  if (!region) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-sb-navy-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white rounded-[2rem] overflow-hidden max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col border border-white/20"
+        >
+          {/* Close Button */}
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {/* Header Image */}
+          <div className="relative h-72 w-full shrink-0">
+             <Image
+              src={region.bgImage}
+              alt={region.name}
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-sb-navy-900/90 via-sb-navy-900/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-medium mb-3 border border-white/10">
+                    {region.icon} {region.vibe}
+                </div>
+                <h2 className="text-4xl font-extrabold text-white mb-2 tracking-tight">
+                   {region.name}
+                </h2>
+                <p className="text-white/90 font-medium text-lg max-w-lg">{region.tagline}</p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-8 overflow-y-auto">
+             <div className="prose prose-sm max-w-none text-sb-navy-600">
+                <div className="mb-8">
+                    <h3 className="text-sm font-bold text-sb-navy-900 uppercase tracking-wider mb-3">Overview</h3>
+                    <p className="text-base leading-relaxed text-sb-navy-700">
+                        {region.overview}
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-sb-teal-50/50 p-5 rounded-2xl border border-sb-teal-100">
+                        <h4 className="font-bold text-sb-teal-900 mb-1 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            💰 Budget
+                        </h4>
+                        <p className="text-2xl font-bold text-sb-teal-700 mb-1">{region.budget}</p>
+                        <p className="text-sm text-sb-teal-800 font-medium">{region.budgetLabel}</p>
+                        <p className="text-xs text-sb-teal-600 mt-2 leading-relaxed">Typical monthly costs for a digital nomad in this region.</p>
+                    </div>
+                    <div className="bg-sb-orange-50/50 p-5 rounded-2xl border border-sb-orange-100">
+                         <h4 className="font-bold text-sb-orange-900 mb-1 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            ⏰ Timezone
+                        </h4>
+                         <p className="text-2xl font-bold text-sb-orange-700 mb-1">{region.timezone}</p>
+                        <p className="text-sm text-sb-orange-800 font-medium">vs EST</p>
+                        <p className="text-xs text-sb-orange-600 mt-2 leading-relaxed">Ideal work overlap windows for US-based teams.</p>
+                    </div>
+                </div>
+             </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+const RegionCard = ({ region, isSelected, onSelect, onDiscover }: RegionCardProps) => {
   const [imgFallbackIndex, setImgFallbackIndex] = useState(-1);
+  const [isHovered, setIsHovered] = useState(false);
 
   const currentSrc = imgFallbackIndex >= 0 && Array.isArray(region.fallbacks)
     ? region.fallbacks[Math.min(imgFallbackIndex, region.fallbacks.length - 1)]
@@ -31,25 +122,24 @@ const RegionCard = ({ region, isSelected, onSelect }: RegionCardProps) => {
   return (
     <motion.div
       onClick={onSelect}
-      whileHover={{ y: -4 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ y: -12, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`group relative flex flex-col bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-500 h-full border ${
+      className={`group relative flex flex-col bg-white rounded-[2rem] overflow-hidden cursor-pointer h-full transition-all duration-300 ${
         isSelected
-          ? 'border-sb-orange-500 shadow-lg ring-2 ring-sb-orange-200 order-last md:order-none'
-          : 'border-gray-100 shadow-md hover:shadow-xl hover:border-sb-orange-200'
+          ? 'shadow-2xl shadow-sb-orange-500/20 ring-4 ring-sb-orange-500/20'
+          : 'shadow-lg shadow-sb-navy-900/5 hover:shadow-2xl hover:shadow-sb-navy-900/10 border border-transparent hover:border-gray-100'
       }`}
     >
-      {/* Image Area - Reduced Height */}
-      <div className="relative h-32 w-full overflow-hidden">
+      {/* Image Section - Taller Aspect Ratio */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         <Image
           src={currentSrc}
           alt={region.name}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          className={`object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
           onError={() => {
              if (region.fallbacks && imgFallbackIndex < region.fallbacks.length - 1) {
                setImgFallbackIndex(prev => prev + 1);
@@ -57,69 +147,97 @@ const RegionCard = ({ region, isSelected, onSelect }: RegionCardProps) => {
           }}
         />
         
-        {/* Selected Checkmark - Smaller */}
+        {/* Gradient Overlay */}
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 ${isSelected ? 'opacity-90' : 'opacity-70 group-hover:opacity-80'}`} />
+
+        {/* Selected State Ring/Border (Inner) */}
         <AnimatePresence>
           {isSelected && (
             <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 border-[6px] border-sb-orange-500 z-20 rounded-[2rem]"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Header with Region Name */}
+        <div className="absolute top-0 left-0 w-full p-5 z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
+              <span className="text-sm">{region.icon}</span>
+              <span>{region.name.toUpperCase()}</span>
+            </div>
+            
+            {/* Info Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDiscover(e);
+              }}
+              className="w-7 h-7 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors border border-white/20"
+            >
+              <Info size={14} strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Content */}
+        <div className="absolute bottom-0 left-0 w-full p-6 z-10 text-white">
+          <h3 className="text-2xl font-bold mb-1.5 tracking-tight">
+            {region.name}
+          </h3>
+          <p className="text-white/90 text-sm font-medium leading-relaxed mb-4">
+            {region.tagline}
+          </p>
+
+          {/* Tags Row */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {/* Budget Tag */}
+            <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+              region.budget === '$' ? 'bg-green-500/90 text-white' :
+              region.budget === '$$' ? 'bg-green-500/90 text-white' :
+              'bg-green-500/90 text-white'
+            }`}>
+              {region.budget} {region.budgetLabel}
+            </div>
+            
+            {/* Timezone Tag */}
+            <div className="px-2.5 py-1 rounded-full bg-blue-500/90 text-white text-[10px] font-bold">
+              {region.timezone}
+            </div>
+          </div>
+
+          {/* Features List */}
+          {region.highlights && region.highlights.length > 0 && (
+            <div className="space-y-1.5 mb-4">
+              {region.highlights.slice(0, 3).map((highlight, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-white/90">
+                  <span className="text-white/60 mt-0.5">•</span>
+                  <span>{highlight}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Vibe Badge */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-[10px] font-bold border border-white/20">
+            <span>{region.vibe}</span>
+          </div>
+
+          {/* Selected Indicator */}
+          {isSelected && (
+            <motion.div 
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              className="absolute top-2 right-2 bg-sb-orange-500 text-white w-6 h-6 rounded-full shadow-md flex items-center justify-center z-10"
+              className="absolute bottom-6 right-6 bg-sb-orange-500 text-white p-2 rounded-full shadow-lg z-20"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </motion.div>
           )}
-        </AnimatePresence>
-
-        {/* Region Icon Badge - Compact */}
-        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm flex items-center gap-1.5">
-          <span className="text-base leading-none">{region.icon}</span>
-          <span className="text-[10px] font-bold text-sb-navy-900 tracking-wide uppercase leading-none mt-0.5">{region.name}</span>
-        </div>
-      </div>
-
-      {/* Content Area - Tighter Padding */}
-      <div className="p-4 flex flex-col flex-1">
-        {/* Header */}
-        <div className="mb-3 text-center">
-          <h3 className="text-lg font-bold text-sb-navy-900 mb-1 leading-tight group-hover:text-sb-orange-600 transition-colors">
-            {region.name}
-          </h3>
-          <p className="text-sb-navy-500 text-xs font-medium leading-snug px-1 line-clamp-2">
-            {region.tagline}
-          </p>
-        </div>
-
-        {/* Stats Row - Compact Pills */}
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">
-            {region.budget} {region.budgetLabel}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">
-            {region.timezone}
-          </span>
-        </div>
-
-        {/* Divider */}
-        <div className="w-full h-px bg-gray-100 mb-3" />
-
-        {/* Highlights - Compact List */}
-        <div className="space-y-1.5 mb-3 flex-1 px-1">
-          {region.highlights.map((highlight: string, idx: number) => (
-            <div key={idx} className="flex items-center gap-2 text-xs text-sb-navy-600">
-              <div className="w-1 h-1 rounded-full bg-sb-orange-400 shrink-0" />
-              <span className="line-clamp-1">{highlight}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Vibe Footer - Integrated */}
-        <div className="mt-auto pt-2 border-t border-dashed border-gray-100 text-center">
-          <p className="text-xs text-sb-navy-800">
-             <span className="text-gray-400 uppercase text-[10px] font-bold mr-1">Vibe:</span> {region.vibe}
-          </p>
         </div>
       </div>
     </motion.div>
@@ -127,7 +245,30 @@ const RegionCard = ({ region, isSelected, onSelect }: RegionCardProps) => {
 };
 
 const RegionStep = ({ data, onUpdate, onNext }: RegionStepProps) => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [hubCityByRegion, setHubCityByRegion] = useState<Record<string, CityPreset | null>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadHubCities() {
+      const regionKeys: RegionKey[] = ['latin-america', 'southeast-asia', 'europe'];
+      const entries = await Promise.all(
+        regionKeys.map(async (regionKey) => {
+          const cities = await getCitiesForRegion(regionKey);
+          const hubName = REGION_HUBS[regionKey]?.[0];
+          const hubCity = (hubName ? cities.find((c) => c.city === hubName) : null) || cities[0] || null;
+          return [regionKey, hubCity] as const;
+        })
+      );
+      if (!cancelled) {
+        setHubCityByRegion(Object.fromEntries(entries));
+      }
+    }
+    loadHubCities();
+    return () => { cancelled = true; };
+  }, []);
+
+  const [selectedRegionDetails, setSelectedRegionDetails] = useState<any>(null);
+
   const regions = [
     {
       id: 'latin-america',
@@ -135,15 +276,14 @@ const RegionStep = ({ data, onUpdate, onNext }: RegionStepProps) => {
       tagline: 'Rhythm, culture, and endless adventure.',
       icon: '🌎',
       bgImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: [
-        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80',
-        'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80'
-      ],
+      fallbacks: ['https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80'],
       budget: '$$',
       budgetLabel: 'Value',
       timezone: '-2h to -5h',
       highlights: ['Spanish immersion', 'Stunning beaches', 'Vibrant street life'],
-      vibe: 'Social & Adventurous'
+      vibe: 'Social & Adventurous',
+      overview: 'Latin America is a vibrant tapestry of cultures, offering everything from the white-sand beaches of the Caribbean to the rugged peaks of the Andes. It is the perfect destination for those looking to immerse themselves in a rich culture, learn Spanish, and enjoy a life full of passion and energy.',
+      hubCity: hubCityByRegion['latin-america'],
     },
     {
       id: 'southeast-asia',
@@ -151,15 +291,14 @@ const RegionStep = ({ data, onUpdate, onNext }: RegionStepProps) => {
       tagline: 'Tropical paradises and incredible food.',
       icon: '🌴',
       bgImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: [
-        'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80'
-      ],
+      fallbacks: ['https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80'],
       budget: '$',
       budgetLabel: 'Affordable',
       timezone: '+5h to +6h',
       highlights: ['Digital nomad hubs', 'World-class cuisine', 'Island hopping'],
-      vibe: 'Relaxed & Creative'
+      vibe: 'Relaxed & Creative',
+      overview: 'Southeast Asia is the undisputed capital of the digital nomad world. With established hubs like Chiang Mai, Bali, and Da Nang, you will find high-speed internet, comfortable coworking spaces, and a supportive community of like-minded individuals.',
+      hubCity: hubCityByRegion['southeast-asia'],
     },
     {
       id: 'europe',
@@ -167,106 +306,79 @@ const RegionStep = ({ data, onUpdate, onNext }: RegionStepProps) => {
       tagline: 'Historic cities meeting modern life.',
       icon: '☕',
       bgImage: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: [
-        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80',
-        'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=1600&q=80'
-      ],
+      fallbacks: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80'],
       budget: '$$$',
       budgetLabel: 'Premium',
       timezone: '+1h to +2h',
       highlights: ['Café culture', 'Easy train travel', 'Workday overlap'],
-      vibe: 'Sophisticated'
+      vibe: 'Sophisticated',
+      overview: 'Europe offers a blend of deep history, modern convenience, and incredible diversity packed into a small continent. Excellent train networks make weekend trips easy, and the timezone is convenient for those working with US East Coast or Asian clients.',
+      hubCity: hubCityByRegion['europe'],
     },
   ];
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    if (data.region && isMobile) {
-      // Small delay to allow for layout shift
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: 'smooth'
-        });
-      }, 100);
-    }
-  }, [data.region, isMobile]);
-
-  const handleNext = () => {
-    if (data.region) {
-      onNext();
-    }
-  };
-
   return (
-    <div className="space-y-4 h-full flex flex-col">
-      {/* Header - Condensed */}
-      <div className="text-center space-y-1 pt-2">
+    <div className="space-y-8 flex flex-col items-center">
+      {/* Header */}
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <span className="text-sb-orange-500 font-bold tracking-wider text-xs uppercase block">Step 1</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-sb-navy-900 tracking-tight">
-            Choose Your Region
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-sb-navy-900 tracking-tight">
+            Where's your next chapter?
           </h2>
-          <p className="text-sm text-sb-navy-500 max-w-xl mx-auto">
-            Where do you see yourself waking up?
+          <p className="text-lg text-sb-navy-500 mt-2">
+            Select a region to start building your ideal journey.
           </p>
         </motion.div>
       </div>
 
-      {/* Region Cards - 3 Column Grid - Reduced Gap */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto px-4 w-full flex-1">
+      {/* Region Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {regions.map((region) => (
           <RegionCard
             key={region.id}
             region={region}
             isSelected={data.region === region.id}
             onSelect={() => onUpdate({ region: region.id })}
+            onDiscover={(e) => {
+              setSelectedRegionDetails(region);
+            }}
           />
         ))}
       </div>
 
-      {/* Next Button - Closer to content */}
-      <motion.div 
-        className="flex justify-center pt-2 pb-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <motion.button
-          onClick={handleNext}
-          disabled={!data.region}
-          whileHover={{ scale: data.region ? 1.02 : 1 }}
-          whileTap={{ scale: data.region ? 0.98 : 1 }}
-          className={`px-8 py-3 rounded-full font-bold text-sm transition-all duration-200 flex items-center gap-2 ${
-            data.region
-              ? 'bg-sb-navy-900 text-white hover:bg-sb-navy-800 shadow-lg'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {data.region ? (
-            <>
-              Continue
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </>
-          ) : (
-            'Select a region'
-          )}
-        </motion.button>
-      </motion.div>
+      {/* Floating Action Button for Next */}
+      <AnimatePresence>
+        {data.region && (
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-8 z-40"
+            >
+                <button
+                    onClick={onNext}
+                    className="bg-sb-navy-900 text-white px-8 py-4 rounded-full font-bold shadow-2xl hover:bg-sb-navy-800 transition-all transform hover:scale-105 flex items-center gap-2 text-lg"
+                >
+                    Continue
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
+       {/* Region Details Modal */}
+       {selectedRegionDetails && (
+        <RegionModal 
+          region={selectedRegionDetails} 
+          onClose={() => setSelectedRegionDetails(null)} 
+        />
+      )}
     </div>
   );
 };
