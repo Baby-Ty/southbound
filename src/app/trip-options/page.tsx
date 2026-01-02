@@ -197,7 +197,7 @@ function TripOptionsContent() {
             (await getCitiesForRegion(region).catch(() => null)) || (CITY_PRESETS[region] || []);
           
           const selectedStops = template.presetCities
-            .map((cityName, i) => {
+            .map((cityName: string, i: number) => {
               const preset =
                 regionPresets.find((p) => p.city.toLowerCase() === cityName.toLowerCase()) ||
                 regionPresets.find((p) => p.city.toLowerCase().includes(cityName.toLowerCase()));
