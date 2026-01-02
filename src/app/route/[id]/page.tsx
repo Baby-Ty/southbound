@@ -2,26 +2,22 @@
 import RouteViewClient from './RouteViewClient';
 
 // Helper function for fetch with timeout
+// Compatible with both Node.js and browser environments
 async function fetchWithTimeout(url: string, timeoutMs: number = 5000): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  // Use Promise.race to implement timeout
+  const fetchPromise = fetch(url, {
+    headers: {
+      'Cache-Control': 'no-cache',
+    },
+  });
   
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'Cache-Control': 'no-cache',
-      },
-    });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeoutMs}ms`);
-    }
-    throw error;
-  }
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Request timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+  
+  return Promise.race([fetchPromise, timeoutPromise]);
 }
 
 // Required for static export - tells Next.js which routes to pre-generate

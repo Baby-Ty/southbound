@@ -30,28 +30,56 @@ jobs:
 
       - name: Build Functions
         working-directory: functions
-        run: npm run build
+        run: |
+          echo "Building Azure Functions..."
+          npm run build || {
+            echo "Build failed. Checking for errors..."
+            exit 1
+          }
+          echo "✓ Build successful"
 
       - name: Prepare deployment package
         working-directory: functions
         run: |
+          echo "Preparing deployment package..."
+          
+          # Verify dist folder exists
+          if [ ! -d "dist" ]; then
+            echo "ERROR: dist folder does not exist after build"
+            exit 1
+          fi
+          
           # Copy host.json to dist
-          cp host.json dist/
-          cp package-lock.json dist/
+          cp host.json dist/ || {
+            echo "ERROR: Failed to copy host.json"
+            exit 1
+          }
+          
+          # Copy package-lock.json to dist
+          cp package-lock.json dist/ || {
+            echo "WARNING: Failed to copy package-lock.json (may not exist)"
+          }
           
           # Create corrected package.json with main pointing to index.js (not dist/index.js)
           # because we're deploying from inside the dist folder
-          cat package.json | sed 's/"main": "dist\/index.js"/"main": "index.js"/' > dist/package.json
+          cat package.json | sed 's/"main": "dist\/index.js"/"main": "index.js"/' > dist/package.json || {
+            echo "ERROR: Failed to create dist/package.json"
+            exit 1
+          }
           
           # Install production dependencies in dist
           cd dist
-          npm ci --omit=dev
+          echo "Installing production dependencies..."
+          npm ci --omit=dev || {
+            echo "ERROR: Failed to install production dependencies"
+            exit 1
+          }
           
           echo "✓ Deployment package prepared"
           echo "Contents of dist folder:"
           ls -la
           echo "package.json main entry:"
-          grep '"main"' package.json
+          grep '"main"' package.json || echo "WARNING: Could not find main entry in package.json"
 
       - name: Wait for any ongoing deployments
         run: |
