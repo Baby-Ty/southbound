@@ -25,11 +25,15 @@ import {
   Briefcase
 } from "lucide-react";
 import { REGION_HUBS, RegionKey, CityPreset } from "@/lib/cityPresets";
-import { getCitiesForRegion } from "@/lib/cityData";
+import { getCitiesForRegion, getCityIdByName } from "@/lib/cityData";
+import { getAllCities, getCityByName, CityData } from "@/lib/cosmos-cities";
 import { CITY_PRESETS } from "@/lib/cityPresets"; // Keep for fallback
 import EnhancedCityCard, { StopPlan, HighlightItem } from "@/components/RouteBuilder/EnhancedCityCard";
 import { EditStopModal } from "@/components/RouteBuilder/EditStopModal";
 import SaveRouteModal from "@/components/RouteBuilder/SaveRouteModal";
+import { getDefaultTripForSelection } from "@/lib/defaultTripsStorage";
+import { getTemplateById, TripTemplate } from "@/lib/tripTemplates";
+import { usdToZar } from "@/lib/currency";
 
 const WHATSAPP_URL = "https://wa.me/27872500972?text=Hi%2C%20I%27m%20ready%20to%20plan%20my%20route%20with%20South%20Bound.";
 
@@ -38,12 +42,23 @@ type DurationOpt = "2-4" | "4-8" | "8-12" | "custom";
 type PlannerState = {
   region: RegionKey;
   base: string;
+  travelStyle?: string;
   workNeeds: string[];
   vibes: string[];
   duration: DurationOpt;
   customStart?: string;
   customEnd?: string;
   stops: StopPlan[];
+  /**
+   * Used to intentionally bust/ignore old saved routePlanner state when the
+   * seeding logic or default trips mapping changes.
+   */
+  seedVersion?: string;
+  /**
+   * Signature of the default trip used to seed stops (when applicable).
+   * If this changes, we should re-seed instead of reusing cached stops.
+   */
+  seedSignature?: string;
 };
 
 const STORAGE_KEY = "sb.routePlanner";
@@ -51,6 +66,9 @@ const STORAGE_KEY = "sb.routePlanner";
 function TripOptionsContent() {
   const searchParams = useSearchParams();
   const regionParam = searchParams.get("region");
+  const styleParam = searchParams.get("style") || "nomad";
+  const seedVersion = searchParams.get("v") || "1";
+  const templateParam = searchParams.get("template");
   
   const region: RegionKey = useMemo(() => {
     if (regionParam === "europe" || regionParam === "southeast-asia") return regionParam;
@@ -65,16 +83,20 @@ function TripOptionsContent() {
     return {
       region,
       base: (REGION_HUBS[region] || [])[0] || "Mexico City",
+      travelStyle: styleParam,
       workNeeds: [],
       vibes: [],
       duration: "2-4",
       stops: presets.map((p, i) => makeStopFromPreset(p, i, "init")),
+      seedVersion,
     };
   });
 
   const [savedSnapshot, setSavedSnapshot] = useState<string>("");
   const [toasts, setToasts] = useState<string[]>([]);
   const [drawer, setDrawer] = useState<{ open: boolean; stopIndex: number | null }>({ open: false, stopIndex: null });
+  const [drawerMode, setDrawerMode] = useState<'add' | 'swap' | 'extend-country' | 'detours'>('add');
+  const [drawerCountryFilter, setDrawerCountryFilter] = useState<string | null>(null);
   const [editingStop, setEditingStop] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isMounted, setIsMounted] = useState(false);
@@ -107,48 +129,206 @@ function TripOptionsContent() {
 
   // Handle mounting and initial shuffle/load
   useEffect(() => {
-    setIsMounted(true);
-    const raw = localStorage.getItem(STORAGE_KEY);
-    
-    if (raw) {
-      try {
-        const parsed: PlannerState = JSON.parse(raw);
-        
-        // Migration for highlights.places being string[] (legacy support)
-        if (parsed.stops) {
-          parsed.stops.forEach((stop: any) => {
-            if (stop.highlights && Array.isArray(stop.highlights.places)) {
-              stop.highlights.places = stop.highlights.places.map((p: any) => {
-                if (typeof p === 'string') {
-                  return { title: p, isCustom: false };
-                }
-                return p;
-              });
-            }
-          });
-        }
+    let cancelled = false;
 
-        if (parsed.region === region) {
-          setState(parsed);
-          setSavedSnapshot(JSON.stringify(parsed));
+    async function init() {
+      setIsMounted(true);
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      // Compute the current "default trip signature" (if any) so we can invalidate
+      // stale cached planner state when admins change Default Trips.
+      const adminTrip = getDefaultTripForSelection(region, styleParam);
+      const adminTripSignature = adminTrip
+        ? JSON.stringify({
+            region: adminTrip.region,
+            tier: adminTrip.budgetTier,
+            enabled: adminTrip.enabled !== false,
+            months: adminTrip.months,
+          })
+        : "";
+
+      if (raw) {
+        try {
+          const parsed: PlannerState = JSON.parse(raw);
+
+          // Migration for highlights.places being string[] (legacy support)
+          if (parsed.stops) {
+            parsed.stops.forEach((stop: any) => {
+              if (stop.highlights && Array.isArray(stop.highlights.places)) {
+                stop.highlights.places = stop.highlights.places.map((p: any) => {
+                  if (typeof p === 'string') {
+                    return { title: p, isCustom: false };
+                  }
+                  return p;
+                });
+              }
+            });
+          }
+
+          // Only reuse saved state if region + style match (otherwise re-seed from defaults).
+          const matchesSeedVersion = (parsed.seedVersion || "1") === seedVersion;
+          const matchesAdminTrip =
+            !adminTripSignature || (parsed.seedSignature || "") === adminTripSignature;
+
+          if (
+            parsed.region === region &&
+            (parsed.travelStyle || "nomad") === styleParam &&
+            matchesSeedVersion &&
+            matchesAdminTrip
+          ) {
+            if (!cancelled) {
+              setState(parsed);
+              setSavedSnapshot(JSON.stringify(parsed));
+            }
+            return;
+          }
+        } catch {}
+      }
+
+      // NEW: If template param exists (v3+), seed from template preset cities
+      if (templateParam && seedVersion === "3") {
+        const template = await getTemplateById(region, templateParam).catch(() => {
+          // Fallback to sync version if async fails
+          const { getTemplateByIdSync } = require('@/lib/tripTemplates');
+          return getTemplateByIdSync(region, templateParam);
+        });
+        if (template) {
+          const regionPresets =
+            (await getCitiesForRegion(region).catch(() => null)) || (CITY_PRESETS[region] || []);
+          
+          const selectedStops = template.presetCities
+            .map((cityName, i) => {
+              const preset =
+                regionPresets.find((p) => p.city.toLowerCase() === cityName.toLowerCase()) ||
+                regionPresets.find((p) => p.city.toLowerCase().includes(cityName.toLowerCase()));
+              if (!preset) return null;
+              const stop = makeStopFromPreset(preset, i);
+              stop.weeks = 4; // 1 month per city
+              stop.weeksEdited = true;
+              return stop;
+            })
+            .filter(Boolean);
+
+          if (selectedStops.length) {
+            if (!cancelled) {
+              setState((prev) => ({
+                ...prev,
+                travelStyle: styleParam,
+                base: selectedStops[0]?.city || prev.base,
+                stops: selectedStops as any,
+                seedVersion,
+                seedSignature: JSON.stringify({ template: template.id, version: seedVersion }),
+              }));
+            }
+            return;
+          }
+        }
+      }
+
+      // If no valid saved state, seed the route from the admin-configured Default Trip for (region + style).
+      // Source of truth is localStorage set by /hub/default-trips (with seed fallback).
+      if (adminTrip) {
+        // Use live city list (Cosmos-backed) for matching, not the static presets.
+        // This makes admin-selected cities actually seed correctly even if they
+        // weren't part of the original hardcoded CITY_PRESETS list.
+        const regionPresets =
+          (await getCitiesForRegion(region).catch(() => null)) || (CITY_PRESETS[region] || []);
+        const months = adminTrip.months;
+        const orderedCities = [months.month1, months.month2, months.month3];
+
+        const selectedStops = orderedCities
+          .map((m, i) => {
+            const cityName = (m?.city || "").trim();
+            if (!cityName) return null;
+            const preset =
+              regionPresets.find((p) => p.city.toLowerCase() === cityName.toLowerCase()) ||
+              regionPresets.find((p) => p.city.toLowerCase().includes(cityName.toLowerCase()));
+            if (!preset) return null;
+            const stop = makeStopFromPreset(preset, i);
+            stop.weeks = 4;
+            stop.weeksEdited = true;
+            return stop;
+          })
+          .filter(Boolean);
+
+        if (selectedStops.length) {
+          if (!cancelled) {
+            setState((prev) => ({
+              ...prev,
+              travelStyle: styleParam,
+              base: selectedStops[0]?.city || prev.base,
+              stops: selectedStops as any,
+              seedVersion,
+              seedSignature: adminTripSignature,
+            }));
+          }
           return;
         }
-      } catch {}
+      }
+
+      // Fallback (older server-managed default trips): keep this as a backup.
+      try {
+        const { apiUrl } = await import('@/lib/api');
+        const res = await fetch(apiUrl(`default-trips?region=${encodeURIComponent(region)}&enabled=true`));
+        if (res.ok) {
+          const data = await res.json();
+          const trips = Array.isArray(data.trips) ? (data.trips as any[]) : [];
+          if (trips.length) {
+            const trip = trips[0];
+            const regionPresets = CITY_PRESETS[region] || [];
+            const selectedStops = (trip.stops || [])
+              .map((st: any, i: number) => {
+                const preset = regionPresets.find((p) => p.city === st.city);
+                if (!preset) return null;
+                const stop = makeStopFromPreset(preset, i);
+                if (typeof st.weeks === 'number' && st.weeks > 0) {
+                  stop.weeks = st.weeks;
+                  stop.weeksEdited = true;
+                }
+                return stop;
+              })
+              .filter(Boolean);
+
+            if (selectedStops.length) {
+              if (!cancelled) {
+                setState((prev) => ({
+                  ...prev,
+                  travelStyle: styleParam,
+                  stops: selectedStops as any,
+                  seedVersion,
+                  seedSignature: "", // seeded from server fallback, not admin mapping
+                }));
+              }
+              return;
+            }
+          }
+        }
+      } catch {
+        // ignore and fall back to random seed
+      }
+
+      // Fallback: random shuffle now that we are client-side (avoids hydration mismatch)
+      const allPresets = [...(CITY_PRESETS[region] || [])];
+      const shuffled = allPresets.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 3);
+
+      if (!cancelled) {
+        setState((prev) => ({
+          ...prev,
+          travelStyle: styleParam,
+          stops: selected.map((p, i) => makeStopFromPreset(p, i)),
+          seedVersion,
+          seedSignature: "", // random seed
+        }));
+      }
     }
 
-    // If no valid saved state, we can do a random shuffle now that we are client-side
-    // This avoids hydration mismatch
-    const allPresets = [...(CITY_PRESETS[region] || [])];
-    // Simple deterministic shuffle for first render wasn't random, now we randomize
-    const shuffled = allPresets.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 3);
-    
-    setState(prev => ({
-      ...prev,
-      stops: selected.map((p, i) => makeStopFromPreset(p, i))
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region]);
+    init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [region, styleParam, seedVersion, templateParam]);
 
   // autosave
   useEffect(() => {
@@ -205,11 +385,22 @@ function TripOptionsContent() {
     pushToast(`Updated to ${p.city}`);
   }
 
-  function addStop(p: CityPreset) {
-    setState((s) => ({
-      ...s,
-      stops: [...s.stops, makeStopFromPreset(p, s.stops.length)]
-    }));
+  function addStop(p: CityPreset, insertAfterIndex?: number) {
+    setState((s) => {
+      if (insertAfterIndex !== undefined && insertAfterIndex >= 0) {
+        // Insert right after the specified index
+        const newStops = [...s.stops];
+        const newIndex = insertAfterIndex + 1;
+        newStops.splice(newIndex, 0, makeStopFromPreset(p, newIndex));
+        return { ...s, stops: newStops };
+      } else {
+        // Add to end (default behavior)
+        return {
+          ...s,
+          stops: [...s.stops, makeStopFromPreset(p, s.stops.length)]
+        };
+      }
+    });
     pushToast(`Added ${p.city} to route`);
   }
 
@@ -231,6 +422,8 @@ function TripOptionsContent() {
   const regionName = region === 'latin-america' ? 'Latin America' : region === 'europe' ? 'Europe' : 'Southeast Asia';
 
   const [allCityPresets, setAllCityPresets] = useState<CityPreset[]>(CITY_PRESETS[region] || []);
+  const [cityIdMap, setCityIdMap] = useState<Record<string, string>>({});
+  const [cityDataMap, setCityDataMap] = useState<Record<string, CityData>>({});
 
   // Load cities from CosmosDB when component mounts or region changes
   useEffect(() => {
@@ -238,6 +431,29 @@ function TripOptionsContent() {
       try {
         const cities = await getCitiesForRegion(region);
         setAllCityPresets(cities);
+        
+        // Also load full city data for accommodation types, common prices, etc.
+        const fullCities = await getAllCities(region);
+        const dataMap: Record<string, CityData> = {};
+        const idMap: Record<string, string> = {};
+        
+        for (const city of fullCities) {
+          dataMap[city.city] = city;
+          idMap[city.city] = city.id;
+        }
+        
+        // Fallback: try to get IDs from cityData if not found
+        for (const city of cities) {
+          if (!idMap[city.city]) {
+            const cityId = await getCityIdByName(city.city, region);
+            if (cityId) {
+              idMap[city.city] = cityId;
+            }
+          }
+        }
+        
+        setCityDataMap(dataMap);
+        setCityIdMap(idMap);
       } catch (error) {
         console.error('Failed to load cities:', error);
         // Keep using static presets as fallback
@@ -264,15 +480,34 @@ function TripOptionsContent() {
     return acc + (parseInt(costStr) || 1500);
   }, 0) / ((state.stops || []).length || 1);
 
-  // Convert to RAND (approx 18 ZAR = 1 USD for estimation)
-  const EXCHANGE_RATE = 18;
+  // Convert to RAND (18.5 ZAR = 1 USD for estimation)
+  const EXCHANGE_RATE = 18.5;
   const estMonthlyRand = Math.round(estimatedMonthlyCost * EXCHANGE_RATE);
 
-  const filteredCityPresets = allCityPresets.filter(p => 
-    p.city.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredCityPresets = allCityPresets.filter(p => {
+    // Search filter
+    const matchesSearch = p.city.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (!matchesSearch) return false;
+
+    // Country filter (for extend-country mode)
+    if (drawerMode === 'extend-country' && drawerCountryFilter) {
+      if (p.country !== drawerCountryFilter) return false;
+      // Only show main cities, not detours
+      return !p.isDetour;
+    }
+
+    // Detours filter
+    if (drawerMode === 'detours' && drawerCountryFilter) {
+      if (!p.isDetour) return false;
+      // Show detours in same country or nearby
+      return p.country === drawerCountryFilter || p.nearbyCity?.includes(drawerCountryFilter);
+    }
+
+    return true;
+  });
 
   // Prevent hydration mismatch by rendering loading state or deterministic state first
   // But since we initialized state deterministically, we can render immediately.
@@ -432,7 +667,11 @@ function TripOptionsContent() {
 
                {/* Add Dest Button */}
                <button 
-                  onClick={() => setDrawer({ open: true, stopIndex: null })}
+                  onClick={() => {
+                    setDrawerMode('add');
+                    setDrawerCountryFilter(null);
+                    setDrawer({ open: true, stopIndex: null }); // null means add to end
+                  }}
                   className="w-9 h-9 rounded-full bg-white border border-dashed border-gray-300 flex items-center justify-center hover:border-sb-teal-400 hover:text-sb-teal-600 hover:bg-sb-teal-50 transition-all group shadow-sm -ml-1"
                   title="Add Destination"
                >
@@ -543,13 +782,17 @@ function TripOptionsContent() {
               </h2>
               <p className="text-gray-500 mt-2 font-handwritten text-lg rotate-[-1deg]">Drag and drop to reorder stops ✦</p>
             </div>
-            <button
-              onClick={() => setDrawer({ open: true, stopIndex: null })}
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-sb-navy-800 text-white font-bold text-sm hover:bg-sb-navy-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ring-4 ring-white/50"
-            >
-              <Plus className="w-4 h-4" />
-              Add Destination
-            </button>
+              <button
+                onClick={() => {
+                  setDrawerMode('add');
+                  setDrawerCountryFilter(null);
+                  setDrawer({ open: true, stopIndex: null }); // null means add to end
+                }}
+                className="flex items-center gap-2 px-6 py-3 rounded-full bg-sb-navy-800 text-white font-bold text-sm hover:bg-sb-navy-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ring-4 ring-white/50"
+              >
+                <Plus className="w-4 h-4" />
+                Add Destination
+              </button>
           </div>
 
           <div className="relative">
@@ -609,16 +852,51 @@ function TripOptionsContent() {
                           }
                         }}
                         cityPreset={cityPreset}
+                        cityData={cityDataMap[stop.city]}
+                        cityId={cityIdMap[stop.city]}
                         index={i}
                         isEditing={editingStop === i}
                         onEdit={() => setEditingStop(i)}
                         onStopEdit={() => setEditingStop(null)}
                         onRemove={() => setState((s) => ({ ...s, stops: s.stops.filter((_, idx) => idx !== i) }))}
-                        onSwap={() => setDrawer({ open: true, stopIndex: i })}
+                        onSwap={() => {
+                          setDrawerMode('swap');
+                          setDrawerCountryFilter(null);
+                          setDrawer({ open: true, stopIndex: i });
+                        }}
                         onUpdate={(patch) => updateStop(i, patch)}
                         dragHandleProps={{}}
                       />
                     </div>
+
+                    {/* Extend Country & Detours Buttons - Below card, above flight icon */}
+                    {!stop.isDetour && (
+                      <div className="pt-4 pb-2 px-5 flex gap-2 max-w-2xl mx-auto">
+                        <button
+                          onClick={() => {
+                            setDrawerMode('extend-country');
+                            setDrawerCountryFilter(stop.country);
+                            setDrawer({ open: true, stopIndex: i }); // Pass current index so we can insert after it
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-sb-teal-50 border border-sb-teal-200 rounded-xl hover:bg-sb-teal-100 transition-all text-sm font-bold text-sb-teal-700 shadow-sm"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Extend {stop.country} +1 Month
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            setDrawerMode('detours');
+                            setDrawerCountryFilter(stop.country);
+                            setDrawer({ open: true, stopIndex: i }); // Pass current index so we can insert after it
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-sb-orange-50 border border-sb-orange-200 rounded-xl hover:bg-sb-orange-100 transition-all text-sm font-bold text-sb-orange-700 shadow-sm"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Add Detour
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -635,7 +913,11 @@ function TripOptionsContent() {
 
               {/* Add Button at bottom of list */}
               <button
-                onClick={() => setDrawer({ open: true, stopIndex: null })}
+                onClick={() => {
+                  setDrawerMode('add');
+                  setDrawerCountryFilter(null);
+                  setDrawer({ open: true, stopIndex: null }); // null means add to end
+                }}
                 className="w-full py-6 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-medium hover:border-sb-teal-400 hover:text-sb-teal-600 hover:bg-sb-teal-50/30 transition-all flex flex-col items-center justify-center gap-2 group mt-8"
               >
                 <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-sb-teal-100 flex items-center justify-center transition-colors">
@@ -718,11 +1000,20 @@ function TripOptionsContent() {
 
       {/* City Selection Drawer */}
       <RightDrawer
-        title={drawer.stopIndex !== null ? "Swap City" : "Add City"}
+        title={
+          drawerMode === 'extend-country' ? `Extend ${drawerCountryFilter}` :
+          drawerMode === 'detours' ? `Detours near ${drawerCountryFilter}` :
+          drawer.stopIndex !== null ? "Swap City" : "Add City"
+        }
         open={drawer.open}
-        onClose={() => setDrawer({ open: false, stopIndex: null })}
+        onClose={() => {
+          setDrawer({ open: false, stopIndex: null });
+          setDrawerMode('add');
+          setDrawerCountryFilter(null);
+          setSearchTerm('');
+        }}
       >
-        <div className="sticky top-0 bg-gray-50 pb-4 z-10">
+        <div className="sticky top-0 bg-gray-50 pb-4 z-10 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -733,6 +1024,14 @@ function TripOptionsContent() {
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-sb-teal-400 focus:border-transparent bg-white shadow-sm"
             />
           </div>
+          {(drawerMode === 'extend-country' || drawerMode === 'detours') && (
+            <div className="text-xs text-gray-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
+              {drawerMode === 'extend-country' 
+                ? `Showing cities in ${drawerCountryFilter}`
+                : `Showing detours near ${drawerCountryFilter}`
+              }
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -741,14 +1040,34 @@ function TripOptionsContent() {
               key={preset.city}
               onClick={() => {
                 if (drawer.stopIndex !== null) {
-                  replaceStopWithPreset(drawer.stopIndex, preset);
+                  // If drawer.stopIndex is set, it means we're either swapping or inserting after
+                  if (drawerMode === 'swap') {
+                    // Swap mode: replace the city at this index
+                    replaceStopWithPreset(drawer.stopIndex, preset);
+                  } else if (drawerMode === 'extend-country' || drawerMode === 'detours') {
+                    // Extend/detour mode: insert right after the city at this index
+                    addStop(preset, drawer.stopIndex);
+                  } else {
+                    // Fallback: add to end
+                    addStop(preset);
+                  }
                 } else {
+                  // Add to end (default)
                   addStop(preset);
                 }
                 setDrawer({ open: false, stopIndex: null });
+                setDrawerMode('add');
+                setDrawerCountryFilter(null);
+                setSearchTerm('');
               }}
               className="group w-full text-left bg-white border border-gray-200 rounded-xl p-4 hover:border-sb-teal-400 hover:shadow-md transition-all relative overflow-hidden"
             >
+              {preset.isDetour && (
+                <div className="absolute top-2 right-2 bg-sb-teal-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-sm z-10">
+                  <MapPin className="w-3 h-3" />
+                  Detour
+                </div>
+              )}
               <div className="flex items-start gap-3 relative z-10">
                 <div 
                   className="w-16 h-16 rounded-lg bg-gray-100 bg-cover bg-center flex-shrink-0"
@@ -760,7 +1079,12 @@ function TripOptionsContent() {
                       <div className="font-bold text-gray-900 flex items-center gap-2">
                         {preset.city} <span className="text-lg">{preset.flag}</span>
                       </div>
-                      <div className="text-xs text-gray-500">{preset.country}</div>
+                      <div className="text-xs text-gray-500">
+                        {preset.country}
+                        {preset.nearbyCity && (
+                          <span className="ml-1 text-sb-teal-600">• near {preset.nearbyCity}</span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-xs font-bold text-sb-teal-600 bg-sb-teal-50 px-2 py-1 rounded-lg">
                       {preset.weather.avgTemp}
@@ -777,7 +1101,12 @@ function TripOptionsContent() {
                   
                   <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
                     <Wallet className="w-3 h-3" />
-                    {preset.costs.monthlyTotal}
+                    {usdToZar(preset.costs.monthlyTotal)}
+                    {preset.suggestedDuration && (
+                      <span className="ml-2 text-sb-orange-600">
+                        • {preset.suggestedDuration} weeks suggested
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -786,7 +1115,12 @@ function TripOptionsContent() {
           
           {filteredCityPresets.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              No cities found matching "{searchTerm}"
+              {drawerMode === 'extend-country' 
+                ? `No cities found in ${drawerCountryFilter}`
+                : drawerMode === 'detours'
+                ? `No detours found near ${drawerCountryFilter}`
+                : `No cities found matching "${searchTerm}"`
+              }
             </div>
           )}
         </div>
@@ -816,11 +1150,17 @@ function TripOptionsContent() {
 }
 
 function makeStopFromPreset(p: CityPreset, idx: number, idSuffix?: string): StopPlan {
+  // Use suggestedDuration from city data, or default based on detour status
+  const defaultWeeks = p.isDetour ? 1.5 : 4;
+  const weeks = p.suggestedDuration || defaultWeeks;
+  
   return {
     id: `${p.city}-${idx}-${idSuffix || Math.random().toString(36).slice(2, 7)}`,
     city: p.city,
     country: p.country,
-    weeks: 4,
+    weeks: weeks,
+    isDetour: p.isDetour || false,
+    nearbyCity: p.nearbyCity,
     budgetCoins: p.budgetCoins,
     tags: p.tags,
     highlights: {

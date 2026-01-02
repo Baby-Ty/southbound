@@ -51,6 +51,9 @@ export async function getContainer(containerId: string): Promise<Container> {
     
     const partitionKeys: Record<string, { paths: string[] }> = {
       'cities': { paths: ['/region'] },
+      'countries': { paths: ['/region'] },
+      'defaultTrips': { paths: ['/region'] },
+      'tripTemplates': { paths: ['/region'] },
       'savedRoutes': { paths: ['/id'] },
       'activities': { paths: ['/id'] },
       'accommodationTypes': { paths: ['/id'] },
@@ -286,6 +289,211 @@ export async function getAllLeads(filters?: {
 export async function deleteLead(leadId: string): Promise<void> {
   const container = await getContainer(LEADS_CONTAINER_ID);
   await container.item(leadId, leadId).delete();
+}
+
+// Default Trips (starter trips after itinerary wizard)
+export interface DefaultTripStop {
+  city: string;
+  country: string;
+  weeks: number;
+}
+
+export interface DefaultTrip {
+  id: string;
+  name: string;
+  region: string;
+  enabled: boolean;
+  order: number;
+  stops: DefaultTripStop[];
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const DEFAULT_TRIPS_CONTAINER_ID = 'defaultTrips';
+
+export async function createDefaultTrip(
+  data: Omit<DefaultTrip, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<DefaultTrip> {
+  const { nanoid } = await import('nanoid');
+  const container = await getContainer(DEFAULT_TRIPS_CONTAINER_ID);
+  const now = new Date().toISOString();
+
+  const trip: DefaultTrip = {
+    ...data,
+    id: nanoid(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const { resource } = await container.items.create(trip);
+  return resource as DefaultTrip;
+}
+
+export async function getDefaultTrips(filters?: {
+  region?: string;
+  enabled?: boolean;
+}): Promise<DefaultTrip[]> {
+  const container = await getContainer(DEFAULT_TRIPS_CONTAINER_ID);
+
+  let query = 'SELECT * FROM c WHERE 1=1';
+  const params: any[] = [];
+
+  if (filters?.region) {
+    query += ' AND c.region = @region';
+    params.push({ name: '@region', value: filters.region });
+  }
+
+  if (typeof filters?.enabled === 'boolean') {
+    query += ' AND c.enabled = @enabled';
+    params.push({ name: '@enabled', value: filters.enabled });
+  }
+
+  query += ' ORDER BY c.order ASC, c.updatedAt DESC';
+
+  const { resources } = await container.items
+    .query({ query, parameters: params })
+    .fetchAll();
+
+  return resources as DefaultTrip[];
+}
+
+export async function getDefaultTripById(id: string): Promise<DefaultTrip | null> {
+  const container = await getContainer(DEFAULT_TRIPS_CONTAINER_ID);
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT * FROM c WHERE c.id = @id',
+      parameters: [{ name: '@id', value: id }],
+    })
+    .fetchAll();
+
+  return (resources?.[0] as DefaultTrip) || null;
+}
+
+export async function updateDefaultTrip(
+  id: string,
+  updates: Partial<Omit<DefaultTrip, 'id' | 'createdAt' | 'updatedAt' | 'region'>>
+): Promise<DefaultTrip> {
+  const container = await getContainer(DEFAULT_TRIPS_CONTAINER_ID);
+  const existing = await getDefaultTripById(id);
+  if (!existing) throw new Error(`Default trip ${id} not found`);
+
+  const updated: DefaultTrip = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { resource } = await container.item(id, existing.region).replace(updated);
+  return resource as DefaultTrip;
+}
+
+export async function deleteDefaultTrip(id: string): Promise<void> {
+  const container = await getContainer(DEFAULT_TRIPS_CONTAINER_ID);
+  const existing = await getDefaultTripById(id);
+  if (!existing) return;
+  await container.item(id, existing.region).delete();
+}
+
+// Trip Templates (adventure style templates for route builder)
+export interface TripTemplate {
+  id: string;
+  region: 'europe' | 'latin-america' | 'southeast-asia';
+  name: string;
+  description: string;
+  icon: string;
+  imageUrl: string;
+  presetCities: string[]; // City names for itinerary seeding
+  tags: string[];
+  enabled: boolean;
+  order: number; // Sort order within region
+  createdAt: string;
+  updatedAt: string;
+}
+
+const TRIP_TEMPLATES_CONTAINER_ID = 'tripTemplates';
+
+export async function createTripTemplate(
+  data: Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<TripTemplate> {
+  const { nanoid } = await import('nanoid');
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  const now = new Date().toISOString();
+
+  const template: TripTemplate = {
+    ...data,
+    id: nanoid(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const { resource } = await container.items.create(template);
+  return resource as TripTemplate;
+}
+
+export async function getTripTemplates(filters?: {
+  region?: 'europe' | 'latin-america' | 'southeast-asia';
+  enabled?: boolean;
+}): Promise<TripTemplate[]> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+
+  let query = 'SELECT * FROM c WHERE 1=1';
+  const params: any[] = [];
+
+  if (filters?.region) {
+    query += ' AND c.region = @region';
+    params.push({ name: '@region', value: filters.region });
+  }
+
+  if (typeof filters?.enabled === 'boolean') {
+    query += ' AND c.enabled = @enabled';
+    params.push({ name: '@enabled', value: filters.enabled });
+  }
+
+  query += ' ORDER BY c.order ASC, c.createdAt ASC';
+
+  const { resources } = await container.items
+    .query({ query, parameters: params })
+    .fetchAll();
+
+  return resources as TripTemplate[];
+}
+
+export async function getTripTemplateById(id: string, region: string): Promise<TripTemplate | null> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  try {
+    const { resource } = await container.item(id, region).read();
+    return resource as TripTemplate | null;
+  } catch (error: any) {
+    if (error.code === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function updateTripTemplate(
+  id: string,
+  region: string,
+  updates: Partial<Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt' | 'region'>>
+): Promise<TripTemplate> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  const existing = await getTripTemplateById(id, region);
+  if (!existing) throw new Error(`Trip template ${id} not found`);
+
+  const updated: TripTemplate = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { resource } = await container.item(id, region).replace(updated);
+  return resource as TripTemplate;
+}
+
+export async function deleteTripTemplate(id: string, region: string): Promise<void> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  await container.item(id, region).delete();
 }
 
 

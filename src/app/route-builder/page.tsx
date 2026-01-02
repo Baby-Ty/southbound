@@ -8,19 +8,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Step Components
 import RegionStep from '@/components/RouteBuilder/RegionStep';
-import LifestyleStep from '@/components/RouteBuilder/LifestyleStep';
-import WorkSetupStep from '@/components/RouteBuilder/WorkSetupStep';
-import TravelStyleStep from '@/components/RouteBuilder/TravelStyleStep';
-import SummaryStep from '@/components/RouteBuilder/SummaryStep';
+import TripTemplateStep from '@/components/RouteBuilder/TripTemplateStep';
+import BudgetStep from '@/components/RouteBuilder/BudgetStep';
 
 // Types
 export interface RouteBuilderData {
   region: string;
-  lifestyle: string[];
+  template?: string;
   workSetup: string[];
   travelStyle: string;
-  tripLength?: string;
-  countries?: string[];
+  budgetTier?: string;
 }
 
 const RouteBuilder = () => {
@@ -28,19 +25,19 @@ const RouteBuilder = () => {
   const [direction, setDirection] = useState(0); // -1 for prev, 1 for next
   const [routeData, setRouteData] = useState<RouteBuilderData>({
     region: '',
-    lifestyle: [],
+    template: undefined,
     workSetup: [],
-    travelStyle: '',
-    tripLength: '3',
-    countries: [],
+    travelStyle: 'remote-worker',
+    budgetTier: undefined,
   });
 
-  const totalSteps = 5;
+  const totalSteps = 3;
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setDirection(1);
       setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -48,6 +45,7 @@ const RouteBuilder = () => {
     if (currentStep > 1) {
       setDirection(-1);
       setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -60,24 +58,43 @@ const RouteBuilder = () => {
     setCurrentStep(1);
     setRouteData({
       region: '',
-      lifestyle: [],
+      template: undefined,
       workSetup: [],
-      travelStyle: '',
+      travelStyle: 'remote-worker',
+      budgetTier: undefined,
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSeeTrip = () => {
+    if (routeData.region && routeData.template && routeData.budgetTier) {
+      const params = new URLSearchParams({
+        region: routeData.region,
+        template: routeData.template,
+        work: (routeData.workSetup || []).join(','),
+        style: routeData.travelStyle,
+        budgetTier: routeData.budgetTier,
+        v: '3', // Version 3 for template-based flow
+      });
+      window.location.href = `/trip-options?${params.toString()}`;
+    }
   };
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 20 : -20,
+      x: direction > 0 ? 50 : -50,
       opacity: 0,
+      scale: 0.95,
     }),
     center: {
       x: 0,
       opacity: 1,
+      scale: 1,
     },
     exit: (direction: number) => ({
-      x: direction < 0 ? 20 : -20,
+      x: direction < 0 ? 50 : -50,
       opacity: 0,
+      scale: 0.95,
     }),
   };
 
@@ -93,7 +110,7 @@ const RouteBuilder = () => {
         );
       case 2:
         return (
-          <LifestyleStep
+          <TripTemplateStep
             data={routeData}
             onUpdate={handleDataUpdate}
             onNext={handleNext}
@@ -102,29 +119,11 @@ const RouteBuilder = () => {
         );
       case 3:
         return (
-          <WorkSetupStep
+          <BudgetStep
             data={routeData}
             onUpdate={handleDataUpdate}
-            onNext={handleNext}
             onPrevious={handlePrevious}
-          />
-        );
-      case 4:
-        return (
-          <TravelStyleStep
-            data={routeData}
-            onUpdate={handleDataUpdate}
-            onNext={handleNext}
-            onPrevious={handlePrevious}
-          />
-        );
-      case 5:
-        return (
-          <SummaryStep
-            data={routeData}
-            onUpdate={handleDataUpdate}
-            onStartOver={handleStartOver}
-            onPrevious={handlePrevious}
+            onSeeTrip={handleSeeTrip}
           />
         );
       default:
@@ -133,54 +132,55 @@ const RouteBuilder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sb-beige-50 via-white to-sb-teal-50 py-4 sm:py-8">
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Progress Indicator */}
-        <div className="mb-4 max-w-2xl mx-auto">
-          <div className="relative pt-1">
-            <div className="flex mb-2 items-center justify-between">
-              <div className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-sb-orange-600 bg-sb-orange-100">
-                Step {currentStep} of {totalSteps}
+    <div className="min-h-screen bg-[#FDFDFD] py-4 sm:py-8">
+      {/* Background Decorations */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-sb-orange-100/30 rounded-full blur-[100px]" />
+         <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-sb-teal-100/30 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center min-h-[calc(100vh-4rem)]">
+        
+        {/* Minimal Progress Steps */}
+        <div className="mb-8 flex items-center gap-3">
+          {Array.from({ length: totalSteps }).map((_, i) => {
+            const stepNum = i + 1;
+            const isActive = stepNum === currentStep;
+            const isCompleted = stepNum < currentStep;
+            
+            return (
+              <div key={i} className="flex items-center gap-3">
+                <motion.div 
+                  className={`h-2.5 rounded-full transition-all duration-500 ${
+                    isActive ? 'w-12 bg-sb-orange-500' : 
+                    isCompleted ? 'w-2.5 bg-sb-navy-200' : 'w-2.5 bg-gray-100'
+                  }`}
+                />
               </div>
-              <div className="text-right">
-                <span className="text-xs font-semibold inline-block text-sb-orange-600">
-                  {Math.round((currentStep / totalSteps) * 100)}%
-                </span>
-              </div>
-            </div>
-            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-sb-orange-100">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-sb-orange-500"
-              />
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Content Card */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative min-h-[500px]">
-          <div className="p-4 sm:p-8 h-full">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={currentStep}
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 }
-                }}
-                className="h-full"
-              >
-                {renderStep()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+        {/* Content Area - No more box, just open layout */}
+        <div className="w-full max-w-5xl">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.3 },
+                scale: { duration: 0.3 }
+              }}
+              className="w-full"
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
