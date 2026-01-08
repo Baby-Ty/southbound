@@ -8,9 +8,21 @@ import { Section } from './ui/Section';
 
 interface OurPromiseSectionProps {
   embedded?: boolean;
+  greeting?: string;
+  bodyParagraphs?: string[];
+  closing?: string;
 }
 
-const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false }) => {
+const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ 
+  embedded = false,
+  greeting = "Howzit,",
+  bodyParagraphs = [
+    "South Bound was built for remote workers who want a bit more out of life.",
+    "We take care of the tricky stuff: accommodation, co-working, SIMs, experiences. You just focus on exploring, working, and enjoying your new home.",
+    "Less hassle. More living."
+  ],
+  closing = "See you out there,"
+}) => {
   const Content = () => (
     <div className={`${embedded ? 'w-full' : 'max-w-3xl mx-auto'} relative`}>
       {/* Sticky Note Container */}
@@ -49,28 +61,22 @@ const OurPromiseSection: React.FC<OurPromiseSectionProps> = ({ embedded = false 
 
             {/* Greeting */}
             <p className="font-handwritten text-3xl font-bold leading-[40px]">
-              Howzit,
+              {greeting}
             </p>
 
             {/* Body Text */}
             <div className="font-handwritten text-2xl font-medium space-y-[40px] leading-[40px]">
-              <p>
-                South Bound was built for remote workers who want a bit more out of life.
-              </p>
-              
-              <p>
-                We take care of the tricky stuff: accommodation, co-working, SIMs, experiences. You just focus on exploring, working, and enjoying your new home.
-              </p>
-
-              <p className="font-bold">
-                Less hassle. More living.
-              </p>
+              {bodyParagraphs.map((paragraph, index) => (
+                <p key={index} className={index === bodyParagraphs.length - 1 ? "font-bold" : ""}>
+                  {paragraph}
+                </p>
+              ))}
             </div>
 
             {/* Footer / Signature */}
             <div className="pt-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
               <div>
-                <p className="font-handwritten text-2xl mb-1">See you out there,</p>
+                <p className="font-handwritten text-2xl mb-1">{closing}</p>
                 <div className="font-handwritten text-3xl font-bold flex items-center gap-2">
                   – The Team <span>🌍</span>
                 </div>

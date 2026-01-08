@@ -37,7 +37,7 @@ export const HeroSection: React.FC = () => {
             </p>
             
             <div className="flex flex-wrap gap-4 pt-6">
-              <Button href="/route-builder" variant="primary">
+              <Button href="/discover" variant="primary">
                 Start your journey
               </Button>
               <Button href="#globe" variant="secondary">

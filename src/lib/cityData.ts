@@ -4,7 +4,7 @@
  */
 
 import { CityPreset, RegionKey } from './cityPresets';
-import { getAllCities, cityDataToPreset, CityData } from './cosmos-cities';
+import { getAllCities, cityDataToPreset, CityData, getCityByName } from './cosmos-cities';
 import { CITY_PRESETS } from './cityPresets';
 
 // Check if we're on the server side
@@ -73,6 +73,42 @@ export async function getCitiesForRegion(region: RegionKey): Promise<CityPreset[
 }
 
 /**
+ * Get city ID by city name and region
+ * Returns null if city not found
+ */
+export async function getCityIdByName(
+  cityName: string,
+  region: RegionKey
+): Promise<string | null> {
+  if (!isServerSide()) {
+    // On client side, use API endpoint
+    try {
+      const { apiUrl } = await import('./api');
+      const response = await fetch(apiUrl(`cities?region=${region}`));
+      if (response.ok) {
+        const data = await response.json();
+        const city = data.cities?.find((c: CityData) => c.city === cityName);
+        return city?.id || null;
+      }
+    } catch (error) {
+      console.warn('[getCityIdByName] Failed to fetch city ID from API:', error);
+    }
+  } else {
+    // On server side, try CosmosDB directly
+    if (isCosmosDBConfigured()) {
+      try {
+        const city = await getCityByName(cityName, region);
+        return city?.id || null;
+      } catch (error) {
+        console.warn('[getCityIdByName] Failed to fetch city ID from CosmosDB:', error);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Get all cities (all regions)
  */
 export async function getAllCitiesData(): Promise<CityPreset[]> {
@@ -101,7 +137,6 @@ export async function getAvailableActivitiesForCity(
 ): Promise<string[]> {
   if (isCosmosDBConfigured()) {
     try {
-      const { getCityByName } = await import('./cosmos-cities');
       const city = await getCityByName(cityName, region);
       if (city && city.availableActivities) {
         return city.availableActivities;
@@ -125,7 +160,6 @@ export async function getAvailableAccommodationForCity(
 ): Promise<string[]> {
   if (isCosmosDBConfigured()) {
     try {
-      const { getCityByName } = await import('./cosmos-cities');
       const city = await getCityByName(cityName, region);
       if (city && city.availableAccommodation) {
         return city.availableAccommodation;
@@ -139,4 +173,3 @@ export async function getAvailableAccommodationForCity(
   const staticCity = CITY_PRESETS[region]?.find((c) => c.city === cityName);
   return staticCity?.highlights.accommodation ? [staticCity.highlights.accommodation] : [];
 }
-

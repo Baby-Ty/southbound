@@ -3,7 +3,19 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import DestinationRotator from './DestinationRotator'
 
-const Hero = () => {
+interface HeroProps {
+  tagline?: string
+  description?: string
+  communityText?: string
+  currencyCode?: string
+}
+
+const Hero = ({ 
+  tagline = "A remote work adventure for South Africans.",
+  description = "We handle the logistics, you just show up.",
+  communityText = "Join other South African nomads",
+  currencyCode = "ZAR"
+}: HeroProps = {}) => {
   const destinations = ["BALI", "MEXICO", "GEORGIA", "CAPE TOWN"]
   const highlightRef = useRef<HTMLSpanElement | null>(null)
   const boardingPassRef = useRef<HTMLDivElement | null>(null)
@@ -177,13 +189,13 @@ const Hero = () => {
 
               {/* Subheading */}
               <p className="text-lg md:text-xl text-stone-200 leading-relaxed mb-8 max-w-lg font-medium">
-                A remote work adventure for South Africans. <br className="hidden md:block" />We handle the logistics, you just show up.
+                {tagline} <br className="hidden md:block" />{description}
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
-                  href="/route-builder"
+                  href="/discover"
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#E86B32] hover:bg-[#d55a24] text-white font-bold rounded-full transition-all duration-300 shadow-lg hover:transform hover:-translate-y-1"
                 >
                   <span>Start your journey</span>
@@ -202,7 +214,7 @@ const Hero = () => {
                         </div>
                     ))}
                  </div>
-                 <p>Join other South African nomads</p>
+                 <p>{communityText}</p>
               </div>
             </div>
 
@@ -237,7 +249,7 @@ const Hero = () => {
                   <div className="grid grid-cols-2 gap-6 mb-8">
                       <div>
                         <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">From</div>
-                        <div className="font-mono text-2xl font-bold text-stone-900">ZAR</div>
+                        <div className="font-mono text-2xl font-bold text-stone-900">{currencyCode}</div>
                       </div>
                       <div>
                         <div className="text-xs uppercase tracking-widest text-stone-500 mb-1">Class</div>

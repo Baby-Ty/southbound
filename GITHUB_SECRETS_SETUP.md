@@ -82,3 +82,6 @@ az functionapp deployment list-publishing-profiles --name southbound-functions -
 
 
 
+
+
+

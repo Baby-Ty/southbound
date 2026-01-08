@@ -222,6 +222,7 @@ export default function CityImageManager({
               currentImage={safeImageUrls[0] || undefined}
               onSelect={handleStockImageSelected}
               cityName={cityName}
+              countryName={promptContext?.country}
             />
             <p className="text-xs text-stone-500">
               Selected images will be added to your collection. Search Unsplash or paste an image URL. Click "Change Image" to add more.

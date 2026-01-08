@@ -69,7 +69,7 @@ const HowItWorksSection: React.FC = () => {
 
         <div className="mt-16 text-center">
           <Link 
-            href="/route-builder"
+            href="/discover"
             className="inline-block border-b-2 border-[#E86B32] text-stone-900 font-bold hover:text-[#E86B32] transition-colors pb-1"
           >
             Build your own itinerary &rarr;

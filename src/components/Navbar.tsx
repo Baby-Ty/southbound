@@ -10,6 +10,12 @@ export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isHomePage = pathname === '/';
+  const isDiscover = pathname?.startsWith('/discover');
+  
+  // Don't render navbar on discover page
+  if (isDiscover) {
+    return null;
+  }
   
   // Increased readability: stronger font weight, larger text, better shadow
   const textColorClass = isHomePage ? 'text-white hover:text-white/90' : 'text-stone-800 hover:text-stone-600';

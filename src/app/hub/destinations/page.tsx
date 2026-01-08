@@ -48,6 +48,12 @@ export default function DestinationsPage() {
 
       <div className="mb-6 flex gap-4">
         <Link
+          href="/hub/destinations/countries"
+          className="px-6 py-3 bg-sb-teal-500 text-white rounded-lg font-medium hover:bg-sb-teal-600 transition"
+        >
+          Manage Countries
+        </Link>
+        <Link
           href="/hub/destinations/cities"
           className="px-6 py-3 bg-sb-orange-500 text-white rounded-lg font-medium hover:bg-sb-orange-600 transition"
         >

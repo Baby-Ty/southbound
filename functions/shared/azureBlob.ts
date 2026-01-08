@@ -96,5 +96,39 @@ export async function uploadImageFromBase64(
   return await uploadImageBuffer(buffer, category, filename);
 }
 
+/**
+ * Upload multiple activity photos from URLs
+ * @param photoUrls Array of photo URLs to download and upload
+ * @param cityId City ID for organizing photos
+ * @param locationId TripAdvisor location ID
+ * @returns Array of blob storage URLs
+ */
+export async function uploadActivityPhotos(
+  photoUrls: string[],
+  cityId: string,
+  locationId: string
+): Promise<string[]> {
+  const uploadedUrls: string[] = [];
+  
+  for (let i = 0; i < photoUrls.length; i++) {
+    try {
+      const photoUrl = photoUrls[i];
+      const filename = `activities/${cityId}/${locationId}/${i}.jpg`;
+      
+      const blobUrl = await uploadImageFromUrl(photoUrl, 'activities', filename);
+      uploadedUrls.push(blobUrl);
+    } catch (error: any) {
+      console.error(`Failed to upload activity photo ${i} for ${locationId}:`, error);
+      // Continue with other photos even if one fails
+      // Fallback: use original URL if blob upload fails
+      uploadedUrls.push(photoUrls[i]);
+    }
+  }
+  
+  return uploadedUrls;
+}
+
+
+
 
 

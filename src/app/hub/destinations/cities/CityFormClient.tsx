@@ -14,7 +14,12 @@ import {
 } from 'lucide-react';
 import { RegionKey } from '@/lib/cityPresets';
 import { CityData } from '@/lib/cosmos-cities';
+import { CountryData } from '@/lib/cosmos-countries';
 import { apiUrl } from '@/lib/api';
+import ActivityManager from '@/components/hub/ActivityManager';
+import AccommodationTypesManager from '@/components/hub/AccommodationTypesManager';
+import ExperienceGalleryManager from '@/components/hub/ExperienceGalleryManager';
+import CityImageManager from '@/components/hub/CityImageManager';
 
 // Default activities and accommodation types
 const DEFAULT_ACTIVITIES = [
@@ -44,6 +49,17 @@ const DEFAULT_ACCOMMODATION = [
   'Coliving Space',
   'Villa',
   'Guesthouse',
+];
+
+// Used on region cards as quick "what to expect" icons
+const DEFAULT_WORK_VIBE = [
+  'Fast internet',
+  'Quiet workspaces',
+  'Great coworking',
+  'Cafe-friendly',
+  'Lots of nomads',
+  'Easy calls (time overlap)',
+  'Backup power common',
 ];
 
 interface CityFormClientProps {
@@ -90,20 +106,73 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
     },
     nomadScore: 7,
     internetSpeed: '',
+    description: '',
     adminNotes: '',
+    tripAdvisorActivities: [],
+    accommodationTypes: {},
+    commonItemPrices: {
+      coke500ml: '',
+      mcdBurger: '',
+      localBeer: '',
+      coffee: '',
+      streetFood: '',
+      transport: '',
+    },
+    experienceGallery: [],
+    regionCard: {
+      sleep: {
+        summary: '',
+        details: '',
+        icons: [],
+      },
+      work: {
+        summary: '',
+        details: '',
+        icons: [],
+      },
+    },
   });
 
   const [newTag, setNewTag] = useState('');
   const [newPlace, setNewPlace] = useState('');
   const [newActivity, setNewActivity] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+  const [countries, setCountries] = useState<CountryData[]>([]);
+  const [allCities, setAllCities] = useState<CityData[]>([]);
 
   // Load city data for edit mode
   useEffect(() => {
     if (mode === 'edit' && cityId) {
       loadCity();
     }
+    loadCountries();
+    loadAllCities();
   }, [mode, cityId]);
+
+  async function loadCountries() {
+    try {
+      const response = await fetch(apiUrl('countries'));
+      if (response.ok) {
+        const data = await response.json();
+        setCountries(data.countries || []);
+      }
+    } catch (err) {
+      console.error('Error loading countries:', err);
+    }
+  }
+
+  async function loadAllCities() {
+    try {
+      const response = await fetch(apiUrl('cities'));
+      if (response.ok) {
+        const data = await response.json();
+        setAllCities(data.cities || []);
+      }
+    } catch (err) {
+      console.error('Error loading cities:', err);
+    }
+  }
 
   async function loadCity() {
     try {
@@ -268,6 +337,68 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
     }));
   };
 
+  const handleImagesChange = (imageUrls: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrls,
+    }));
+  };
+
+  const fetchCityDescription = async (source: 'tripadvisor' | 'ai') => {
+    if (!formData.city || !formData.country) {
+      setError('Please enter city and country first');
+      return;
+    }
+
+    setDescriptionLoading(true);
+    setError(null);
+
+    try {
+      const url = apiUrl('cities/description');
+      console.log('[fetchCityDescription] Calling URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: formData.city,
+          country: formData.country,
+          source,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        // If 404 and on localhost, suggest checking DISABLE_STATIC_EXPORT
+        if (response.status === 404 && typeof window !== 'undefined' && 
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          errorMessage += '. Make sure DISABLE_STATIC_EXPORT=true is set in .env.local and restart the dev server.';
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({
+        ...prev,
+        description: data.description || '',
+      }));
+    } catch (err: any) {
+      console.error('Error fetching description:', err);
+      setError(err.message || 'Failed to fetch description');
+    } finally {
+      setDescriptionLoading(false);
+    }
+  };
+
   const toggleActivity = (activity: string) => {
     setFormData(prev => {
       const current = prev.availableActivities || [];
@@ -288,6 +419,40 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
         availableAccommodation: current.includes(acc)
           ? current.filter(a => a !== acc)
           : [...current, acc],
+      };
+    });
+  };
+
+  const toggleRegionCardSleepIcon = (label: string) => {
+    setFormData((prev) => {
+      const current = prev.regionCard?.sleep?.icons || [];
+      const next = current.includes(label) ? current.filter((x) => x !== label) : [...current, label];
+      return {
+        ...prev,
+        regionCard: {
+          ...prev.regionCard,
+          sleep: {
+            ...prev.regionCard?.sleep,
+            icons: next,
+          },
+        },
+      };
+    });
+  };
+
+  const toggleRegionCardWorkIcon = (label: string) => {
+    setFormData((prev) => {
+      const current = prev.regionCard?.work?.icons || [];
+      const next = current.includes(label) ? current.filter((x) => x !== label) : [...current, label];
+      return {
+        ...prev,
+        regionCard: {
+          ...prev.regionCard,
+          work: {
+            ...prev.regionCard?.work,
+            icons: next,
+          },
+        },
       };
     });
   };
@@ -370,13 +535,29 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">Country *</label>
-              <input
-                type="text"
+              <select
                 required
                 value={formData.country || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                onChange={(e) => {
+                  const selectedCountry = countries.find(c => c.name === e.target.value);
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    country: e.target.value,
+                    flag: selectedCountry?.flag || prev.flag,
+                    region: selectedCountry?.region || prev.region,
+                  }));
+                }}
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
-              />
+              >
+                <option value="">Select a country...</option>
+                {countries
+                  .filter(c => !formData.region || c.region === formData.region)
+                  .map((country) => (
+                    <option key={country.id} value={country.name}>
+                      {country.flag} {country.name}
+                    </option>
+                  ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">Flag Emoji</label>
@@ -445,6 +626,69 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
               <label htmlFor="enabled" className="text-sm font-medium text-stone-700">Enabled</label>
             </div>
           </div>
+
+          {/* Detour Fields */}
+          <div className="pt-4 border-t border-stone-200 space-y-4">
+            <h3 className="text-md font-bold text-stone-900">Detour Settings</h3>
+            
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="isDetour"
+                checked={formData.isDetour || false}
+                onChange={(e) => {
+                  const isDetour = e.target.checked;
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    isDetour,
+                    suggestedDuration: isDetour ? 1.5 : (prev.suggestedDuration || 4),
+                    nearbyCity: isDetour ? prev.nearbyCity : undefined,
+                  }));
+                }}
+                className="w-4 h-4 text-sb-teal-500 rounded"
+              />
+              <label htmlFor="isDetour" className="text-sm font-medium text-stone-700">Is Detour</label>
+            </div>
+
+            {formData.isDetour && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Nearby City</label>
+                  <select
+                    value={formData.nearbyCity || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nearbyCity: e.target.value }))}
+                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-teal-400 focus:border-transparent"
+                  >
+                    <option value="">Select nearby city...</option>
+                    {allCities
+                      .filter(c => c.country === formData.country && !c.isDetour && c.city !== formData.city)
+                      .map((city) => (
+                        <option key={city.id} value={city.city}>
+                          {city.city}
+                        </option>
+                      ))}
+                  </select>
+                  <p className="text-xs text-stone-500 mt-1">Main city this detour is near (e.g., "Bali (Canggu)" for Ubud)</p>
+                </div>
+              </>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Suggested Duration (weeks)</label>
+              <input
+                type="number"
+                min="0.5"
+                max="12"
+                step="0.5"
+                value={formData.suggestedDuration || (formData.isDetour ? 1.5 : 4)}
+                onChange={(e) => setFormData(prev => ({ ...prev, suggestedDuration: parseFloat(e.target.value) }))}
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+              />
+              <p className="text-xs text-stone-500 mt-1">
+                {formData.isDetour ? 'Detours typically 1-2 weeks' : 'Main cities typically 4 weeks'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Tags */}
@@ -475,31 +719,66 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
           </div>
         </div>
 
-        {/* Image URLs */}
+        {/* City Images */}
+        <CityImageManager
+          imageUrls={formData.imageUrls || []}
+          onImagesChange={handleImagesChange}
+          cityName={formData.city}
+          promptContext={{
+            cityName: formData.city || '',
+            country: formData.country || '',
+            region: formData.region,
+            tags: formData.tags || [],
+          }}
+        />
+
+        {/* City Description */}
         <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
-          <h2 className="text-lg font-bold text-stone-900">City Images</h2>
-          <div className="space-y-2">
-            {(formData.imageUrls || []).map((url, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2 bg-stone-50 rounded-lg">
-                <span className="flex-1 text-sm text-stone-600 truncate">{url}</span>
-                <button type="button" onClick={() => removeImageUrl(url)} className="text-red-500 hover:text-red-700">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-stone-900">City Description</h2>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fetchCityDescription('tripadvisor')}
+                disabled={descriptionLoading || !formData.city || !formData.country}
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {descriptionLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Get from TripAdvisor'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => fetchCityDescription('ai')}
+                disabled={descriptionLoading || !formData.city || !formData.country}
+                className="px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {descriptionLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  'Generate with AI'
+                )}
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="https://..."
-              className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
-            />
-            <button type="button" onClick={addImageUrl} className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300">
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+          <textarea
+            value={formData.description || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Enter a description of the city, or use the buttons above to fetch from TripAdvisor or generate with AI..."
+            rows={6}
+            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+          />
+          <p className="text-xs text-stone-500">
+            Provide a compelling description of the city that will help travelers understand what makes it special.
+          </p>
         </div>
 
         {/* Available Activities */}
@@ -634,6 +913,150 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
           </div>
         </div>
 
+        {/* Region Cards: Sleep + Work Vibe (Hub City) */}
+        <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">Region Card: Sleep & Work Vibe</h2>
+            <p className="text-sm text-stone-500">
+              These show up on the user-facing <span className="font-medium">Region cards</span>. Edit them here on the hub city.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Sleep */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-stone-900">Where you&apos;ll sleep</h3>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Summary (1 line)</label>
+                <input
+                  type="text"
+                  value={formData.regionCard?.sleep?.summary || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      regionCard: {
+                        ...prev.regionCard,
+                        sleep: {
+                          ...prev.regionCard?.sleep,
+                          summary: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  placeholder="e.g. Private apartments & coliving, walkable to cafés"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Details (expandable)</label>
+                <textarea
+                  value={formData.regionCard?.sleep?.details || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      regionCard: {
+                        ...prev.regionCard,
+                        sleep: {
+                          ...prev.regionCard?.sleep,
+                          details: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  placeholder="Give a realistic picture: typical neighborhoods, noise, AC, laundry, desk setup, etc."
+                  rows={4}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">Quick icons</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {DEFAULT_ACCOMMODATION.map((label) => (
+                    <label key={label} className="flex items-center gap-2 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(formData.regionCard?.sleep?.icons || []).includes(label)}
+                        onChange={() => toggleRegionCardSleepIcon(label)}
+                        className="w-4 h-4 text-sb-orange-500 rounded"
+                      />
+                      <span className="text-sm text-stone-700">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Work */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-stone-900">Where you&apos;ll work</h3>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Summary (1 line)</label>
+                <input
+                  type="text"
+                  value={formData.regionCard?.work?.summary || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      regionCard: {
+                        ...prev.regionCard,
+                        work: {
+                          ...prev.regionCard?.work,
+                          summary: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  placeholder="e.g. Strong coworking culture + reliable WiFi in cafés"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Details (expandable)</label>
+                <textarea
+                  value={formData.regionCard?.work?.details || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      regionCard: {
+                        ...prev.regionCard,
+                        work: {
+                          ...prev.regionCard?.work,
+                          details: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  placeholder="Share specifics: coworking vibe, noise, power cuts, call booths, cafe etiquette, etc."
+                  rows={4}
+                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">Quick icons</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {DEFAULT_WORK_VIBE.map((label) => (
+                    <label key={label} className="flex items-center gap-2 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(formData.regionCard?.work?.icons || []).includes(label)}
+                        onChange={() => toggleRegionCardWorkIcon(label)}
+                        className="w-4 h-4 text-sb-orange-500 rounded"
+                      />
+                      <span className="text-sm text-stone-700">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Weather */}
         <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
           <h2 className="text-lg font-bold text-stone-900">Weather</h2>
@@ -696,7 +1119,7 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
                   ...prev,
                   costs: { ...prev.costs!, accommodation: e.target.value },
                 }))}
-                placeholder="$500 - $800/month"
+                placeholder="R8,000 - R12,000/month"
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
               />
             </div>
@@ -709,7 +1132,7 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
                   ...prev,
                   costs: { ...prev.costs!, coworking: e.target.value },
                 }))}
-                placeholder="$100 - $150/month"
+                placeholder="R1,800 - R2,700/month"
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
               />
             </div>
@@ -722,7 +1145,7 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
                   ...prev,
                   costs: { ...prev.costs!, meals: e.target.value },
                 }))}
-                placeholder="$200 - $400/month"
+                placeholder="R3,600 - R7,200/month"
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
               />
             </div>
@@ -735,12 +1158,132 @@ export default function CityFormClient({ mode }: CityFormClientProps) {
                   ...prev,
                   costs: { ...prev.costs!, monthlyTotal: e.target.value },
                 }))}
-                placeholder="$800 - $1,200"
+                placeholder="R14,400 - R21,600"
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
               />
             </div>
           </div>
+
+          {/* Common Item Prices */}
+          <div className="mt-6 pt-6 border-t border-stone-200">
+            <h3 className="text-sm font-bold text-stone-900 mb-3">Common Item Prices (in local currency)</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">500ml Coke</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.coke500ml || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, coke500ml: e.target.value },
+                  }))}
+                  placeholder="R15"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">McDonald's Burger</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.mcdBurger || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, mcdBurger: e.target.value },
+                  }))}
+                  placeholder="R45"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Local Beer</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.localBeer || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, localBeer: e.target.value },
+                  }))}
+                  placeholder="R25"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Coffee (Cafe)</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.coffee || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, coffee: e.target.value },
+                  }))}
+                  placeholder="R30"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Street Food Meal</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.streetFood || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, streetFood: e.target.value },
+                  }))}
+                  placeholder="R50"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Transport Ticket</label>
+                <input
+                  type="text"
+                  value={formData.commonItemPrices?.transport || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    commonItemPrices: { ...prev.commonItemPrices!, transport: e.target.value },
+                  }))}
+                  placeholder="R10"
+                  className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Accommodation Types */}
+        <div className="bg-white rounded-xl border border-stone-200 p-6">
+          <AccommodationTypesManager
+            accommodationTypes={formData.accommodationTypes || {}}
+            onChange={(types) => setFormData(prev => ({ ...prev, accommodationTypes: types }))}
+          />
+        </div>
+
+        {/* Experience Gallery */}
+        <div className="bg-white rounded-xl border border-stone-200 p-6">
+          <ExperienceGalleryManager
+            gallery={formData.experienceGallery || []}
+            onChange={(gallery) => setFormData(prev => ({ ...prev, experienceGallery: gallery }))}
+            cityName={formData.city || ''}
+          />
+        </div>
+
+        {/* TripAdvisor Activities */}
+        {mode === 'edit' && cityId && (
+          <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">
+            <ActivityManager
+              cityId={cityId}
+              cityName={formData.city || ''}
+              countryName={formData.country || ''}
+              initialActivities={formData.tripAdvisorActivities || []}
+              onActivitiesUpdate={(activities) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  tripAdvisorActivities: activities,
+                }));
+              }}
+            />
+          </div>
+        )}
 
         {/* Admin Notes */}
         <div className="bg-white rounded-xl border border-stone-200 p-6 space-y-4">

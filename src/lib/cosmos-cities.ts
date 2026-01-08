@@ -1,5 +1,6 @@
 import { getContainer } from './cosmos';
 import { CityPreset, RegionKey } from './cityPresets';
+import { TripAdvisorActivity } from './tripadvisor';
 
 // Highlight place with image support
 export interface HighlightPlace {
@@ -45,10 +46,43 @@ export interface CityData {
   };
   nomadScore: number;
   internetSpeed: string;
+  description?: string; // City description from TripAdvisor or AI-generated
   // Admin-controlled fields
   availableActivities: string[]; // Which activities can be selected for this city
   availableAccommodation: string[]; // Which accommodation types can be selected
+  // "What to expect" content used on Region cards (via hub city)
+  regionCard?: CityPreset['regionCard'];
   adminNotes?: string;
+  // TripAdvisor activities
+  tripAdvisorActivities?: TripAdvisorActivity[]; // Activities fetched from TripAdvisor
+  // Accommodation types with details
+  accommodationTypes?: {
+    [key: string]: {
+      name: string;
+      description: string;
+      images: string[];
+      amenities: string[];
+    };
+  };
+  // Common item prices for cost comparison
+  commonItemPrices?: {
+    coke500ml: string;
+    mcdBurger: string;
+    localBeer: string;
+    coffee: string;
+    streetFood: string;
+    transport: string;
+  };
+  // Curated city experience gallery
+  experienceGallery?: {
+    url: string;
+    caption?: string;
+    source?: 'tripadvisor' | 'unsplash' | 'custom';
+  }[];
+  // New fields for detour support
+  isDetour?: boolean; // Flag to mark as detour
+  nearbyCity?: string; // Main city this detour is near (e.g., "Bali (Canggu)" for Ubud)
+  suggestedDuration?: number; // Suggested weeks (1-2 for detours, 4 for main cities)
   createdAt: string;
   updatedAt: string;
 }
@@ -287,6 +321,161 @@ export async function getAllAccommodationTypes(): Promise<AccommodationData[]> {
   }
 }
 
+// TripAdvisor Activity CRUD Operations for Cities
+export async function updateCityActivities(
+  cityId: string,
+  activities: TripAdvisorActivity[]
+): Promise<CityData> {
+  return updateCity(cityId, { tripAdvisorActivities: activities });
+}
+
+export async function addCityActivity(
+  cityId: string,
+  activity: TripAdvisorActivity
+): Promise<CityData> {
+  const city = await getCity(cityId);
+  if (!city) {
+    throw new Error(`City ${cityId} not found`);
+  }
+
+  const existingActivities = city.tripAdvisorActivities || [];
+  // Check if activity already exists (by locationId)
+  const existingIndex = existingActivities.findIndex(
+    (a) => a.locationId === activity.locationId
+  );
+
+  let updatedActivities: TripAdvisorActivity[];
+  if (existingIndex >= 0) {
+    // Update existing activity - merge to preserve existing fields like isDefault, isCurated
+    updatedActivities = [...existingActivities];
+    updatedActivities[existingIndex] = {
+      ...existingActivities[existingIndex],
+      ...activity,
+      // Preserve important flags that shouldn't be overwritten unless explicitly provided
+      isDefault: activity.isDefault !== undefined ? activity.isDefault : existingActivities[existingIndex].isDefault,
+      isCurated: activity.isCurated !== undefined ? activity.isCurated : existingActivities[existingIndex].isCurated,
+    };
+  } else {
+    // Add new activity
+    updatedActivities = [...existingActivities, activity];
+  }
+
+  return updateCity(cityId, { tripAdvisorActivities: updatedActivities });
+}
+
+export async function removeCityActivity(
+  cityId: string,
+  locationId: string
+): Promise<CityData> {
+  const city = await getCity(cityId);
+  if (!city) {
+    throw new Error(`City ${cityId} not found`);
+  }
+
+  const existingActivities = city.tripAdvisorActivities || [];
+  const updatedActivities = existingActivities.filter(
+    (a) => a.locationId !== locationId
+  );
+
+  return updateCity(cityId, { tripAdvisorActivities: updatedActivities });
+}
+
+export async function toggleActivityDefault(
+  cityId: string,
+  locationId: string,
+  isDefault: boolean
+): Promise<CityData> {
+  const city = await getCity(cityId);
+  if (!city) {
+    throw new Error(`City ${cityId} not found`);
+  }
+
+  const existingActivities = city.tripAdvisorActivities || [];
+  
+  // Enforce 2-default limit: if trying to set a 3rd activity as default, unmark the oldest default
+  if (isDefault) {
+    const currentDefaults = existingActivities.filter(a => a.isDefault);
+    if (currentDefaults.length >= 2) {
+      // Find the activity we're trying to set as default
+      const targetActivity = existingActivities.find(a => a.locationId === locationId);
+      // If it's not already a default, we need to unmark one of the existing defaults
+      if (!targetActivity?.isDefault) {
+        // Unmark the oldest default (by lastSynced date, or first in array if no date)
+        const sortedDefaults = [...currentDefaults].sort((a, b) => {
+          const aDate = a.lastSynced ? new Date(a.lastSynced).getTime() : 0;
+          const bDate = b.lastSynced ? new Date(b.lastSynced).getTime() : 0;
+          return aDate - bDate; // Oldest first
+        });
+        const oldestDefault = sortedDefaults[0];
+        
+        // Unmark the oldest default
+        const updatedActivities = existingActivities.map((activity) => {
+          if (activity.locationId === oldestDefault.locationId) {
+            return { ...activity, isDefault: false };
+          }
+          if (activity.locationId === locationId) {
+            return { ...activity, isDefault: true };
+          }
+          return activity;
+        });
+        
+        return updateCity(cityId, { tripAdvisorActivities: updatedActivities });
+      }
+    }
+  }
+  
+  // Normal toggle if under limit or unmarking
+  const updatedActivities = existingActivities.map((activity) =>
+    activity.locationId === locationId
+      ? { ...activity, isDefault }
+      : activity
+  );
+
+  return updateCity(cityId, { tripAdvisorActivities: updatedActivities });
+}
+
+export async function getCityDefaultActivities(
+  cityId: string
+): Promise<TripAdvisorActivity[]> {
+  const city = await getCity(cityId);
+  if (!city) {
+    return [];
+  }
+
+  return (city.tripAdvisorActivities || []).filter((a) => a.isDefault);
+}
+
+export async function toggleActivityCurated(
+  cityId: string,
+  locationId: string,
+  isCurated: boolean
+): Promise<CityData> {
+  const city = await getCity(cityId);
+  if (!city) {
+    throw new Error(`City ${cityId} not found`);
+  }
+
+  const existingActivities = city.tripAdvisorActivities || [];
+  const updatedActivities = existingActivities.map((activity) =>
+    activity.locationId === locationId
+      ? { ...activity, isCurated }
+      : activity
+  );
+
+  return updateCity(cityId, { tripAdvisorActivities: updatedActivities });
+}
+
+export async function getCityCuratedActivities(
+  cityId: string
+): Promise<TripAdvisorActivity[]> {
+  const city = await getCity(cityId);
+  if (!city) {
+    return [];
+  }
+
+  return (city.tripAdvisorActivities || []).filter((a) => a.isCurated);
+}
+
 // Helper to convert CityData to CityPreset format (for compatibility)
 /**
  * Check if a URL is a blob storage URL
@@ -333,6 +522,7 @@ export function cityDataToPreset(city: CityData): CityPreset {
     tags: city.tags,
     imageUrl, // Primary image (first in array, prioritized to be blob URL if available)
     imageUrls: finalImageUrls.length > 1 ? finalImageUrls : undefined, // Only include if multiple images
+    regionCard: city.regionCard,
     highlights: {
       // Convert HighlightPlace objects to strings for CityPreset compatibility
       // Users will see admin defaults but can override in their builder
@@ -347,6 +537,10 @@ export function cityDataToPreset(city: CityData): CityPreset {
     costs: city.costs,
     nomadScore: city.nomadScore,
     internetSpeed: city.internetSpeed,
+    // Include detour fields
+    isDetour: city.isDetour || false,
+    nearbyCity: city.nearbyCity,
+    suggestedDuration: city.suggestedDuration,
   };
 }
 

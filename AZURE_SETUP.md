@@ -147,3 +147,6 @@ az group delete --name southbound-rg --yes
 
 
 
+
+
+

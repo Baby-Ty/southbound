@@ -221,11 +221,12 @@ const Layout = ({ children }: LayoutProps) => {
 
   const isRouteBuilder = pathname?.startsWith('/route-builder');
   const isHub = pathname?.startsWith('/hub');
+  const isDiscover = pathname?.startsWith('/discover');
 
   return (
     <div className="relative min-h-screen flex flex-col text-foreground">
-      {!isRouteBuilder && !isHub && <Navbar />}
-      {!isRouteBuilder && !isHub && <ScrollProgress />}
+      {!isRouteBuilder && !isHub && !isDiscover && <Navbar />}
+      {!isRouteBuilder && !isHub && !isDiscover && <ScrollProgress />}
       <AnimatePresence mode="wait">
         <motion.div
           key={`gradient-${activeConfig.key}`}
@@ -272,8 +273,8 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="relative z-10 flex-grow">
         {children}
       </main>
-      {!isHub && <Footer />}
-      {!isHub && <FloatingWhatsAppButton />}
+      {!isHub && !isDiscover && <Footer />}
+      {!isHub && !isDiscover && <FloatingWhatsAppButton />}
     </div>
   );
 };

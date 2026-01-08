@@ -5,6 +5,7 @@
 /**
  * Get the base URL for API calls
  * Uses NEXT_PUBLIC_FUNCTIONS_URL environment variable if set, otherwise detects runtime
+ * For local development, prefers local API routes when on localhost
  */
 export function getApiUrl(): string {
   // Check for environment variable first (highest priority)
@@ -52,26 +53,59 @@ export function getApiUrl(): string {
 
 /**
  * Build a full API endpoint URL
- * Uses Azure Functions when NEXT_PUBLIC_FUNCTIONS_URL is set, otherwise falls back to local /api routes
+ * Routes intelligently:
+ * - TripAdvisor and activities endpoints -> Local Next.js API routes (when on localhost)
+ * - Cities endpoints (base CRUD) -> Azure Functions
+ * - Other endpoints -> Azure Functions (or local if configured)
  */
 export function apiUrl(path: string): string {
   // Remove leading slash from path if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
-  // Get the base API URL (checks NEXT_PUBLIC_FUNCTIONS_URL first)
+  // Routes that should use local Next.js API (TripAdvisor, activities, attractions, city descriptions, and countries)
+  const isTripAdvisorRoute = cleanPath.startsWith('tripadvisor/');
+  const isCityActivitiesRoute = cleanPath.includes('/activities');
+  const isAttractionsRoute = cleanPath.startsWith('attractions/');
+  const isCityDescriptionRoute = cleanPath === 'cities/description';
+  const isCountriesRoute = cleanPath.startsWith('countries');
+  
+  // Check if we're on localhost (for local development)
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  
+  // Check if static export is disabled (required for API routes)
+  const staticExportDisabled = process.env.DISABLE_STATIC_EXPORT === 'true';
+  
+  // For TripAdvisor, activities, attractions, and city description routes, use local API when on localhost
+  // (These routes exist locally when DISABLE_STATIC_EXPORT=true)
+  if ((isTripAdvisorRoute || isCityActivitiesRoute || isAttractionsRoute || isCityDescriptionRoute) && isLocalhost) {
+    const finalUrl = `/api/${cleanPath}`;
+    console.log('[apiUrl] Using local Next.js API route (Localhost):', finalUrl);
+    return finalUrl;
+  }
+  
+  // Countries routes always use local Next.js API (Azure Function may not be deployed yet)
+  if (isCountriesRoute) {
+    const finalUrl = `/api/${cleanPath}`;
+    console.log('[apiUrl] Using local Next.js API route for countries:', finalUrl);
+    return finalUrl;
+  }
+  
+  // For all other routes (including base cities endpoints), use Azure Functions
   const baseUrl = getApiUrl();
   
   // If we have an external API URL (not starting with /), use it
   if (!baseUrl.startsWith('/')) {
     // External URL (Azure Functions)
     const finalUrl = `${baseUrl}/api/${cleanPath}`;
-    console.log('[apiUrl] Using external API URL:', finalUrl);
+    console.log('[apiUrl] Using external API URL (Azure Functions):', finalUrl);
     return finalUrl;
   }
   
-  // Otherwise use local /api routes (for development or when no external URL is set)
+  // Fallback: if no Functions URL is configured, try local routes
+  // (This should only happen in development without Azure Functions configured)
   const finalUrl = `/api/${cleanPath}`;
-  console.log('[apiUrl] Using local Next.js API route:', finalUrl);
+  console.log('[apiUrl] Using local Next.js API route (fallback):', finalUrl);
   return finalUrl;
 }
 

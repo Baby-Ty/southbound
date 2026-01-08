@@ -2,6 +2,7 @@ import { CosmosClient, Database, Container } from '@azure/cosmos';
 
 // CosmosDB connection configuration
 // Use function to get env vars to avoid issues with Next.js env loading
+// Read dynamically to support dotenv-loaded variables in scripts
 function getEnvVar(name: string, defaultValue: string = ''): string {
   if (typeof process !== 'undefined' && process.env) {
     return process.env[name] || defaultValue;
@@ -9,23 +10,36 @@ function getEnvVar(name: string, defaultValue: string = ''): string {
   return defaultValue;
 }
 
-const endpoint = getEnvVar('COSMOSDB_ENDPOINT', '');
-const key = getEnvVar('COSMOSDB_KEY', '');
-const databaseId = getEnvVar('COSMOSDB_DATABASE_ID', 'southbound');
+function getEndpoint(): string {
+  return getEnvVar('COSMOSDB_ENDPOINT', '');
+}
+
+function getKey(): string {
+  return getEnvVar('COSMOSDB_KEY', '');
+}
+
+function getDatabaseId(): string {
+  return getEnvVar('COSMOSDB_DATABASE_ID', 'southbound');
+}
 
 // Initialize CosmosDB client
 let client: CosmosClient | null = null;
 let database: Database | null = null;
 
 function getClient(): CosmosClient {
+  const endpoint = getEndpoint();
+  const key = getKey();
+  
+  if (!endpoint || !key) {
+    const error = new Error('CosmosDB credentials not configured. Set COSMOSDB_ENDPOINT and COSMOSDB_KEY environment variables.');
+    console.error('CosmosDB Error:', error.message);
+    console.error('Endpoint:', endpoint ? 'SET' : 'NOT SET');
+    console.error('Key:', key ? 'SET' : 'NOT SET');
+    throw error;
+  }
+  
+  // Recreate client if credentials changed (for scripts that load env vars after module load)
   if (!client) {
-    if (!endpoint || !key) {
-      const error = new Error('CosmosDB credentials not configured. Set COSMOSDB_ENDPOINT and COSMOSDB_KEY environment variables.');
-      console.error('CosmosDB Error:', error.message);
-      console.error('Endpoint:', endpoint ? 'SET' : 'NOT SET');
-      console.error('Key:', key ? 'SET' : 'NOT SET');
-      throw error;
-    }
     try {
       client = new CosmosClient({ endpoint, key });
     } catch (err: any) {
@@ -41,9 +55,11 @@ function getClient(): CosmosClient {
 }
 
 async function getDatabase(): Promise<Database> {
-  if (!database) {
+  // Reset database cache if client was recreated (for scripts)
+  if (!database || !client) {
     try {
       const cosmosClient = getClient();
+      const databaseId = getDatabaseId();
       const { database: db } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
       database = db;
     } catch (error: any) {
@@ -61,6 +77,8 @@ export async function getContainer(containerId: string): Promise<Container> {
     // Define partition keys for each container
     const partitionKeys: Record<string, { paths: string[] }> = {
       'cities': { paths: ['/region'] },
+      'countries': { paths: ['/region'] },
+      'defaultTrips': { paths: ['/region'] },
       'savedRoutes': { paths: ['/id'] },
       'activities': { paths: ['/id'] },
       'accommodationTypes': { paths: ['/id'] },

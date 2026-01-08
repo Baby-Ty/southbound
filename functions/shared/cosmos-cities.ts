@@ -14,6 +14,19 @@ export interface CityData {
   highlightImages?: string[];
   activityImages?: string[];
   accommodationImages?: string[];
+  // "What to expect" content used on Region cards (via hub city)
+  regionCard?: {
+    sleep?: {
+      summary?: string;
+      details?: string;
+      icons?: string[];
+    };
+    work?: {
+      summary?: string;
+      details?: string;
+      icons?: string[];
+    };
+  };
   highlights: {
     places: string[];
     accommodation: string;
@@ -36,6 +49,10 @@ export interface CityData {
   availableActivities: string[];
   availableAccommodation: string[];
   adminNotes?: string;
+  // New fields for detour support
+  isDetour?: boolean; // Flag to mark as detour
+  nearbyCity?: string; // Main city this detour is near (e.g., "Bali (Canggu)" for Ubud)
+  suggestedDuration?: number; // Suggested weeks (1-2 for detours, 4 for main cities)
   createdAt: string;
   updatedAt: string;
 }

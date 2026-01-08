@@ -69,6 +69,23 @@ The application includes a comprehensive navigation system with the following se
    
    # Optional: Only needed for write operations
    SANITY_API_TOKEN=your-api-token-here
+   
+   # For local development with API routes (TripAdvisor integration)
+   # Set this to 'true' to disable static export and enable Next.js API routes
+   DISABLE_STATIC_EXPORT=true
+   
+   # TripAdvisor API key (required for activities feature)
+   TRIPADVISOR_API_KEY=your-tripadvisor-api-key-here
+   
+   # Cosmos DB configuration (required for cities and activities)
+   COSMOS_ENDPOINT=your-cosmos-endpoint
+   COSMOS_KEY=your-cosmos-key
+   COSMOS_DATABASE_ID=your-database-id
+   COSMOS_CONTAINER_ID=your-container-id
+   
+   # Azure Functions URL (for production)
+   # Leave unset for local development, or set to '/api' to use local routes
+   # NEXT_PUBLIC_FUNCTIONS_URL=https://your-functions.azurewebsites.net
    ```
    
    d. **Update the sanity.config.ts file** with your project ID:

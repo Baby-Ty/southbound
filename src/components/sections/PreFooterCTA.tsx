@@ -41,7 +41,7 @@ export default function PreFooterCTA() {
             whileTap={{ scale: 0.95 }}
           >
             <Link 
-              href="/route-builder"
+              href="/discover"
               className="group inline-flex items-center justify-center gap-3 px-12 py-6 bg-white text-[#E86B32] font-bold rounded-full text-xl transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_60px_rgba(255,255,255,0.3)] hover:bg-stone-50"
             >
               Build your itinerary now

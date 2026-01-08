@@ -67,14 +67,11 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
     <div className="space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <motion.div 
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        <div 
           className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-sb-orange-400 to-sb-orange-600 rounded-full shadow-xl"
         >
           <span className="text-xl">✨</span>
-        </motion.div>
+        </div>
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-sb-navy-700 tracking-tight mb-1">
             Your Perfect Route is Ready!
@@ -86,10 +83,7 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
       </div>
 
       {/* Summary Card - Ticket Style */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+      <div 
         className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 relative"
       >
         {/* Top Deco Bar */}
@@ -209,14 +203,14 @@ const SummaryStep = ({ data, onUpdate, onStartOver, onPrevious }: SummaryStepPro
 
           <motion.a
             href={`/trip-options?region=${encodeURIComponent(data.region)}&lifestyle=${encodeURIComponent((data.lifestyle||[]).join(','))}&work=${encodeURIComponent((data.workSetup||[]).join(','))}&style=${encodeURIComponent(data.travelStyle)}&duration=${encodeURIComponent(data.tripLength || '3')}&v=2`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             className="w-full sm:w-auto px-8 py-3 bg-sb-orange-500 text-white rounded-xl font-bold text-base shadow-lg hover:bg-sb-orange-600 hover:shadow-xl flex items-center justify-center gap-2 transition-all"
           >
             🚀 Build My Trip
           </motion.a>
         </div>
-      </motion.div>
+      </div>
 
       {/* Back Button */}
       <div className="flex justify-center pt-2">

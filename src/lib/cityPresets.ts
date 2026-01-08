@@ -6,6 +6,22 @@ export type CityPreset = {
   tags: string[];
   imageUrl: string; // Primary image (first from imageUrls array)
   imageUrls?: string[]; // Array of images for rotation
+  /**
+   * Extra "what to expect" content used on region cards (pulled from the region's hub city).
+   * Admin-editable in Hub -> Destinations -> Cities -> Edit.
+   */
+  regionCard?: {
+    sleep?: {
+      summary?: string;
+      details?: string;
+      icons?: string[]; // free-form labels rendered as icon chips
+    };
+    work?: {
+      summary?: string;
+      details?: string;
+      icons?: string[]; // free-form labels rendered as icon chips
+    };
+  };
   highlights: {
     places: string[];
     accommodation: string;
@@ -25,6 +41,10 @@ export type CityPreset = {
   };
   nomadScore: number;
   internetSpeed: string;
+  // Detour fields
+  isDetour?: boolean;
+  nearbyCity?: string;
+  suggestedDuration?: number;
 };
 
 export type RegionKey = 'europe' | 'latin-america' | 'southeast-asia';

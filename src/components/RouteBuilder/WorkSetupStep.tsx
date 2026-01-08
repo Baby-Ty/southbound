@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-type RouteBuilderData = { region: string; lifestyle: string[]; workSetup: string[]; travelStyle: string; };
+type RouteBuilderData = { region: string; template?: string; workSetup: string[]; travelStyle: string; };
 
 interface WorkSetupStepProps {
   data: RouteBuilderData;
@@ -30,105 +30,89 @@ const WorkSetupStep = ({ data, onUpdate, onNext, onPrevious }: WorkSetupStepProp
     onUpdate({ workSetup: updatedWorkSetup });
   };
 
-  const handleNext = () => {
-    if (data.workSetup && data.workSetup.length > 0) {
-      onNext();
-    }
-  };
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
+  const hasSelection = data.workSetup && data.workSetup.length > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-12 max-w-5xl mx-auto flex flex-col items-center pb-24">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-sb-navy-700">
-          What does your ideal work setup look like?
-        </h2>
-        <p className="text-base text-sb-navy-500">
-          Helps us match you with the right coworking and accommodation options.
-        </p>
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-sb-navy-900 tracking-tight">
+            Work hard, play hard.
+          </h2>
+          <p className="text-lg text-sb-navy-500 mt-2">
+            What do you need to be productive on the road?
+          </p>
+        </motion.div>
       </div>
 
-      {/* Work Setup Options */}
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
-      >
+      {/* Work Setup Options Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
         {workSetupOptions.map((option) => {
           const isSelected = data.workSetup?.includes(option.id);
           return (
             <motion.button
               key={option.id}
-              variants={item}
               onClick={() => handleWorkSetupToggle(option.id)}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className={`relative p-3 rounded-2xl border-2 text-left transition-all duration-300 h-full flex flex-col items-center justify-center text-center space-y-2 min-h-[110px] ${
+              whileHover={{ scale: 1.03, y: -4 }}
+              whileTap={{ scale: 0.95 }}
+              className={`relative aspect-[1.2/1] p-6 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 transition-all duration-300 group ${
                 isSelected
-                  ? 'border-sb-orange-500 bg-sb-orange-50 shadow-md'
-                  : 'border-gray-100 bg-white hover:border-sb-orange-200 hover:shadow-lg'
+                  ? 'bg-sb-teal-500 text-white shadow-xl shadow-sb-teal-500/20 ring-4 ring-sb-teal-500/20'
+                  : 'bg-white text-sb-navy-700 hover:shadow-xl hover:shadow-sb-navy-900/5 hover:bg-gray-50'
               }`}
             >
-              <span className="text-3xl mb-1">{option.icon}</span>
-              <span className={`font-semibold text-sm leading-tight ${isSelected ? 'text-sb-orange-700' : 'text-sb-navy-700'}`}>
+              <span className="text-4xl sm:text-5xl filter drop-shadow-sm transition-transform duration-300 group-hover:scale-110">
+                {option.icon}
+              </span>
+              <span className={`font-bold text-sm sm:text-base leading-tight ${isSelected ? 'text-white' : 'text-sb-navy-900'}`}>
                 {option.name}
               </span>
               
               {isSelected && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-3 right-3 text-sb-orange-500"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <div className="absolute top-4 right-4 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                </motion.div>
+                </div>
               )}
             </motion.button>
           );
         })}
-      </motion.div>
+      </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between pt-4 border-t border-gray-100">
-        <button
-          onClick={onPrevious}
-          className="flex items-center space-x-2 px-6 py-3 rounded-full text-gray-500 hover:bg-gray-100 hover:text-sb-navy-700 transition-all duration-200 font-medium"
-        >
-          <span>←</span>
-          <span>Back</span>
-        </button>
+      {/* Fixed Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-100 p-4 z-50">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+            <button
+                onClick={onPrevious}
+                className="flex items-center gap-2 px-6 py-3 rounded-full text-sb-navy-600 hover:bg-gray-100 transition-colors font-bold text-sm"
+            >
+                <span className="text-lg">←</span>
+                <span>Back</span>
+            </button>
 
-        <motion.button
-          onClick={handleNext}
-          disabled={!data.workSetup || data.workSetup.length === 0}
-          whileHover={{ scale: data.workSetup && data.workSetup.length > 0 ? 1.05 : 1 }}
-          whileTap={{ scale: 0.95 }}
-          className={`px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-200 ${
-            data.workSetup && data.workSetup.length > 0
-              ? 'bg-sb-orange-500 text-white hover:bg-sb-orange-600 hover:shadow-xl'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-          }`}
-        >
-          Next: Travel Style
-        </motion.button>
+            <motion.button
+                onClick={hasSelection ? onNext : undefined}
+                disabled={!hasSelection}
+                whileHover={{ scale: hasSelection ? 1.02 : 1 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-200 flex items-center gap-2 text-base ${
+                hasSelection
+                    ? 'bg-sb-navy-900 text-white hover:bg-sb-navy-800'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                }`}
+            >
+                Next: Travel Style
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </motion.button>
+        </div>
       </div>
     </div>
   );

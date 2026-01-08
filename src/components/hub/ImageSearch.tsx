@@ -20,21 +20,111 @@ interface UnsplashImage {
   };
 }
 
+interface TripAdvisorImage {
+  id: string;
+  url: string;
+  caption: string;
+  locationId?: string;
+}
+
 interface ImageSearchProps {
   currentImage?: string;
   onSelect: (imageUrl: string) => void;
   cityName?: string;
+  countryName?: string;
 }
 
-export default function ImageSearch({ currentImage, onSelect, cityName }: ImageSearchProps) {
+type ImageSource = 'unsplash' | 'tripadvisor';
+
+export default function ImageSearch({ currentImage, onSelect, cityName, countryName }: ImageSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState(cityName || '');
+  const [imageSource, setImageSource] = useState<ImageSource>('unsplash');
   const [images, setImages] = useState<UnsplashImage[]>([]);
+  const [tripadvisorImages, setTripadvisorImages] = useState<TripAdvisorImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState('');
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set());
+
+  const searchTripAdvisorImages = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setTripadvisorImages([]);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setImageLoadErrors(new Set());
+    setTripadvisorImages([]);
+
+    try {
+      // Search for city location first
+      const searchResponse = await fetch('/api/tripadvisor/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cityName: searchQuery,
+          countryName: countryName,
+          limit: 5, // Get top 5 locations
+        }),
+      });
+
+      if (!searchResponse.ok) {
+        throw new Error('Failed to search TripAdvisor');
+      }
+
+      const searchData = await searchResponse.json();
+      const locations = searchData.results || searchData.activities || [];
+
+      if (locations.length === 0) {
+        setError(`No locations found for "${searchQuery}"`);
+        return;
+      }
+
+      // Get photos from the first location (usually the city itself)
+      const cityLocation = locations[0];
+      if (!cityLocation.locationId) {
+        setError('No location ID found');
+        return;
+      }
+
+      // Fetch photos for the city location
+      const photosResponse = await fetch(`/api/tripadvisor/location/${cityLocation.locationId}/photos`, {
+        method: 'GET',
+      });
+
+      if (!photosResponse.ok) {
+        throw new Error('Failed to fetch TripAdvisor photos');
+      }
+
+      const photosData = await photosResponse.json();
+      const photos = photosData.photos || [];
+
+      if (photos.length === 0) {
+        setError('No photos found for this location');
+        return;
+      }
+
+      // Convert to TripAdvisorImage format
+      const tripadvisorImages: TripAdvisorImage[] = photos.slice(0, 20).map((photo: any, index: number) => ({
+        id: photo.id || `ta-${index}`,
+        url: photo.images?.large?.url || photo.images?.medium?.url || photo.images?.original?.url || '',
+        caption: photo.caption || '',
+        locationId: cityLocation.locationId,
+      }));
+
+      setTripadvisorImages(tripadvisorImages.filter(img => img.url));
+    } catch (err: any) {
+      console.error('TripAdvisor image search error:', err);
+      setError(err.message || 'Failed to search TripAdvisor images');
+      setTripadvisorImages([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [countryName]);
 
   const searchImages = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -50,19 +140,6 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
     setImages([]);
     
     try {
-      // Use Unsplash API
-      const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
-      
-      if (!accessKey) {
-        console.warn('Unsplash API key not configured');
-        setError('Unsplash API key not configured. Using default images.');
-        // Fallback to predefined city images
-        const defaultImages = getDefaultCityImages(searchQuery);
-        setImages(defaultImages);
-        setLoading(false);
-        return;
-      }
-      
       // Enhance search query for better results
       let enhancedQuery = searchQuery.toLowerCase().trim();
       
@@ -96,18 +173,20 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
       // Use enhanced query if available, otherwise use original
       enhancedQuery = cityEnhancements[enhancedQuery] || enhancedQuery;
       
-      const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(enhancedQuery)}&per_page=20&orientation=landscape`,
-        {
-          headers: {
-            Authorization: `Client-ID ${accessKey}`,
-          },
-        }
-      );
+      // Use server-side API route (same as HighlightManager)
+      const { apiUrl } = await import('@/lib/api');
+      const response = await fetch(apiUrl(`images-search?query=${encodeURIComponent(enhancedQuery)}`));
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Unsplash API error:', response.status, errorText);
+        let errorMessage = `Failed to fetch images: ${response.status}`;
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
         
         // Check for rate limiting
         if (response.status === 403 || response.status === 429) {
@@ -119,19 +198,36 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
           throw new Error('Invalid Unsplash API key. Please check your configuration.');
         }
         
-        throw new Error(`Failed to fetch images: ${response.status} ${response.statusText}`);
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
       
       // Check if we got results
-      if (!data.results || data.results.length === 0) {
+      if (!data || data.length === 0) {
         setError(`No images found for "${searchQuery}". Try a different search term.`);
         setImages([]);
         return;
       }
       
-      setImages(data.results);
+      // Transform API response to UnsplashImage format
+      const unsplashImages: UnsplashImage[] = data.map((img: any) => ({
+        id: img.id,
+        urls: {
+          small: img.thumb || img.url,
+          regular: img.url,
+          raw: img.url,
+        },
+        alt_description: img.alt || '',
+        user: {
+          name: img.user || 'Unsplash',
+          links: {
+            html: 'https://unsplash.com',
+          },
+        },
+      }));
+      
+      setImages(unsplashImages);
       setError(null); // Clear any previous errors
     } catch (err: any) {
       console.error('Image search error:', err);
@@ -154,13 +250,20 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
     }
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!query.trim()) {
       setError('Please enter a search term');
       return;
     }
-    searchImages(query.trim());
+    if (imageSource === 'tripadvisor') {
+      searchTripAdvisorImages(query.trim());
+    } else {
+      searchImages(query.trim());
+    }
   };
   
   // Handle query changes - clear error when user types
@@ -209,6 +312,44 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
       setError(error.message || 'Failed to upload to blob storage. Using original URL.');
       // Still allow selection with original URL as fallback
       onSelect(imageUrl);
+      setIsOpen(false);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTripAdvisorSelect = async (image: TripAdvisorImage) => {
+    setUploading(true);
+    setError(null);
+    
+    // Automatically upload to blob storage
+    try {
+      const { apiUrl } = await import('@/lib/api');
+      const response = await fetch(apiUrl('upload-image'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: image.url,
+          category: 'cities',
+          filename: `city-ta-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.jpg`,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Use blob URL instead of original URL
+        onSelect(data.blobUrl);
+        setIsOpen(false);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to upload image');
+      }
+    } catch (error: any) {
+      // Fallback to original URL if upload fails
+      console.error('Error uploading to blob storage:', error);
+      setError(error.message || 'Failed to upload to blob storage. Using original URL.');
+      // Still allow selection with original URL as fallback
+      onSelect(image.url);
       setIsOpen(false);
     } finally {
       setUploading(false);
@@ -284,6 +425,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
+                type="button"
                 onClick={() => setIsOpen(true)}
                 className="px-4 py-2 bg-white rounded-lg font-medium text-stone-900 hover:bg-stone-100 transition flex items-center gap-2"
               >
@@ -294,6 +436,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
           </>
         ) : (
           <button
+            type="button"
             onClick={() => {
               setQuery(cityName || '');
               setIsOpen(true);
@@ -330,6 +473,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-stone-900">Choose City Image</h3>
                   <button
+                    type="button"
                     onClick={() => setIsOpen(false)}
                     className="p-2 rounded-full hover:bg-stone-100 transition"
                   >
@@ -337,8 +481,47 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                   </button>
                 </div>
 
+                {/* Source Selection */}
+                <div className="flex gap-2 mb-4 border-b border-stone-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageSource('unsplash');
+                      setImages([]);
+                      setTripadvisorImages([]);
+                      setError(null);
+                    }}
+                    className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                      imageSource === 'unsplash'
+                        ? 'border-sb-orange-500 text-sb-orange-600'
+                        : 'border-transparent text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    Unsplash
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageSource('tripadvisor');
+                      setImages([]);
+                      setTripadvisorImages([]);
+                      setError(null);
+                      if (query.trim()) {
+                        searchTripAdvisorImages(query.trim());
+                      }
+                    }}
+                    className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                      imageSource === 'tripadvisor'
+                        ? 'border-sb-orange-500 text-sb-orange-600'
+                        : 'border-transparent text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    TripAdvisor
+                  </button>
+                </div>
+
                 {/* Search Form */}
-                <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                     <input
@@ -348,7 +531,8 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          handleSearch(e);
+                          e.stopPropagation();
+                          handleSearch();
                         }
                       }}
                       placeholder="Search for city photos..."
@@ -356,13 +540,18 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                     />
                   </div>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSearch();
+                    }}
                     disabled={loading || uploading}
                     className="px-6 py-3 bg-sb-orange-500 text-white rounded-lg font-medium hover:bg-sb-orange-600 transition disabled:opacity-50"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}
                   </button>
-                </form>
+                </div>
 
                 {/* Upload Status */}
                 {uploading && (
@@ -378,6 +567,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                     <span>{error}</span>
                     {query.trim() && !loading && (
                       <button
+                        type="button"
                         onClick={() => {
                           setError(null);
                           searchImages(query.trim());
@@ -442,11 +632,12 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                   <div className="text-center py-12 text-stone-500">
                     <p>{error}</p>
                   </div>
-                ) : images.length > 0 ? (
+                ) : imageSource === 'unsplash' && images.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {images.map((image) => (
                       <button
                         key={image.id}
+                        type="button"
                         onClick={() => handleSelect(image)}
                         className="group relative aspect-video rounded-lg overflow-hidden bg-stone-100 hover:ring-2 hover:ring-sb-orange-500 transition focus:outline-none focus:ring-2 focus:ring-sb-orange-500"
                       >
@@ -472,6 +663,32 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
                       </button>
                     ))}
                   </div>
+                ) : imageSource === 'tripadvisor' && tripadvisorImages.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {tripadvisorImages.map((image) => (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => handleTripAdvisorSelect(image)}
+                        className="group relative aspect-video rounded-lg overflow-hidden bg-stone-100 hover:ring-2 hover:ring-sb-orange-500 transition focus:outline-none focus:ring-2 focus:ring-sb-orange-500"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={image.url}
+                          alt={image.caption || 'City photo'}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          loading="lazy"
+                        />
+                        {image.caption && (
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition">
+                            <div className="absolute bottom-2 left-2 right-2 text-white text-xs">
+                              <span className="font-medium">{image.caption}</span>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="text-center py-12 text-stone-500">
                     <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -483,15 +700,31 @@ export default function ImageSearch({ currentImage, onSelect, cityName }: ImageS
 
               {/* Footer */}
               <div className="p-4 border-t border-stone-200 bg-stone-50 text-center text-xs text-stone-500">
-                Photos by{' '}
-                <a
-                  href="https://unsplash.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-stone-700"
-                >
-                  Unsplash
-                </a>
+                {imageSource === 'unsplash' ? (
+                  <>
+                    Photos by{' '}
+                    <a
+                      href="https://unsplash.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-stone-700"
+                    >
+                      Unsplash
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    Photos from{' '}
+                    <a
+                      href="https://tripadvisor.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-stone-700"
+                    >
+                      TripAdvisor
+                    </a>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>

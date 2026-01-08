@@ -143,7 +143,7 @@ const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
               </div>
 
               <Link 
-                href="/route-builder"
+                href="/discover"
                 className="flex items-center justify-center gap-2 w-full bg-[#E86B32] hover:bg-[#d55a24] text-white font-bold py-3.5 rounded-xl transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -180,7 +180,7 @@ const DestinationsGrid = () => {
             </p>
           </div>
           <Link 
-            href="/route-builder" 
+            href="/discover" 
             className="hidden md:inline-flex items-center font-semibold text-[#E86B32] hover:text-[#d55a24] transition-colors group text-lg"
           >
             Explore all destinations 
@@ -196,7 +196,7 @@ const DestinationsGrid = () => {
 
         <div className="mt-12 text-center md:hidden">
           <Link 
-            href="/route-builder" 
+            href="/discover" 
             className="inline-flex items-center font-semibold text-[#E86B32] text-lg"
           >
             Explore all destinations <ArrowRight className="ml-2" size={20} />
