@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/lib/sanity';
 import { tripAdvisorClient } from '@/lib/tripadvisor';
 
-// Required for static export - tells Next.js this route is dynamic and should be skipped
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 /**
  * GET /api/attractions/[locationId]

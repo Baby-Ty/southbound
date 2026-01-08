@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateActivityDescription } from '@/lib/aiDescriptionGenerator';
 
-// Required for static export - tells Next.js this route is dynamic and should be skipped
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 /**
  * POST /api/attractions/generate-description

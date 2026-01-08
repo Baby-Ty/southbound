@@ -5,10 +5,8 @@ import {
 } from '@/lib/cosmos-cities';
 import { tripAdvisorClient } from '@/lib/tripadvisor';
 
-// Only export dynamic if static export is disabled
-// This allows API routes to work in development when DISABLE_STATIC_EXPORT=true
-// Next.js route segment config must be statically analyzable (no env conditionals).
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 /**
  * POST /api/cities/[id]/activities/pull

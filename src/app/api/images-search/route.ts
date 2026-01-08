@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiUrl } from '@/lib/api';
 
-// Next.js route segment config must be statically analyzable (no env conditionals).
-// These API routes are always dynamic at runtime.
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 /**
  * GET /api/images-search?query=...

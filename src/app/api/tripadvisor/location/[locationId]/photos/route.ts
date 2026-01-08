@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { tripAdvisorClient } from '@/lib/tripadvisor';
 
-// Only export dynamic if static export is disabled
-// Next.js route segment config must be statically analyzable (no env conditionals).
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 /**
  * GET /api/tripadvisor/location/[locationId]/photos

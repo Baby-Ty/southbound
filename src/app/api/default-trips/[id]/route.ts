@@ -5,8 +5,8 @@ import {
   updateDefaultTrip,
 } from '@/lib/cosmos-default-trips';
 
-// Required for static export - tells Next.js this route is dynamic and should be skipped
-export const dynamic = 'force-dynamic';
+// Note: API routes are not available in static export builds (output: 'export')
+// This route will be skipped during static export
 
 export async function GET(
   _request: NextRequest,
