@@ -5,6 +5,9 @@ import {
   updateDefaultTrip,
 } from '@/lib/cosmos-default-trips';
 
+// Mark as dynamic to exclude from static export
+export const dynamic = 'force-dynamic';
+
 // Note: API routes are not available in static export builds (output: 'export')
 // This route will be skipped during static export
 
