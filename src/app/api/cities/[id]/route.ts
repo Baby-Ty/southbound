@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCity, updateCity, deleteCity } from '@/lib/cosmos-cities';
 
+// Required for static export - tells Next.js this route is dynamic and should be skipped
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

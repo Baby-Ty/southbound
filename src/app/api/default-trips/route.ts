@@ -6,6 +6,9 @@ import {
   type DefaultTrip,
 } from '@/lib/cosmos-default-trips';
 
+// Required for static export - tells Next.js this route is dynamic and should be skipped
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
