@@ -5,11 +5,6 @@ import { TripAdvisorActivity } from '@/lib/tripadvisor';
 import { updateCityActivities } from '@/lib/cosmos-cities';
 import { generateActivityDescription } from '@/lib/aiDescriptionGenerator';
 
-// Mark as dynamic to exclude from static export
-export const dynamic = 'force-dynamic';
-
-// Note: API routes are not available in static export builds (output: 'export')
-// This route will be skipped during static export
 
 /**
  * Rate limiting configuration

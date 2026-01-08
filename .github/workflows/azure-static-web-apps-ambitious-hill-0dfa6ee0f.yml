@@ -40,6 +40,16 @@ jobs:
           test -f src/components/hub/CountryFormClient.tsx || { echo "ERROR: CountryFormClient.tsx missing"; exit 1; }
           echo "✓ All required files present"
 
+      - name: Temporarily move API routes (incompatible with static export)
+        run: |
+          echo "Moving API routes for static export build..."
+          if [ -d "src/app/api" ]; then
+            mv src/app/api src/app/_api_backup
+            echo "✓ API routes moved to _api_backup"
+          else
+            echo "⚠ API routes directory not found"
+          fi
+
       - name: Build
         run: |
           echo "Starting Next.js build..."
@@ -59,6 +69,17 @@ jobs:
           COSMOSDB_KEY: ''
         timeout-minutes: 15
         continue-on-error: false
+
+      - name: Restore API routes
+        if: always()
+        run: |
+          echo "Restoring API routes..."
+          if [ -d "src/app/_api_backup" ]; then
+            mv src/app/_api_backup src/app/api
+            echo "✓ API routes restored"
+          else
+            echo "⚠ API backup directory not found"
+          fi
 
       - name: Verify build output
         run: |
