@@ -11,6 +11,11 @@
     {
       "route": "/login",
       "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+      "route": "/discover",
+      "redirect": "/discover/",
+      "statusCode": 301
     }
   ],
   "responseOverrides": {
@@ -21,7 +26,7 @@
   },
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*", "/_next/*", "/favicon.ico"]
+    "exclude": ["/images/*", "/_next/*", "/favicon.ico", "*.json", "*.xml", "*.txt"]
   },
   "globalHeaders": {
     "X-Frame-Options": "DENY",
