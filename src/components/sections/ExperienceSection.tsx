@@ -2,28 +2,29 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const features = [
   {
-    title: "Productive Workspace",
-    description: "We partner with top coworking spaces ensuring high-speed fiber and ergonomic setups.",
-    icon: "💻"
+    title: "Same job. Better days.",
+    description: "The details are handled so you can focus on living and working somewhere better.",
+    icon: "💼"
   },
   {
-    title: "Curated Accommodation",
-    description: "Stay in safe, comfortable, and verified apartments or coliving villas in the best neighborhoods.",
+    title: "Easy to live in",
+    description: "Comfortable, work-friendly places in good neighbourhoods, set up so you can settle in quickly and enjoy everyday life.",
     icon: "🏡"
   },
   {
-    title: "Instant Community",
-    description: "Connect with other South African remote workers and global nomads from day one.",
-    icon: "👋"
+    title: "A better rhythm",
+    description: "Enough structure to stay productive, enough freedom to enjoy where you are.",
+    icon: "⚖️"
   },
   {
-    title: "Local Support",
-    description: "Our local city managers are there to help with everything from SIM cards to restaurant tips.",
-    icon: "🤝"
+    title: "Move at your pace",
+    description: "Want to stay longer, move cities, or slow things down? Your trip isn't locked in. It can evolve as you go.",
+    icon: "🚶"
   }
 ];
 
@@ -46,10 +47,10 @@ const ExperienceSection = () => {
               <span className="text-[#E86B32]">A lifestyle upgrade.</span>
             </h2>
             <p className="text-stone-300 text-lg mb-12 leading-relaxed">
-              We don't just book hotels. We build an ecosystem for you to thrive personally and professionally.
+              Live and work somewhere better, without quitting your job or turning your life upside down.
             </p>
 
-            <div className="grid sm:grid-cols-2 gap-8">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8">
               {features.map((feature, index) => (
                 <motion.div 
                   key={index} 
@@ -87,7 +88,7 @@ const ExperienceSection = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/40 to-transparent"></div>
             
-            <div className="absolute bottom-8 left-8 right-8 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20">
+            <Link href="/discover" className="absolute bottom-8 left-8 right-8 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:bg-white/15 transition-all duration-300 cursor-pointer group">
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-4">
                     {[1,2,3].map(i => (
@@ -95,11 +96,11 @@ const ExperienceSection = () => {
                     ))}
                 </div>
                 <div>
-                    <p className="font-bold text-white">Join the crew</p>
-                    <p className="text-xs text-stone-300">Next cohort starts in Cape Town</p>
+                    <p className="font-bold text-white group-hover:text-[#E86B32] transition-colors duration-300">Build your route</p>
+                    <p className="text-xs text-stone-300">Starting from Cape Town</p>
                 </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
         </div>
       </div>
