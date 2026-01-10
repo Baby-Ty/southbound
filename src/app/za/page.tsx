@@ -14,7 +14,7 @@ export default function SouthAfricaHome() {
         <Hero 
           tagline="🇿🇦 Remote work adventures for South Africans."
           description="We handle the logistics, you just show up."
-          communityText="Join other South African nomads"
+          communityText="For South African remote workers"
           currencyCode="ZAR"
         />
         <IntroSection />

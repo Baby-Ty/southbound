@@ -8,20 +8,20 @@ const HowItWorksSection: React.FC = () => {
   const steps = [
     {
       number: '01',
-      title: 'Pick your vibe',
-      description: 'Tell us what you\'re into. We match you with places that fit your lifestyle and budget.',
+      title: 'Define your lifestyle',
+      description: 'Work hours, pace, budget, and priorities. This sets the foundation for the route ahead.',
       icon: '✨'
     },
     {
       number: '02',
-      title: 'Book your trip',
-      description: 'We lock in your stay, workspace, and a few local experiences. One simple itinerary. No admin.',
+      title: 'Shape your route',
+      description: 'Your route comes together around real workdays, routines, and everyday life, with room to adjust as you go.',
       icon: '📅'
     },
     {
       number: '03',
-      title: 'Just show up',
-      description: 'Arrive and settle in. Fast Wi-Fi, a smooth setup, and local support from day one.',
+      title: 'Settle in',
+      description: 'Arrive, find your rhythm, and start living and working from day one.',
       icon: '🚀'
     }
   ];
@@ -34,7 +34,7 @@ const HowItWorksSection: React.FC = () => {
             How it works
           </h2>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto">
-            We\'ve stripped away the stress of planning so you can focus on living.
+            A simple, flexible approach to living and working abroad.
           </p>
         </div>
 
@@ -72,7 +72,7 @@ const HowItWorksSection: React.FC = () => {
             href="/discover"
             className="inline-block border-b-2 border-[#E86B32] text-stone-900 font-bold hover:text-[#E86B32] transition-colors pb-1"
           >
-            Build your own itinerary &rarr;
+            Build your route &rarr;
           </Link>
         </div>
       </div>

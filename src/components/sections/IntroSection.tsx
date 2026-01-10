@@ -38,16 +38,12 @@ const IntroSection = () => {
             <span className="text-stone-400">Now get the lifestyle.</span>
           </h2>
           <p className="text-xl text-stone-600 leading-relaxed mb-10 max-w-2xl mx-auto">
-            Planning a multi-month trip while working full-time is a nightmare.
-            <span className="block h-6 md:hidden"></span>
-            <br className="hidden md:block" />
-            <span className="block md:inline">Time zones?</span>
-            <span className="block md:inline md:ml-2">WiFi speeds?</span>
-            <span className="block md:inline md:ml-2">Safe neighborhoods?</span>
-            <span className="block md:inline md:ml-2">Community?</span>
+            Turn remote work into a way of life, not a once-off trip.
+            <br />
+            For people who want to live well while they work.
           </p>
           <p className="text-xl text-stone-900 font-bold leading-relaxed">
-            <span className="bg-[#E86B32] text-white px-2 py-1 -rotate-1 inline-block">We sort it all out.</span> You just book your flight and show up.
+            <span className="bg-[#E86B32] text-white px-2 py-1 -rotate-1 inline-block">For living</span> not just travelling.
           </p>
         </motion.div>
       </div>

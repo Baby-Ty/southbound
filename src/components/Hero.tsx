@@ -11,9 +11,9 @@ interface HeroProps {
 }
 
 const Hero = ({ 
-  tagline = "A remote work adventure for South Africans.",
+  tagline = "A remote-work lifestyle designed for South Africans who want to live well while they work.",
   description = "We handle the logistics, you just show up.",
-  communityText = "Join other South African nomads",
+  communityText = "For South African remote workers",
   currencyCode = "ZAR"
 }: HeroProps = {}) => {
   const destinations = ["BALI", "MEXICO", "GEORGIA", "CAPE TOWN"]
@@ -189,7 +189,7 @@ const Hero = ({
 
               {/* Subheading */}
               <p className="text-lg md:text-xl text-stone-200 leading-relaxed mb-8 max-w-lg font-medium">
-                {tagline} <br className="hidden md:block" />{description}
+                {tagline}
               </p>
 
               {/* CTA Buttons */}

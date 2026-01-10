@@ -32,8 +32,9 @@ export default function PreFooterCTA() {
           </h2>
           
           <p className="text-xl md:text-2xl text-orange-50 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-            Your desk is ready in Bali. Your community is waiting in Cape Town. 
-            All you have to do is click.
+            Your desk can be anywhere.
+            <br />
+            All you need is a clear route to get there.
           </p>
           
           <motion.div
@@ -44,13 +45,13 @@ export default function PreFooterCTA() {
               href="/discover"
               className="group inline-flex items-center justify-center gap-3 px-12 py-6 bg-white text-[#E86B32] font-bold rounded-full text-xl transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_60px_rgba(255,255,255,0.3)] hover:bg-stone-50"
             >
-              Build your itinerary now
+              Build your route
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
           
           <p className="mt-8 text-sm text-orange-200/80 font-medium tracking-wide uppercase">
-            No login required to start planning
+            Explore routes before committing
           </p>
         </motion.div>
       </div>
