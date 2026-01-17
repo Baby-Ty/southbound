@@ -83,7 +83,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
       name: 'Europe',
       tagline: 'Historic cities meeting modern life.',
       icon: '☕',
-      bgImage: '/europe.png',
+      bgImage: '/euro rain.png',
       budget: '$$$',
       budgetLabel: 'Premium',
       timezone: '+1h to +2h',
