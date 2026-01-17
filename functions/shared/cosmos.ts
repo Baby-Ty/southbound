@@ -453,13 +453,17 @@ export async function getTripTemplates(filters?: {
     params.push({ name: '@enabled', value: filters.enabled });
   }
 
-  query += ' ORDER BY c.order ASC, c.createdAt ASC';
-
   const { resources } = await container.items
     .query({ query, parameters: params })
     .fetchAll();
 
-  return resources as TripTemplate[];
+  // Sort in memory since Cosmos DB requires composite index for ORDER BY
+  const sorted = (resources as TripTemplate[]).sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+
+  return sorted;
 }
 
 export async function getTripTemplateById(id: string, region: string): Promise<TripTemplate | null> {
@@ -558,13 +562,17 @@ export async function getRouteCards(filters?: {
     params.push({ name: '@enabled', value: filters.enabled });
   }
 
-  query += ' ORDER BY c.order ASC, c.createdAt ASC';
-
   const { resources } = await container.items
     .query({ query, parameters: params })
     .fetchAll();
 
-  return resources as RouteCard[];
+  // Sort in memory since Cosmos DB requires composite index for ORDER BY
+  const sorted = (resources as RouteCard[]).sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+
+  return sorted;
 }
 
 export async function getRouteCard(id: string, region: string): Promise<RouteCard | null> {
