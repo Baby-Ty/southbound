@@ -54,6 +54,7 @@ export async function getContainer(containerId: string): Promise<Container> {
       'countries': { paths: ['/region'] },
       'defaultTrips': { paths: ['/region'] },
       'tripTemplates': { paths: ['/region'] },
+      'routeCards': { paths: ['/region'] },
       'savedRoutes': { paths: ['/id'] },
       'activities': { paths: ['/id'] },
       'accommodationTypes': { paths: ['/id'] },
@@ -493,6 +494,111 @@ export async function updateTripTemplate(
 
 export async function deleteTripTemplate(id: string, region: string): Promise<void> {
   const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  await container.item(id, region).delete();
+}
+
+// RouteCard Types and CRUD Operations
+export interface RouteCard {
+  id: string;
+  region: 'europe' | 'latin-america' | 'southeast-asia';
+  name: string;
+  tagline: string;
+  icon: string;
+  imageUrl: string;
+  budget: string;
+  budgetLabel: string;
+  timezone: string;
+  vibe: string;
+  overview: string;
+  featuredCities: string[];
+  enabled: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const ROUTE_CARDS_CONTAINER_ID = 'routeCards';
+
+export async function createRouteCard(
+  data: Omit<RouteCard, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<RouteCard> {
+  const { nanoid } = await import('nanoid');
+  const container = await getContainer(ROUTE_CARDS_CONTAINER_ID);
+  const now = new Date().toISOString();
+
+  const routeCard: RouteCard = {
+    ...data,
+    id: nanoid(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const { resource } = await container.items.create(routeCard);
+  return resource as RouteCard;
+}
+
+export async function getRouteCards(filters?: {
+  region?: 'europe' | 'latin-america' | 'southeast-asia';
+  enabled?: boolean;
+}): Promise<RouteCard[]> {
+  const container = await getContainer(ROUTE_CARDS_CONTAINER_ID);
+
+  let query = 'SELECT * FROM c WHERE 1=1';
+  const params: any[] = [];
+
+  if (filters?.region) {
+    query += ' AND c.region = @region';
+    params.push({ name: '@region', value: filters.region });
+  }
+
+  if (typeof filters?.enabled === 'boolean') {
+    query += ' AND c.enabled = @enabled';
+    params.push({ name: '@enabled', value: filters.enabled });
+  }
+
+  query += ' ORDER BY c.order ASC, c.createdAt ASC';
+
+  const { resources } = await container.items
+    .query({ query, parameters: params })
+    .fetchAll();
+
+  return resources as RouteCard[];
+}
+
+export async function getRouteCard(id: string, region: string): Promise<RouteCard | null> {
+  const container = await getContainer(ROUTE_CARDS_CONTAINER_ID);
+  try {
+    const { resource } = await container.item(id, region).read();
+    return resource as RouteCard | null;
+  } catch (error: any) {
+    if (error.code === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function updateRouteCard(
+  id: string,
+  region: string,
+  updates: Partial<Omit<RouteCard, 'id' | 'createdAt' | 'updatedAt' | 'region'>>
+): Promise<RouteCard> {
+  const container = await getContainer(ROUTE_CARDS_CONTAINER_ID);
+  const existing = await getRouteCard(id, region);
+  if (!existing) throw new Error(`Route card ${id} not found`);
+
+  const updated: RouteCard = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { resource } = await container.item(id, region).replace(updated);
+  return resource as RouteCard;
+}
+
+export async function deleteRouteCard(id: string, region: string): Promise<void> {
+  const container = await getContainer(ROUTE_CARDS_CONTAINER_ID);
   await container.item(id, region).delete();
 }
 

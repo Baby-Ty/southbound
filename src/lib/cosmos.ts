@@ -79,6 +79,8 @@ export async function getContainer(containerId: string): Promise<Container> {
       'cities': { paths: ['/region'] },
       'countries': { paths: ['/region'] },
       'defaultTrips': { paths: ['/region'] },
+      'tripTemplates': { paths: ['/region'] },
+      'routeCards': { paths: ['/region'] },
       'savedRoutes': { paths: ['/id'] },
       'activities': { paths: ['/id'] },
       'accommodationTypes': { paths: ['/id'] },

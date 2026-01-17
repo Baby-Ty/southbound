@@ -19,7 +19,7 @@ export const TRIP_TEMPLATES: Record<RegionKey, TripTemplate[]> = {
       name: 'Euro Rail Classic',
       description: 'Train-friendly cities perfect for weekend adventures',
       icon: '🚂',
-      imageUrl: '/euro rain.png',
+      imageUrl: '/euro rail.png',
       presetCities: ['Lisbon', 'Barcelona', 'Split'],
       tags: ['train travel', 'coastal', 'culture'],
       region: 'europe',

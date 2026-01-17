@@ -7,6 +7,8 @@ import { Info } from 'lucide-react';
 import { RegionKey, REGION_HUBS } from '@/lib/cityPresets';
 import { getCitiesForRegion } from '@/lib/cityData';
 import { CityPreset } from '@/lib/cityPresets';
+import { apiUrl } from '@/lib/api';
+import { RouteCard } from '@/types/routeCard';
 
 interface RegionSelectorProps {
   selectedRegions: RegionKey[];
@@ -25,11 +27,74 @@ interface RegionData {
   vibe: string;
   overview: string;
   hubCity: CityPreset | null;
+  featuredCities: string[];
+}
+
+// Fallback data if API is unavailable
+const FALLBACK_REGIONS: RegionData[] = [
+  {
+    id: 'latin-america',
+    name: 'Latin America',
+    tagline: 'Rhythm, culture, and endless adventure.',
+    icon: '🌎',
+    bgImage: '/SouthAmerica.png',
+    budget: '$$',
+    budgetLabel: 'Value',
+    timezone: '-2h to -5h',
+    vibe: 'Social & Adventurous',
+    overview: 'Latin America is a vibrant tapestry of cultures, offering everything from the white-sand beaches of the Caribbean to the rugged peaks of the Andes.',
+    hubCity: null,
+    featuredCities: [],
+  },
+  {
+    id: 'southeast-asia',
+    name: 'Southeast Asia',
+    tagline: 'Tropical paradises and incredible food.',
+    icon: '🌴',
+    bgImage: '/southeastasia.png',
+    budget: '$',
+    budgetLabel: 'Affordable',
+    timezone: '+5h to +6h',
+    vibe: 'Relaxed & Creative',
+    overview: 'Southeast Asia is the undisputed capital of the digital nomad world. With established hubs like Chiang Mai, Bali, and Da Nang, you will find high-speed internet and a supportive community.',
+    hubCity: null,
+    featuredCities: [],
+  },
+  {
+    id: 'europe',
+    name: 'Europe',
+    tagline: 'Historic cities meeting modern life.',
+    icon: '☕',
+    bgImage: '/europe.png',
+    budget: '$$$',
+    budgetLabel: 'Premium',
+    timezone: '+1h to +2h',
+    vibe: 'Sophisticated',
+    overview: 'Europe offers a blend of deep history, modern convenience, and incredible diversity. Excellent train networks make weekend trips easy.',
+    hubCity: null,
+    featuredCities: [],
+  },
+];
+
+interface RegionData {
+  id: RegionKey;
+  name: string;
+  tagline: string;
+  icon: string;
+  bgImage: string;
+  budget: string;
+  budgetLabel: string;
+  timezone: string;
+  vibe: string;
+  overview: string;
+  hubCity: CityPreset | null;
+  featuredCities: string[];
 }
 
 export default function RegionSelector({ selectedRegions, onRegionToggle }: RegionSelectorProps) {
   const [hubCityByRegion, setHubCityByRegion] = useState<Record<string, CityPreset | null>>({});
   const [selectedRegionDetails, setSelectedRegionDetails] = useState<RegionData | null>(null);
+  const [regions, setRegions] = useState<RegionData[]>(FALLBACK_REGIONS);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,47 +116,49 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
     return () => { cancelled = true; };
   }, []);
 
-  const regions: RegionData[] = [
-    {
-      id: 'latin-america',
-      name: 'Latin America',
-      tagline: 'Rhythm, culture, and endless adventure.',
-      icon: '🌎',
-      bgImage: '/SouthAmerica.png',
-      budget: '$$',
-      budgetLabel: 'Value',
-      timezone: '-2h to -5h',
-      vibe: 'Social & Adventurous',
-      overview: 'Latin America is a vibrant tapestry of cultures, offering everything from the white-sand beaches of the Caribbean to the rugged peaks of the Andes.',
-      hubCity: hubCityByRegion['latin-america'],
-    },
-    {
-      id: 'southeast-asia',
-      name: 'Southeast Asia',
-      tagline: 'Tropical paradises and incredible food.',
-      icon: '🌴',
-      bgImage: '/southeastasia.png',
-      budget: '$',
-      budgetLabel: 'Affordable',
-      timezone: '+5h to +6h',
-      vibe: 'Relaxed & Creative',
-      overview: 'Southeast Asia is the undisputed capital of the digital nomad world. With established hubs like Chiang Mai, Bali, and Da Nang, you will find high-speed internet and a supportive community.',
-      hubCity: hubCityByRegion['southeast-asia'],
-    },
-    {
-      id: 'europe',
-      name: 'Europe',
-      tagline: 'Historic cities meeting modern life.',
-      icon: '☕',
-      bgImage: '/euro rail.png',
-      budget: '$$$',
-      budgetLabel: 'Premium',
-      timezone: '+1h to +2h',
-      vibe: 'Sophisticated',
-      overview: 'Europe offers a blend of deep history, modern convenience, and incredible diversity. Excellent train networks make weekend trips easy.',
-      hubCity: hubCityByRegion['europe'],
-    },
-  ];
+  useEffect(() => {
+    async function loadRouteCards() {
+      try {
+        const url = apiUrl('route-cards?enabled=true');
+        const response = await fetch(url, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        if (!response.ok) {
+          console.warn('[RegionSelector] Failed to load route cards, using fallback');
+          return;
+        }
+        
+        const data = await response.json();
+        if (data.routeCards && Array.isArray(data.routeCards)) {
+          // Map RouteCard[] to RegionData[]
+          const mappedRegions: RegionData[] = data.routeCards.map((card: RouteCard) => ({
+            id: card.region as RegionKey,
+            name: card.name,
+            tagline: card.tagline,
+            icon: card.icon,
+            bgImage: card.imageUrl,
+            budget: card.budget,
+            budgetLabel: card.budgetLabel,
+            timezone: card.timezone,
+            vibe: card.vibe,
+            overview: card.overview,
+            hubCity: hubCityByRegion[card.region] || null,
+            featuredCities: card.featuredCities || [],
+          }));
+          
+          // Ensure we have all 3 regions (fill missing with fallback)
+          const regionIds = mappedRegions.map(r => r.id);
+          const missingRegions = FALLBACK_REGIONS.filter(f => !regionIds.includes(f.id));
+          setRegions([...mappedRegions, ...missingRegions]);
+        }
+      } catch (error) {
+        console.error('[RegionSelector] Error loading route cards:', error);
+        // Keep fallback data
+      }
+    }
+    loadRouteCards();
+  }, [hubCityByRegion]);
 
   const RegionCard = ({ region }: { region: RegionData }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -267,7 +334,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div className="bg-sb-teal-50/50 p-5 rounded-2xl border border-sb-teal-100">
                     <h4 className="font-bold text-sb-teal-900 mb-1 flex items-center gap-2 text-sm uppercase tracking-wide">
                       💰 Budget
@@ -283,6 +350,19 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
                     <p className="text-sm text-sb-orange-800 font-medium">vs EST</p>
                   </div>
                 </div>
+
+                {selectedRegionDetails.featuredCities && selectedRegionDetails.featuredCities.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-bold text-sb-navy-900 uppercase tracking-wider mb-3">Featured Cities</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRegionDetails.featuredCities.map((city, idx) => (
+                        <span key={idx} className="px-3 py-1.5 bg-sb-teal-50 text-sb-teal-700 rounded-lg text-sm font-medium border border-sb-teal-100">
+                          {city}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

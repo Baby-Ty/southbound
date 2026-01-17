@@ -12,6 +12,8 @@ import './default-trips/index';
 import './default-trips-by-id/index';
 import './trip-templates/index';
 import './trip-templates-by-id/index';
+import './route-cards/index';
+import './route-cards-by-id/index';
 import './leads/index';
 import './leads-by-id/index';
 import './images-search/index';
