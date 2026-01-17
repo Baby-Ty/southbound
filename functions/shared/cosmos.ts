@@ -7,15 +7,15 @@ function getEnvVar(name: string, defaultValue: string = ''): string {
   return defaultValue;
 }
 
-const endpoint = getEnvVar('COSMOSDB_ENDPOINT', '');
-const key = getEnvVar('COSMOSDB_KEY', '');
-const databaseId = getEnvVar('COSMOSDB_DATABASE_ID', 'southbound');
-
 let client: CosmosClient | null = null;
 let database: Database | null = null;
 
 function getClient(): CosmosClient {
   if (!client) {
+    // Evaluate environment variables at runtime, not at module load time
+    const endpoint = getEnvVar('COSMOSDB_ENDPOINT', '');
+    const key = getEnvVar('COSMOSDB_KEY', '');
+    
     if (!endpoint || !key) {
       const error = new Error('CosmosDB credentials not configured. Set COSMOSDB_ENDPOINT and COSMOSDB_KEY environment variables.');
       console.error('CosmosDB Error:', error.message);
@@ -35,6 +35,7 @@ async function getDatabase(): Promise<Database> {
   if (!database) {
     try {
       const cosmosClient = getClient();
+      const databaseId = getEnvVar('COSMOSDB_DATABASE_ID', 'southbound');
       const { database: db } = await cosmosClient.databases.createIfNotExists({ id: databaseId });
       database = db;
     } catch (error: any) {
