@@ -1,0 +1,803 @@
+[
+  {
+    "email": "+27784407830@whatsapp",
+    "region": "southeast-asia",
+    "stops": [
+      {
+        "id": "Chiang Mai-0-sw06z",
+        "city": "Chiang Mai",
+        "country": "Thailand",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "calm",
+          "walkable",
+          "temples"
+        ],
+        "highlights": {
+          "places": [
+            "Nimman",
+            "Old City",
+            "Santitham"
+          ],
+          "accommodation": "Condo near Nimman",
+          "activities": [
+            "temples",
+            "coworking",
+            "night markets"
+          ],
+          "notes": "",
+          "notesHint": "Best Nov to Feb. Avoid burning season (Feb-Apr)."
+        }
+      },
+      {
+        "id": "Bali (Canggu)-1-502h5",
+        "city": "Bali (Canggu)",
+        "country": "Indonesia",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "tropical",
+          "creative",
+          "surf"
+        ],
+        "highlights": {
+          "places": [
+            "Berawa",
+            "Batu Bolong",
+            "Pererenan"
+          ],
+          "accommodation": "Villa or guesthouse with desk",
+          "activities": [
+            "surf",
+            "cafés",
+            "yoga",
+            "scooter trips"
+          ],
+          "notes": "",
+          "notesHint": "Check generator and Wi‑Fi backup."
+        }
+      },
+      {
+        "id": "Ubud-2-mqy90",
+        "city": "Ubud",
+        "country": "Indonesia",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "jungle",
+          "yoga",
+          "spiritual"
+        ],
+        "highlights": {
+          "places": [
+            "Hanoman",
+            "Penestanan",
+            "Nyuh Kuning"
+          ],
+          "accommodation": "Villa in rice fields",
+          "activities": [
+            "yoga",
+            "monkey forest",
+            "healthy food"
+          ],
+          "notes": "",
+          "notesHint": "Traffic can be gridlocked."
+        }
+      }
+    ],
+    "preferences": {
+      "lifestyle": [
+        "Wellness",
+        "Nightlife"
+      ],
+      "workSetup": [
+        "Quiet workspace"
+      ],
+      "travelStyle": "remote-worker"
+    },
+    "status": "draft",
+    "notes": "",
+    "id": "Y1EOXz6fXiv-LCG6PZcuC",
+    "createdAt": "2025-11-29T18:36:48.586Z",
+    "updatedAt": "2025-11-29T18:36:48.587Z",
+    "_rid": "OCYXAJvMe+kBAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kBAAAAAAAAAA==/",
+    "_etag": "\"00000a01-0000-0100-0000-692b3d420000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764441410
+  },
+  {
+    "name": "tyler",
+    "email": "0747082825@whatsapp",
+    "region": "latin-america",
+    "stops": [
+      {
+        "id": "Rio-0-f0dvb",
+        "city": "Rio",
+        "country": "Brazil",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "festivals",
+          "nature"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Carnival",
+              "imageUrl": "https://images.unsplash.com/photo-1574724713425-fee7e2eacf84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwxfHxDYXJuaXZhbHxlbnwwfDB8fHwxNzY0NTg2MzM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Christ the Redeemer",
+              "imageUrl": "https://images.unsplash.com/photo-1700677866571-43199bcbc593?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwzfHxDaHJpc3QlMjB0aGUlMjBSZWRlZW1lcnxlbnwwfDB8fHwxNzY0NTg2Mzg5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Favela's",
+              "imageUrl": "https://images.unsplash.com/photo-1706493666184-f09131b48340?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHw0fHxGYXZlbGElMjdzfGVufDB8MHx8fDE3NjQ1ODY0MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            }
+          ],
+          "accommodation": "Near beach and metro",
+          "activities": [
+            "beach mornings",
+            "hikes",
+            "samba nights"
+          ],
+          "notes": "",
+          "notesHint": "Book early for Carnival."
+        }
+      },
+      {
+        "id": "Mexico City-1-l4h48",
+        "city": "Mexico City",
+        "country": "Mexico",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "food",
+          "culture",
+          "urban"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Condesa",
+              "imageUrl": "https://images.unsplash.com/photo-1640505253341-b3c0a14bd0e6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwyfHxDb25kZXNhfGVufDB8MHx8fDE3NjQ1ODYxOTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Roma",
+              "imageUrl": "https://images.unsplash.com/photo-1747835350334-887682f9a68c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHw0fHxSb21hJTIwbWV4aWNvfGVufDB8MHx8fDE3NjQ1ODYyMzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Coyoacán",
+              "imageUrl": "https://images.unsplash.com/photo-1614895196252-f127fb7c421d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwxfHxDb3lvYWNhbnxlbnwwfDB8fHwxNzY0NTg2MjU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            }
+          ],
+          "accommodation": "Apartment with desk",
+          "activities": [
+            "taco crawl",
+            "museums",
+            "street art",
+            "rooftop coworking"
+          ],
+          "notes": "Excited for the day of the dead",
+          "notesHint": "Aim for Day of the Dead if timing fits."
+        }
+      },
+      {
+        "id": "Buenos Aires-2-d9agl",
+        "city": "Buenos Aires",
+        "country": "Argentina",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "food",
+          "culture",
+          "nightlife"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Palermo Soho",
+              "imageUrl": "https://images.unsplash.com/photo-1742736746785-2c8861a1b3fc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwyfHxQYWxlcm1vJTIwU29ob3xlbnwwfDB8fHwxNzY0NTg2Mjg0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Recoleta",
+              "imageUrl": "https://images.unsplash.com/photo-1683212012349-df9e6680cddc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwzfHxSZWNvbGV0YXxlbnwwfDB8fHwxNzY0NTg2Mjk0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "San Telmo",
+              "imageUrl": "https://images.unsplash.com/photo-1638154642608-da44b991fb6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwyfHxTYW4lMjBUZWxtb3xlbnwwfDB8fHwxNzY0NTg2MzA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            }
+          ],
+          "accommodation": "Loft in Palermo",
+          "activities": [
+            "tango shows",
+            "steak dinners",
+            "soccer matches"
+          ],
+          "notes": "",
+          "notesHint": "Bring cash (Blue Dollar rate)."
+        }
+      },
+      {
+        "id": "Buenos Aires-3-uw4uy",
+        "city": "Buenos Aires",
+        "country": "Argentina",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "food",
+          "culture",
+          "nightlife"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Palermo Soho",
+              "isCustom": false
+            },
+            {
+              "title": "Recoleta",
+              "isCustom": false
+            },
+            {
+              "title": "San Telmo",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Loft in Palermo",
+          "activities": [
+            "tango shows",
+            "steak dinners",
+            "soccer matches"
+          ],
+          "notes": "",
+          "notesHint": "Bring cash (Blue Dollar rate)."
+        }
+      }
+    ],
+    "preferences": {
+      "lifestyle": [
+        "Culture",
+        "Wellness"
+      ],
+      "workSetup": [
+        "Fast internet"
+      ],
+      "travelStyle": "remote-worker"
+    },
+    "status": "draft",
+    "notes": "",
+    "id": "h8IQpErPYpPD8w8TiR63H",
+    "createdAt": "2025-12-01T16:20:18.677Z",
+    "updatedAt": "2025-12-01T16:20:18.677Z",
+    "_rid": "OCYXAJvMe+kCAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kCAAAAAAAAAA==/",
+    "_etag": "\"1800536c-0000-0100-0000-692dc0430000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764606019
+  },
+  {
+    "name": "tyler",
+    "email": "01235252894@whatsapp",
+    "region": "latin-america",
+    "stops": [
+      {
+        "id": "Playa del Carmen-0-0mgua",
+        "city": "Playa del Carmen",
+        "country": "Mexico",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "diving",
+          "nightlife"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Centro",
+              "imageUrl": "https://images.unsplash.com/photo-1664410251458-b290870d15fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwzfHxDZW50cm98ZW58MHwwfHx8MTc2NDY5OTk5OHww&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Playacar",
+              "isCustom": false
+            },
+            {
+              "title": "5th Avenue",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Condo with pool",
+          "activities": [
+            "cenote diving",
+            "beach clubs",
+            "tulum day trips"
+          ],
+          "notes": "",
+          "notesHint": "Sargassum season is summer."
+        }
+      },
+      {
+        "id": "Mexico City-1-qs3xl",
+        "city": "Mexico City",
+        "country": "Mexico",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "food",
+          "culture",
+          "urban"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Condesa",
+              "isCustom": false
+            },
+            {
+              "title": "Roma",
+              "isCustom": false
+            },
+            {
+              "title": "Coyoacán",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Apartment with desk",
+          "activities": [
+            "taco crawl",
+            "museums",
+            "street art",
+            "rooftop coworking"
+          ],
+          "notes": "",
+          "notesHint": "Aim for Day of the Dead if timing fits."
+        }
+      },
+      {
+        "id": "Rio-2-0qv3c",
+        "city": "Rio",
+        "country": "Brazil",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "festivals",
+          "nature"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Ipanema",
+              "isCustom": false
+            },
+            {
+              "title": "Leblon",
+              "isCustom": false
+            },
+            {
+              "title": "Botafogo",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Near beach and metro",
+          "activities": [
+            "beach mornings",
+            "hikes",
+            "samba nights"
+          ],
+          "notes": "",
+          "notesHint": "Book early for Carnival."
+        }
+      }
+    ],
+    "preferences": {
+      "lifestyle": [
+        "Wellness"
+      ],
+      "workSetup": [],
+      "travelStyle": "nomad"
+    },
+    "status": "draft",
+    "notes": "",
+    "id": "_n1oqf1LIsnVFClFP_Pa6",
+    "createdAt": "2025-12-02T18:27:55.469Z",
+    "updatedAt": "2025-12-02T18:27:55.469Z",
+    "_rid": "OCYXAJvMe+kDAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kDAAAAAAAAAA==/",
+    "_etag": "\"3600fe82-0000-0100-0000-692f2fab0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764700075
+  },
+  {
+    "name": "tyler",
+    "email": "tyler@tyler.co.za",
+    "region": "latin-america",
+    "stops": [
+      {
+        "id": "Playa del Carmen-0-0mgua",
+        "city": "Playa del Carmen",
+        "country": "Mexico",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "diving",
+          "nightlife"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Centro",
+              "imageUrl": "https://images.unsplash.com/photo-1664410251458-b290870d15fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHwzfHxDZW50cm98ZW58MHwwfHx8MTc2NDY5OTk5OHww&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Playacar",
+              "isCustom": false
+            },
+            {
+              "title": "5th Avenue",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Condo with pool",
+          "activities": [
+            "cenote diving",
+            "beach clubs",
+            "tulum day trips"
+          ],
+          "notes": "",
+          "notesHint": "Sargassum season is summer."
+        }
+      },
+      {
+        "id": "Mexico City-1-qs3xl",
+        "city": "Mexico City",
+        "country": "Mexico",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "food",
+          "culture",
+          "urban"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Condesa",
+              "isCustom": false
+            },
+            {
+              "title": "Roma",
+              "isCustom": false
+            },
+            {
+              "title": "Coyoacán",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Apartment with desk",
+          "activities": [
+            "taco crawl",
+            "museums",
+            "street art",
+            "rooftop coworking"
+          ],
+          "notes": "",
+          "notesHint": "Aim for Day of the Dead if timing fits."
+        }
+      },
+      {
+        "id": "Rio-2-0qv3c",
+        "city": "Rio",
+        "country": "Brazil",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "festivals",
+          "nature"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Ipanema",
+              "isCustom": false
+            },
+            {
+              "title": "Leblon",
+              "isCustom": false
+            },
+            {
+              "title": "Botafogo",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Near beach and metro",
+          "activities": [
+            "beach mornings",
+            "hikes",
+            "samba nights"
+          ],
+          "notes": "",
+          "notesHint": "Book early for Carnival."
+        }
+      }
+    ],
+    "preferences": {
+      "lifestyle": [
+        "Food",
+        "Wellness",
+        "Culture"
+      ],
+      "workSetup": [
+        "Fast internet"
+      ],
+      "travelStyle": "remote-worker"
+    },
+    "status": "draft",
+    "notes": "",
+    "id": "xb5nkNmc8TFxiyd6rbPyT",
+    "createdAt": "2025-12-02T19:09:22.139Z",
+    "updatedAt": "2025-12-02T19:09:22.139Z",
+    "_rid": "OCYXAJvMe+kEAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kEAAAAAAAAAA==/",
+    "_etag": "\"3700618a-0000-0100-0000-692f39620000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764702562
+  },
+  {
+    "name": "tyler",
+    "email": "12452168356@whatsapp",
+    "region": "latin-america",
+    "stops": [
+      {
+        "id": "Lima-0-xe9io",
+        "city": "Lima",
+        "country": "Peru",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "food",
+          "coastal",
+          "surfing"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Miraflores",
+              "imageUrl": "https://images.unsplash.com/photo-1620768237794-f3bfe964f9f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4Mzc0NDN8MHwxfHNlYXJjaHw0fHxtYWNodSUyMHBpY2h1fGVufDB8MHx8fDE3NjQ3ODI3NTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+              "isCustom": true
+            },
+            {
+              "title": "Barranco",
+              "isCustom": false
+            },
+            {
+              "title": "San Isidro",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Ocean view condo",
+          "activities": [
+            "ceviche tasting",
+            "surfing",
+            "paragliding"
+          ],
+          "notes": "",
+          "notesHint": "Food scene is world-class."
+        }
+      },
+      {
+        "id": "Buenos Aires-1-mxkue",
+        "city": "Buenos Aires",
+        "country": "Argentina",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "food",
+          "culture",
+          "nightlife"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Palermo Soho",
+              "isCustom": false
+            },
+            {
+              "title": "Recoleta",
+              "isCustom": false
+            },
+            {
+              "title": "San Telmo",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Loft in Palermo",
+          "activities": [
+            "tango shows",
+            "steak dinners",
+            "soccer matches"
+          ],
+          "notes": "",
+          "notesHint": "Bring cash (Blue Dollar rate)."
+        }
+      },
+      {
+        "id": "Rio-2-klj03",
+        "city": "Rio",
+        "country": "Brazil",
+        "weeks": 4,
+        "budgetCoins": 2,
+        "tags": [
+          "beach",
+          "festivals",
+          "nature"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "Ipanema",
+              "isCustom": false
+            },
+            {
+              "title": "Leblon",
+              "isCustom": false
+            },
+            {
+              "title": "Botafogo",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Near beach and metro",
+          "activities": [
+            "beach mornings",
+            "hikes",
+            "samba nights"
+          ],
+          "notes": "",
+          "notesHint": "Book early for Carnival."
+        }
+      },
+      {
+        "id": "Medellín-3-vn7pj",
+        "city": "Medellín",
+        "country": "Colombia",
+        "weeks": 4,
+        "budgetCoins": 1,
+        "tags": [
+          "mild climate",
+          "community",
+          "mountain"
+        ],
+        "highlights": {
+          "places": [
+            {
+              "title": "El Poblado",
+              "isCustom": false
+            },
+            {
+              "title": "Laureles",
+              "isCustom": false
+            },
+            {
+              "title": "Envigado",
+              "isCustom": false
+            }
+          ],
+          "accommodation": "Apartment near cafés",
+          "activities": [
+            "language classes",
+            "coworking",
+            "coffee farms"
+          ],
+          "notes": "",
+          "notesHint": "Blackout curtains for early calls."
+        }
+      }
+    ],
+    "preferences": {
+      "lifestyle": [
+        "Culture",
+        "Wellness"
+      ],
+      "workSetup": [
+        "Fast internet"
+      ],
+      "travelStyle": "remote-worker"
+    },
+    "status": "draft",
+    "notes": "",
+    "id": "X_EGBrHJDiTbuPeXT3xvU",
+    "createdAt": "2025-12-03T17:26:57.929Z",
+    "updatedAt": "2025-12-03T17:26:57.929Z",
+    "_rid": "OCYXAJvMe+kFAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kFAAAAAAAAAA==/",
+    "_etag": "\"4e00fbf9-0000-0100-0000-693072e20000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764782818
+  },
+  {
+    "name": "Tyler Stewart",
+    "email": "tylerstewart147@gmail.com",
+    "region": "southeast-asia",
+    "stops": [],
+    "preferences": {
+      "vibes": [
+        "beach"
+      ],
+      "source": "discover-page"
+    },
+    "status": "draft",
+    "notes": "Lead from discover page. Interested in: beach. Regions: southeast-asia",
+    "id": "aeCjBlD17mw3Z4NFpukVm",
+    "createdAt": "2026-01-08T18:47:21.410Z",
+    "updatedAt": "2026-01-08T18:47:21.410Z",
+    "_rid": "OCYXAJvMe+kGAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kGAAAAAAAAAA==/",
+    "_etag": "\"5b00996b-0000-0100-0000-695ffbb90000\"",
+    "_attachments": "attachments/",
+    "_ts": 1767898041
+  },
+  {
+    "name": "Fred",
+    "email": "0814745536@whatsapp",
+    "region": "southeast-asia",
+    "stops": [],
+    "preferences": {
+      "vibes": [
+        "beach",
+        "adventure-wellness",
+        "city-culture"
+      ],
+      "source": "discover-page"
+    },
+    "status": "draft",
+    "notes": "Lead from discover page. Interested in: beach, adventure wellness, city culture. Regions: southeast-asia",
+    "id": "SsYNKPNBAclUcvptCIyFN",
+    "createdAt": "2026-01-10T19:35:25.106Z",
+    "updatedAt": "2026-01-10T19:35:25.106Z",
+    "_rid": "OCYXAJvMe+kHAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kHAAAAAAAAAA==/",
+    "_etag": "\"680081f4-0000-0100-0000-6962a9fd0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1768073725
+  },
+  {
+    "name": "tyler",
+    "email": "email@tylerstewart.co.za",
+    "region": "latin-america",
+    "stops": [],
+    "preferences": {
+      "vibes": [
+        "beach"
+      ],
+      "source": "discover-page"
+    },
+    "status": "draft",
+    "notes": "Lead from discover page. Interested in: beach. Regions: latin-america",
+    "id": "Ig5Ot8Ys_RKoNFP0w_HzX",
+    "createdAt": "2026-01-15T11:51:17.019Z",
+    "updatedAt": "2026-01-15T11:51:17.019Z",
+    "_rid": "OCYXAJvMe+kIAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAJvMe+k=/docs/OCYXAJvMe+kIAAAAAAAAAA==/",
+    "_etag": "\"61001ff8-0000-0100-0000-6968d4b50000\"",
+    "_attachments": "attachments/",
+    "_ts": 1768477877
+  }
+]

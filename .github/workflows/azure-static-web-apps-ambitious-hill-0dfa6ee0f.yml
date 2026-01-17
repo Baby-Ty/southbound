@@ -62,7 +62,7 @@ jobs:
             exit 1
           }
         env:
-          NEXT_PUBLIC_FUNCTIONS_URL: https://api.southbnd.co.za
+          NEXT_PUBLIC_FUNCTIONS_URL: https://southbnd-functions.azurewebsites.net
           NODE_ENV: production
           # Skip CosmosDB connection during build (not needed for static export)
           COSMOSDB_ENDPOINT: ''

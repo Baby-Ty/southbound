@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Leah Delport",
+    "destination": "Southeast Asia",
+    "stage": "Warm",
+    "notes": "9months",
+    "lastContact": "2025-12-03T18:26:09.368Z",
+    "id": "N9T0XIvOlvPh_EpRdcXBL",
+    "createdAt": "2025-12-03T18:26:09.614Z",
+    "updatedAt": "2025-12-03T18:26:09.614Z",
+    "_rid": "OCYXAKG93JUBAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAKG93JU=/docs/OCYXAKG93JUBAAAAAAAAAA==/",
+    "_etag": "\"b504005e-0000-0100-0000-693080c10000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764786369
+  },
+  {
+    "name": "Martin D",
+    "destination": "Southeast Asia",
+    "stage": "New",
+    "notes": "",
+    "lastContact": "2025-12-03T18:26:52.409Z",
+    "id": "_OPHN7b3xg-1Ugioqb1Rc",
+    "createdAt": "2025-12-03T18:26:52.674Z",
+    "updatedAt": "2025-12-03T18:26:52.674Z",
+    "_rid": "OCYXAKG93JUCAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAKG93JU=/docs/OCYXAKG93JUCAAAAAAAAAA==/",
+    "_etag": "\"b504fb62-0000-0100-0000-693080ec0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764786412
+  },
+  {
+    "name": "Allan Vermeulen",
+    "destination": "Latin America",
+    "stage": "Sent Builder",
+    "notes": "",
+    "lastContact": "2025-12-03T18:28:10.671Z",
+    "id": "c20AD6Pyo4RhuIPDfxfOu",
+    "createdAt": "2025-12-03T18:28:10.904Z",
+    "updatedAt": "2025-12-03T18:28:10.904Z",
+    "_rid": "OCYXAKG93JUDAAAAAAAAAA==",
+    "_self": "dbs/OCYXAA==/colls/OCYXAKG93JU=/docs/OCYXAKG93JUDAAAAAAAAAA==/",
+    "_etag": "\"b5044d6b-0000-0100-0000-6930813b0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1764786491
+  }
+]
