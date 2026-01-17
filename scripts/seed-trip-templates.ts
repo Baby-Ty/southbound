@@ -6,11 +6,30 @@
  * 
  * Usage:
  *   npx tsx scripts/seed-trip-templates.ts
+ * 
+ * Make sure COSMOSDB_ENDPOINT and COSMOSDB_KEY are set in your .env.local file
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { createTripTemplate, getTripTemplates } from '../functions/shared/cosmos';
 import { TRIP_TEMPLATES } from '../src/lib/tripTemplates';
 import { RegionKey } from '../src/lib/cityPresets';
+
+// Load .env.local file
+const result = config({ path: resolve(process.cwd(), '.env.local') });
+
+if (result.error) {
+  console.warn('Warning: Could not load .env.local:', result.error.message);
+}
+
+if (!process.env.COSMOSDB_ENDPOINT || !process.env.COSMOSDB_KEY) {
+  console.error('❌ Error: COSMOSDB_ENDPOINT and COSMOSDB_KEY must be set');
+  console.error('\n📝 Please create a .env.local file in the project root with:');
+  console.error('   COSMOSDB_ENDPOINT=<your-endpoint>');
+  console.error('   COSMOSDB_KEY=<your-key>\n');
+  process.exit(1);
+}
 
 async function seedTripTemplates() {
   console.log('🌱 Starting Trip Templates seed...\n');
@@ -46,6 +65,7 @@ async function seedTripTemplates() {
           imageUrl: template.imageUrl,
           presetCities: template.presetCities,
           tags: template.tags,
+          story: template.story,
           enabled: true,
           order: i,
         });

@@ -406,6 +406,7 @@ export interface TripTemplate {
   imageUrl: string;
   presetCities: string[]; // City names for itinerary seeding
   tags: string[];
+  story?: string; // Narrative overview of the route
   enabled: boolean;
   order: number; // Sort order within region
   createdAt: string;
