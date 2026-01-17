@@ -102,19 +102,15 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] py-4 sm:py-12">
-      <div className="max-w-5xl mx-auto px-3 sm:px-6 space-y-8 sm:space-y-12">
+    <div className="min-h-screen bg-[#FDFDFD] pt-2 sm:pt-6 pb-24 sm:pb-32">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 space-y-8 sm:space-y-12">
         {/* Header */}
-        <div className="text-center space-y-4 pt-8">
+        <div className="text-center space-y-4 pt-2">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sb-teal-50 text-sb-teal-700 text-sm font-bold mb-4 border border-sb-teal-100">
-              <span>✨</span>
-              <span>Find Your Perfect Trip</span>
-            </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-sb-navy-900 tracking-tight mb-4">
               Let's discover your
               <br />

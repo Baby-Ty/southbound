@@ -19,7 +19,6 @@ interface RegionData {
   tagline: string;
   icon: string;
   bgImage: string;
-  fallbacks?: string[];
   budget: string;
   budgetLabel: string;
   timezone: string;
@@ -58,8 +57,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
       name: 'Latin America',
       tagline: 'Rhythm, culture, and endless adventure.',
       icon: '🌎',
-      bgImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: ['https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80'],
+      bgImage: '/SouthAmerica.png',
       budget: '$$',
       budgetLabel: 'Value',
       timezone: '-2h to -5h',
@@ -72,8 +70,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
       name: 'Southeast Asia',
       tagline: 'Tropical paradises and incredible food.',
       icon: '🌴',
-      bgImage: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: ['https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80'],
+      bgImage: '/southeastasia.png',
       budget: '$',
       budgetLabel: 'Affordable',
       timezone: '+5h to +6h',
@@ -86,8 +83,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
       name: 'Europe',
       tagline: 'Historic cities meeting modern life.',
       icon: '☕',
-      bgImage: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1600&q=80',
-      fallbacks: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80'],
+      bgImage: '/europe.png',
       budget: '$$$',
       budgetLabel: 'Premium',
       timezone: '+1h to +2h',
@@ -98,13 +94,8 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
   ];
 
   const RegionCard = ({ region }: { region: RegionData }) => {
-    const [imgFallbackIndex, setImgFallbackIndex] = useState(-1);
     const [isHovered, setIsHovered] = useState(false);
     const isSelected = selectedRegions.includes(region.id);
-
-    const currentSrc = imgFallbackIndex >= 0 && Array.isArray(region.fallbacks)
-      ? region.fallbacks[Math.min(imgFallbackIndex, region.fallbacks.length - 1)]
-      : region.bgImage;
 
     return (
       <motion.div
@@ -120,22 +111,17 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
         }`}
       >
         {/* Image Section - Responsive Aspect Ratio */}
-        <div className="relative aspect-[5/4] md:aspect-[4/5] w-full overflow-hidden">
+        <div className="relative aspect-[4/5] md:aspect-[3/4] w-full overflow-hidden">
           <Image
-            src={currentSrc}
+            src={region.bgImage}
             alt={region.name}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
             className={`object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
-            onError={() => {
-              if (region.fallbacks && imgFallbackIndex < region.fallbacks.length - 1) {
-                setImgFallbackIndex(prev => prev + 1);
-              }
-            }}
           />
           
           {/* Gradient Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 ${isSelected ? 'opacity-90' : 'opacity-70 group-hover:opacity-80'}`} />
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 ${isSelected ? 'opacity-95' : 'opacity-80 group-hover:opacity-85'}`} />
 
           {/* Selected State Ring */}
           {isSelected && (
@@ -149,7 +135,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
 
           {/* Top Content */}
           <div className="absolute top-0 left-0 w-full p-3 md:p-6 z-10 flex justify-between items-start">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold shadow-sm border border-white/10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md text-white text-xs font-bold shadow-sm border border-white/20">
               <span>{region.icon}</span> {region.vibe}
             </div>
             
@@ -158,29 +144,29 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
                 e.stopPropagation();
                 setSelectedRegionDetails(region);
               }}
-              className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-sb-navy-900 transition-colors border border-white/10"
+              className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-sb-navy-900 transition-colors border border-white/20"
             >
               <Info size={16} strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Bottom Content */}
-          <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-10 text-white">
+          <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 z-10 text-white drop-shadow-md">
             <h3 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight">
               {region.name}
             </h3>
-            <p className="text-white/90 text-xs md:text-sm font-medium leading-relaxed mb-3 md:mb-4 line-clamp-2">
+            <p className="text-white text-xs md:text-sm font-semibold leading-relaxed mb-3 md:mb-4 line-clamp-2">
               {region.tagline}
             </p>
 
             {/* Quick Stats */}
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="bg-white/10 backdrop-blur-sm px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-white/10">
-                <span className="text-[9px] md:text-[10px] uppercase tracking-wider opacity-70 block">Budget</span>
+              <div className="bg-white/20 backdrop-blur-md px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-white/20">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider opacity-90 block font-bold">Budget</span>
                 <span className="text-xs md:text-sm font-bold">{region.budget}</span>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-white/10">
-                <span className="text-[9px] md:text-[10px] uppercase tracking-wider opacity-70 block">Timezone</span>
+              <div className="bg-white/20 backdrop-blur-md px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-white/20">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-wider opacity-90 block font-bold">Timezone</span>
                 <span className="text-xs md:text-sm font-bold">{region.timezone}</span>
               </div>
             </div>
