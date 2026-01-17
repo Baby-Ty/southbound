@@ -11,13 +11,31 @@ import { VibeKey, VIBE_TAG_MAP } from './VibeSelector';
 interface TripResultsProps {
   selectedRegions: RegionKey[];
   selectedVibes: VibeKey[];
+  preselectedTemplateId?: string | null;
 }
 
-export default function TripResults({ selectedRegions, selectedVibes }: TripResultsProps) {
+export default function TripResults({ selectedRegions, selectedVibes, preselectedTemplateId }: TripResultsProps) {
   const [matchedTrips, setMatchedTrips] = useState<TripTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle preselected template
+  useEffect(() => {
+    if (preselectedTemplateId && matchedTrips.length > 0) {
+      const templateExists = matchedTrips.some(t => t.id === preselectedTemplateId);
+      if (templateExists) {
+        setSelectedTripId(preselectedTemplateId);
+        // Scroll to results after a delay
+        setTimeout(() => {
+          cardsContainerRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 800);
+      }
+    }
+  }, [preselectedTemplateId, matchedTrips]);
 
   useEffect(() => {
     async function filterTrips() {

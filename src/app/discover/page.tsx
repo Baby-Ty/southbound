@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import { RegionKey } from '@/lib/cityPresets';
 import RegionSelector from '@/components/discover/RegionSelector';
 import VibeSelector, { VibeKey } from '@/components/discover/VibeSelector';
@@ -9,13 +10,46 @@ import TripResults from '@/components/discover/TripResults';
 import LeadCaptureForm from '@/components/discover/LeadCaptureForm';
 
 export default function DiscoverPage() {
+  const searchParams = useSearchParams();
   const [selectedRegions, setSelectedRegions] = useState<RegionKey[]>([]);
   const [selectedVibes, setSelectedVibes] = useState<VibeKey[]>([]);
+  const [preselectedTemplateId, setPreselectedTemplateId] = useState<string | null>(null);
   const [hasScrolledToVibes, setHasScrolledToVibes] = useState(false);
   const [hasScrolledToResults, setHasScrolledToResults] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   const vibesRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    if (hasInitialized) return;
+    
+    const region = searchParams.get('region') as RegionKey | null;
+    const vibesParam = searchParams.get('vibes');
+    const templateId = searchParams.get('template');
+    
+    if (region && ['europe', 'latin-america', 'southeast-asia'].includes(region)) {
+      setSelectedRegions([region]);
+      setHasScrolledToVibes(true); // Skip auto-scroll since we're pre-selecting
+    }
+    
+    if (vibesParam) {
+      const vibes = vibesParam.split(',').filter(v => 
+        ['beach', 'city-culture', 'adventure-wellness'].includes(v)
+      ) as VibeKey[];
+      if (vibes.length > 0) {
+        setSelectedVibes(vibes);
+        setHasScrolledToResults(true); // Skip auto-scroll since we're pre-selecting
+      }
+    }
+    
+    if (templateId) {
+      setPreselectedTemplateId(templateId);
+    }
+    
+    setHasInitialized(true);
+  }, [searchParams, hasInitialized]);
 
   // Auto-scroll when sections reveal (only once per section)
   useEffect(() => {
@@ -186,7 +220,11 @@ export default function DiscoverPage() {
               exit="exit"
               className="space-y-12"
             >
-              <TripResults selectedRegions={selectedRegions} selectedVibes={selectedVibes} />
+              <TripResults 
+                selectedRegions={selectedRegions} 
+                selectedVibes={selectedVibes}
+                preselectedTemplateId={preselectedTemplateId}
+              />
               
               {/* Divider before form */}
               <motion.div

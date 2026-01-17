@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { Navbar } from './Navbar';
 import Footer from './Footer';
-import FloatingWhatsAppButton from './FloatingWhatsAppButton';
 import { ScrollProgress } from './ScrollProgress';
 
 interface LayoutProps {
@@ -274,7 +273,6 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
       {!isHub && !isDiscover && <Footer />}
-      {!isHub && !isDiscover && <FloatingWhatsAppButton />}
     </div>
   );
 };

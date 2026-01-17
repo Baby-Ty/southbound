@@ -23,6 +23,7 @@ export const Navbar = () => {
   
   const navItems = [
     ...(!isHomePage ? [{ name: 'Home', href: '/' }] : []),
+    { name: 'Popular Routes', href: '/templates' },
     { name: 'Plan My Route', href: '/route-builder' },
     { name: 'About', href: '/about' },
   ];
