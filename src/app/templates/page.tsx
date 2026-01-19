@@ -181,10 +181,18 @@ export default function TripTemplatesPage() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#E86B32] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-stone-600 font-medium">Loading templates...</p>
-        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+export default function TemplatesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading templates...</div>}>
+      <TemplatesPageContent />
+    </Suspense>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sb-beige-100 via-white to-sb-teal-50">
