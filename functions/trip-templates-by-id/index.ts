@@ -59,6 +59,12 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
       const body = (await request.json()) as Partial<TripTemplate>;
       const region = body.region || request.query.get('region');
       
+      context.log(`[PATCH] Updating template ${id} in region ${region}`);
+      context.log('[PATCH] Body received:', JSON.stringify(body, null, 2));
+      context.log(`[PATCH] Body keys:`, Object.keys(body));
+      context.log(`[PATCH] body.isCurated:`, body.isCurated, `(type: ${typeof body.isCurated}, in body: ${'isCurated' in body})`);
+      context.log(`[PATCH] body.curatedOrder:`, body.curatedOrder, `(type: ${typeof body.curatedOrder}, in body: ${'curatedOrder' in body})`);
+      
       if (!region) {
         return createCorsResponse({ error: 'Region is required (in body or query)' }, 400);
       }
@@ -85,11 +91,140 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
       if (body.tags !== undefined) {
         allowed.tags = Array.isArray(body.tags) ? body.tags.map(t => String(t).trim()) : [];
       }
+      if (body.story !== undefined) allowed.story = String(body.story).trim();
       if (body.enabled !== undefined) allowed.enabled = !!body.enabled;
       if (body.order !== undefined) allowed.order = Number(body.order) || 0;
+      // Handle isCurated - explicitly check for presence in body
+      if ('isCurated' in body) {
+        // Handle boolean, string, or number values
+        let isCuratedValue: boolean;
+        const isCuratedRaw = body.isCurated as any;
+        if (typeof isCuratedRaw === 'boolean') {
+          isCuratedValue = isCuratedRaw;
+        } else if (typeof isCuratedRaw === 'string') {
+          isCuratedValue = isCuratedRaw.toLowerCase() === 'true';
+        } else if (typeof isCuratedRaw === 'number') {
+          isCuratedValue = isCuratedRaw === 1;
+        } else {
+          isCuratedValue = Boolean(isCuratedRaw);
+        }
+        allowed.isCurated = isCuratedValue;
+        context.log(`[PATCH] Set isCurated: ${allowed.isCurated} (type: ${typeof allowed.isCurated}, from: ${body.isCurated})`);
+      }
+      
+      // Handle curatedOrder - explicitly check for presence in body
+      if ('curatedOrder' in body) {
+        if (body.curatedOrder === null) {
+          // Explicitly clear the field
+          allowed.curatedOrder = undefined;
+          context.log(`[PATCH] Clearing curatedOrder (received null)`);
+        } else if (body.curatedOrder !== undefined) {
+          const order = typeof body.curatedOrder === 'number' 
+            ? body.curatedOrder 
+            : Number(body.curatedOrder);
+          if (!isNaN(order) && order > 0) {
+            allowed.curatedOrder = order;
+            context.log(`[PATCH] Set curatedOrder: ${allowed.curatedOrder} (from: ${body.curatedOrder})`);
+          } else {
+            context.log(`[PATCH] Invalid curatedOrder value: ${body.curatedOrder}, skipping`);
+          }
+        }
+      }
+      if (body.curatedImageUrl !== undefined) {
+        const trimmed = String(body.curatedImageUrl).trim();
+        allowed.curatedImageUrl = trimmed === '' ? undefined : trimmed;
+      }
+      // Homepage card display fields
+      if (body.price !== undefined) {
+        const trimmed = String(body.price).trim();
+        allowed.price = trimmed === '' ? undefined : trimmed;
+      }
+      if (body.vibe !== undefined) {
+        const trimmed = String(body.vibe).trim();
+        allowed.vibe = trimmed === '' ? undefined : trimmed;
+      }
+      if (body.internetSpeed !== undefined) {
+        const trimmed = String(body.internetSpeed).trim();
+        allowed.internetSpeed = trimmed === '' ? undefined : trimmed;
+      }
+      if (body.safetyRating !== undefined) {
+        const trimmed = String(body.safetyRating).trim();
+        allowed.safetyRating = trimmed === '' ? undefined : trimmed;
+      }
+      if (body.avgWeather !== undefined) {
+        const trimmed = String(body.avgWeather).trim();
+        allowed.avgWeather = trimmed === '' ? undefined : trimmed;
+      }
+      if (body.bestFor !== undefined) {
+        const trimmed = String(body.bestFor).trim();
+        allowed.bestFor = trimmed === '' ? undefined : trimmed;
+      }
 
-      const template = await updateTripTemplate(id, region, allowed);
-      return createCorsResponse({ template });
+      // CRITICAL: Final safety check - ensure fields are in allowed if they're in body
+      if ('isCurated' in body) {
+        if (!('isCurated' in allowed)) {
+          context.log(`[PATCH] WARNING: isCurated was in body but not set in allowed! Forcing...`);
+        }
+        // Force set it regardless
+        const isCuratedRaw = body.isCurated as any;
+        const isCuratedValue = typeof isCuratedRaw === 'boolean' 
+          ? isCuratedRaw 
+          : (typeof isCuratedRaw === 'string' ? isCuratedRaw.toLowerCase() === 'true' : Boolean(isCuratedRaw));
+        allowed.isCurated = isCuratedValue;
+        context.log(`[PATCH] FORCED isCurated: ${allowed.isCurated}`);
+      }
+      
+      if ('curatedOrder' in body) {
+        if (body.curatedOrder === null) {
+          // Explicitly clear the field
+          if (!('curatedOrder' in allowed)) {
+            context.log(`[PATCH] WARNING: curatedOrder was in body but not set in allowed! Forcing clear...`);
+          }
+          allowed.curatedOrder = undefined;
+          context.log(`[PATCH] FORCED clear curatedOrder`);
+        } else if (body.curatedOrder !== null && body.curatedOrder !== undefined) {
+          if (!('curatedOrder' in allowed)) {
+            context.log(`[PATCH] WARNING: curatedOrder was in body but not set in allowed! Forcing...`);
+          }
+          // Force set it regardless
+          const order = typeof body.curatedOrder === 'number' ? body.curatedOrder : Number(body.curatedOrder);
+          if (!isNaN(order) && order > 0) {
+            allowed.curatedOrder = order;
+            context.log(`[PATCH] FORCED curatedOrder: ${allowed.curatedOrder}`);
+          }
+        }
+      }
+      
+      context.log('[PATCH] Final allowed updates:', JSON.stringify(allowed, null, 2));
+      context.log(`[PATCH] Final allowed keys:`, Object.keys(allowed));
+      context.log(`[PATCH] Final allowed.isCurated:`, allowed.isCurated, `(type: ${typeof allowed.isCurated})`);
+      context.log(`[PATCH] Final allowed.curatedOrder:`, allowed.curatedOrder, `(type: ${typeof allowed.curatedOrder})`);
+
+      if (Object.keys(allowed).length === 0) {
+        context.log('[PATCH] No updates to apply, returning existing template');
+        const existing = await getTripTemplateById(id, region);
+        if (!existing) return createCorsResponse({ error: 'Template not found' }, 404);
+        return createCorsResponse({ template: existing });
+      }
+
+      try {
+        const template = await updateTripTemplate(id, region, allowed);
+        
+        context.log('[PATCH] Updated template:', JSON.stringify(template, null, 2));
+        context.log(`[PATCH] Successfully updated template ${id} - isCurated: ${template.isCurated}, curatedOrder: ${template.curatedOrder}`);
+        
+        return createCorsResponse({ template });
+      } catch (updateError: any) {
+        context.log(`[PATCH] Error updating template ${id}:`, updateError.message);
+        context.log(`[PATCH] Error stack:`, updateError.stack);
+        return createCorsResponse(
+          { 
+            error: updateError.message || 'Failed to update template',
+            details: process.env.NODE_ENV === 'development' ? updateError.stack : undefined
+          },
+          500
+        );
+      }
     }
 
     if (request.method === 'DELETE') {

@@ -24,6 +24,7 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
     if (request.method === 'GET') {
       const regionParam = request.query.get('region');
       const enabledParam = request.query.get('enabled');
+      const curatedParam = request.query.get('curated');
       
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       const region = regionParam && validRegions.includes(regionParam)
@@ -37,6 +38,13 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
             ? true
             : false;
 
+      const isCurated =
+        curatedParam === null || curatedParam === undefined
+          ? undefined
+          : curatedParam === 'true'
+            ? true
+            : false;
+
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ templates: [] });
       }
@@ -44,6 +52,7 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
       const templates = await getTripTemplates({
         ...(region ? { region } : {}),
         ...(typeof enabled === 'boolean' ? { enabled } : {}),
+        ...(typeof isCurated === 'boolean' ? { isCurated } : {}),
       });
       return createCorsResponse({ templates });
     }

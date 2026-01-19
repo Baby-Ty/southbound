@@ -1,12 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Wifi, Shield, Sun, ArrowRight, MapPin, Zap } from 'lucide-react';
+import { Wifi, Shield, Sun, ArrowRight, MapPin, Zap, Loader2 } from 'lucide-react';
+import { TripTemplate } from '@/lib/tripTemplates';
 
-const destinations = [
+// Fallback destinations in case API fails or no curated templates
+const fallbackDestinations = [
   {
     id: 1,
     name: 'Bali, Indonesia',
@@ -19,7 +21,8 @@ const destinations = [
       safety: '4.5/5',
       weather: '27°C',
     },
-    bestFor: 'Surfing & Cafes'
+    bestFor: 'Surfing & Cafes',
+    link: '/discover?region=southeast-asia'
   },
   {
     id: 2,
@@ -33,7 +36,8 @@ const destinations = [
       safety: '4.6/5',
       weather: '30°C',
     },
-    bestFor: 'Beaches & Wellness'
+    bestFor: 'Beaches & Wellness',
+    link: '/discover?region=southeast-asia'
   },
   {
     id: 3,
@@ -47,7 +51,8 @@ const destinations = [
       safety: '4.3/5',
       weather: '20°C',
     },
-    bestFor: 'Culture & Nightlife'
+    bestFor: 'Culture & Nightlife',
+    link: '/discover?region=latin-america'
   },
   {
     id: 4,
@@ -61,12 +66,25 @@ const destinations = [
       safety: '4.4/5',
       weather: '28°C',
     },
-    bestFor: 'Diving & Cenotes'
+    bestFor: 'Diving & Cenotes',
+    link: '/discover?region=latin-america'
   }
 ];
 
-const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
+type DestinationType = typeof fallbackDestinations[0] | (TripTemplate & { link: string; tag: string; price: string; vibe: string; stats: typeof fallbackDestinations[0]['stats']; bestFor: string });
+
+const DestinationCard = ({ dest }: { dest: DestinationType }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Determine the image to use
+  const image = 'curatedImageUrl' in dest && dest.curatedImageUrl 
+    ? dest.curatedImageUrl 
+    : 'imageUrl' in dest 
+      ? dest.imageUrl 
+      : dest.image;
+
+  // Determine the link
+  const link = 'link' in dest ? dest.link : `/templates?expanded=${dest.id}`;
 
   return (
     <motion.div 
@@ -82,7 +100,7 @@ const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
       {/* Background Image */}
       <div className="absolute inset-0 w-full h-full">
         <Image
-          src={dest.image}
+          src={image}
           alt={dest.name}
           fill
           className={`object-cover transition-transform duration-700 ${isExpanded ? 'scale-110' : 'scale-100'}`}
@@ -143,7 +161,7 @@ const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
               </div>
 
               <Link 
-                href="/discover"
+                href={link}
                 className="flex items-center justify-center gap-2 w-full bg-[#E86B32] hover:bg-[#d55a24] text-white font-bold py-3.5 rounded-xl transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -158,7 +176,100 @@ const DestinationCard = ({ dest }: { dest: typeof destinations[0] }) => {
   );
 }
 
+// Skeleton card component for loading state
+const DestinationCardSkeleton = () => {
+  return (
+    <div className="relative h-[480px] w-full overflow-hidden rounded-3xl bg-stone-200 animate-pulse">
+      <div className="absolute inset-0 bg-gradient-to-t from-stone-800/90 via-stone-600/40 to-transparent" />
+      
+      {/* Top Badge Skeleton */}
+      <div className="absolute top-6 left-6 z-10">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full w-32 h-6" />
+      </div>
+
+      {/* Content Skeleton */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
+        <div className="mb-2">
+          <div className="h-8 bg-white/20 rounded w-3/4 mb-2" />
+          <div className="h-5 bg-white/20 rounded w-1/2" />
+        </div>
+        
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-3 gap-4 border-t border-white/20 pt-4 mt-6">
+          <div className="flex flex-col items-center text-center gap-1">
+            <div className="w-5 h-5 bg-white/20 rounded" />
+            <div className="h-3 bg-white/20 rounded w-12" />
+            <div className="h-4 bg-white/20 rounded w-16" />
+          </div>
+          <div className="flex flex-col items-center text-center gap-1">
+            <div className="w-5 h-5 bg-white/20 rounded" />
+            <div className="h-3 bg-white/20 rounded w-12" />
+            <div className="h-4 bg-white/20 rounded w-16" />
+          </div>
+          <div className="flex flex-col items-center text-center gap-1">
+            <div className="w-5 h-5 bg-white/20 rounded" />
+            <div className="h-3 bg-white/20 rounded w-12" />
+            <div className="h-4 bg-white/20 rounded w-16" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DestinationsGrid = () => {
+  const [destinations, setDestinations] = useState<DestinationType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    async function fetchCuratedTemplates() {
+      try {
+        setLoading(true);
+        setError(false);
+        const { apiUrl } = await import('@/lib/api');
+        const response = await fetch(apiUrl('trip-templates?curated=true&enabled=true'));
+        
+        if (!response.ok) throw new Error('Failed to fetch curated templates');
+        
+        const data = await response.json();
+        const templates: TripTemplate[] = data.templates || [];
+        
+        if (templates.length > 0) {
+          // Map templates to destination format
+          const mappedDestinations = templates.slice(0, 4).map((template) => ({
+            ...template,
+            image: template.curatedImageUrl || template.imageUrl,
+            tag: template.tags[0] || 'Adventure',
+            price: template.price || 'R25,000/mo',
+            vibe: template.vibe || template.description.split('.')[0],
+            stats: {
+              internet: template.internetSpeed || '50+ Mbps',
+              safety: template.safetyRating || '4.5/5',
+              weather: template.avgWeather || '25°C',
+            },
+            bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
+            link: `/templates?expanded=${template.id}`,
+          }));
+          
+          setDestinations(mappedDestinations);
+        } else {
+          // No curated templates found - use fallback
+          setDestinations(fallbackDestinations);
+        }
+      } catch (error) {
+        console.error('Error fetching curated templates:', error);
+        setError(true);
+        // Only show fallback destinations on error, not during loading
+        setDestinations(fallbackDestinations);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCuratedTemplates();
+  }, []);
+
   return (
     <section className="py-24 bg-white relative overflow-hidden">
       {/* Subtle Background Decoration */}
@@ -180,7 +291,7 @@ const DestinationsGrid = () => {
             </p>
           </div>
           <Link 
-            href="/discover" 
+            href="/templates" 
             className="hidden md:inline-flex items-center font-semibold text-[#E86B32] hover:text-[#d55a24] transition-colors group text-lg"
           >
             Explore all destinations 
@@ -189,14 +300,22 @@ const DestinationsGrid = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {destinations.map((dest) => (
-            <DestinationCard key={dest.id} dest={dest} />
-          ))}
+          {loading ? (
+            // Show skeleton cards while loading
+            Array.from({ length: 4 }).map((_, idx) => (
+              <DestinationCardSkeleton key={`skeleton-${idx}`} />
+            ))
+          ) : destinations.length > 0 ? (
+            // Show actual destination cards
+            destinations.map((dest) => (
+              <DestinationCard key={'id' in dest ? dest.id : dest.name} dest={dest} />
+            ))
+          ) : null}
         </div>
 
         <div className="mt-12 text-center md:hidden">
           <Link 
-            href="/discover" 
+            href="/templates" 
             className="inline-flex items-center font-semibold text-[#E86B32] text-lg"
           >
             Explore all destinations <ArrowRight className="ml-2" size={20} />

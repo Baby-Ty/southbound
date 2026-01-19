@@ -68,6 +68,9 @@ async function seedTripTemplates() {
           story: template.story,
           enabled: true,
           order: i,
+          isCurated: false, // Default to not curated
+          curatedOrder: undefined,
+          curatedImageUrl: undefined,
         });
         console.log(`  ✅ Created ${template.id}: ${template.name}`);
         totalCreated++;

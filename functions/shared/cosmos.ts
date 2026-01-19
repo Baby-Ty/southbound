@@ -410,6 +410,16 @@ export interface TripTemplate {
   story?: string; // Narrative overview of the route
   enabled: boolean;
   order: number; // Sort order within region
+  isCurated?: boolean; // Whether this template appears on homepage
+  curatedOrder?: number; // Display priority for curated templates (lower = higher priority)
+  curatedImageUrl?: string; // Optional alternate image URL for homepage display
+  // Homepage card display fields
+  price?: string; // e.g., "R25,000/mo"
+  vibe?: string; // Short tagline (e.g., "Beach & Relaxation")
+  internetSpeed?: string; // e.g., "50 Mbps"
+  safetyRating?: string; // e.g., "4.5/5"
+  avgWeather?: string; // e.g., "27°C"
+  bestFor?: string; // e.g., "Surfing & Cafes"
   createdAt: string;
   updatedAt: string;
 }
@@ -437,6 +447,7 @@ export async function createTripTemplate(
 export async function getTripTemplates(filters?: {
   region?: 'europe' | 'latin-america' | 'southeast-asia';
   enabled?: boolean;
+  isCurated?: boolean;
 }): Promise<TripTemplate[]> {
   const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
 
@@ -453,12 +464,24 @@ export async function getTripTemplates(filters?: {
     params.push({ name: '@enabled', value: filters.enabled });
   }
 
+  if (typeof filters?.isCurated === 'boolean') {
+    query += ' AND c.isCurated = @isCurated';
+    params.push({ name: '@isCurated', value: filters.isCurated });
+  }
+
   const { resources } = await container.items
     .query({ query, parameters: params })
     .fetchAll();
 
   // Sort in memory since Cosmos DB requires composite index for ORDER BY
   const sorted = (resources as TripTemplate[]).sort((a, b) => {
+    // If filtering by curated, sort by curatedOrder first
+    if (filters?.isCurated && a.isCurated && b.isCurated) {
+      const orderA = a.curatedOrder ?? 999;
+      const orderB = b.curatedOrder ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+    }
+    // Otherwise sort by normal order
     if (a.order !== b.order) return a.order - b.order;
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
@@ -488,14 +511,38 @@ export async function updateTripTemplate(
   const existing = await getTripTemplateById(id, region);
   if (!existing) throw new Error(`Trip template ${id} not found`);
 
+  console.log(`[Cosmos] Updating template ${id} in region ${region}`);
+  console.log(`[Cosmos] Updates received:`, JSON.stringify(updates, null, 2));
+  console.log(`[Cosmos] Existing isCurated:`, existing.isCurated);
+  console.log(`[Cosmos] Updates isCurated:`, updates.isCurated);
+
   const updated: TripTemplate = {
     ...existing,
     ...updates,
     updatedAt: new Date().toISOString(),
   };
 
+  console.log(`[Cosmos] Final updated object isCurated:`, updated.isCurated);
+  console.log(`[Cosmos] Final updated object curatedOrder:`, updated.curatedOrder);
+  console.log(`[Cosmos] Sending to CosmosDB:`, JSON.stringify({
+    id: updated.id,
+    isCurated: updated.isCurated,
+    curatedOrder: updated.curatedOrder,
+    name: updated.name,
+  }, null, 2));
+
   const { resource } = await container.item(id, region).replace(updated);
-  return resource as TripTemplate;
+  
+  console.log(`[Cosmos] Replace response isCurated:`, (resource as any)?.isCurated);
+  console.log(`[Cosmos] Replace response curatedOrder:`, (resource as any)?.curatedOrder);
+  
+  // CosmosDB replace might not return all fields, so fetch it back to ensure we have the complete document
+  const { resource: verified } = await container.item(id, region).read();
+  
+  console.log(`[Cosmos] Verified read isCurated:`, (verified as any)?.isCurated);
+  console.log(`[Cosmos] Verified read curatedOrder:`, (verified as any)?.curatedOrder);
+  
+  return verified as TripTemplate;
 }
 
 export async function deleteTripTemplate(id: string, region: string): Promise<void> {

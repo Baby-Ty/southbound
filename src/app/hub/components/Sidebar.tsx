@@ -9,7 +9,7 @@ const navItems = [
   { name: 'Destinations', href: '/hub/destinations', icon: Map },
   { name: 'Playbook', href: '/hub/playbook', icon: BookOpen },
   { name: 'Routes', href: '/hub/routes', icon: Route },
-  { name: 'Trip Templates', href: '/hub/trip-templates', icon: Sparkles },
+  { name: 'Templates', href: '/hub/templates', icon: Sparkles },
   { name: 'Route Cards', href: '/hub/route-cards', icon: MapPin },
   { name: 'Default Trips', href: '/hub/default-trips', icon: List },
   { name: 'Leads', href: '/hub/leads', icon: Users },

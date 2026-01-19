@@ -10,6 +10,16 @@ export interface TripTemplate {
   tags: string[]; // Mood/vibe tags
   region: RegionKey;
   story: string; // Narrative overview of the route
+  isCurated?: boolean; // Whether this template appears on homepage
+  curatedOrder?: number; // Display priority for curated templates (lower = higher priority)
+  curatedImageUrl?: string; // Optional alternate image URL for homepage display
+  // Homepage card display fields
+  price?: string; // e.g., "R25,000/mo"
+  vibe?: string; // Short tagline (e.g., "Beach & Relaxation")
+  internetSpeed?: string; // e.g., "50 Mbps"
+  safetyRating?: string; // e.g., "4.5/5"
+  avgWeather?: string; // e.g., "27°C"
+  bestFor?: string; // e.g., "Surfing & Cafes"
 }
 
 export const TRIP_TEMPLATES: Record<RegionKey, TripTemplate[]> = {

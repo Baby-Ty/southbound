@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { RegionKey } from '@/lib/cityPresets';
 import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
 import { VibeKey } from '@/components/discover/VibeSelector';
@@ -44,11 +44,84 @@ const itemVariants = {
 export default function TripTemplatesPage() {
   const [selectedRegion, setSelectedRegion] = useState<RegionKey>('southeast-asia');
   const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(null);
+  const [apiTemplates, setApiTemplates] = useState<Record<RegionKey, TripTemplate[]>>({} as Record<RegionKey, TripTemplate[]>);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Fetch templates from API
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const { apiUrl } = await import('@/lib/api');
+        const templatesData: Record<RegionKey, TripTemplate[]> = {
+          'europe': [],
+          'latin-america': [],
+          'southeast-asia': [],
+        };
+        
+        // Fetch templates for each region
+        for (const region of REGION_ORDER) {
+          const response = await fetch(apiUrl(`trip-templates?region=${region}&enabled=true`));
+          if (response.ok) {
+            const data = await response.json();
+            templatesData[region] = data.templates || [];
+          }
+        }
+        
+        setApiTemplates(templatesData);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        // Fallback to static templates
+        setApiTemplates(TRIP_TEMPLATES);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    }
+    
+    fetchTemplates();
+  }, []);
+
+  // Handle deep linking - expand template from URL parameter
+  useEffect(() => {
+    if (loadingTemplates) return; // Wait for templates to load
+    
+    const expandedParam = searchParams.get('expanded');
+    if (expandedParam) {
+      // Find which region this template belongs to
+      let foundRegion: RegionKey | null = null;
+      for (const region of REGION_ORDER) {
+        const templates = apiTemplates[region] || [];
+        const template = templates.find(t => t.id === expandedParam);
+        if (template) {
+          foundRegion = region;
+          break;
+        }
+      }
+      
+      if (foundRegion) {
+        setSelectedRegion(foundRegion);
+      }
+      
+      // Set expanded state
+      setExpandedTemplateId(expandedParam);
+      
+      // Scroll to the template after a delay to allow rendering
+      setTimeout(() => {
+        const element = document.getElementById(`template-${expandedParam}`);
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+          });
+        }
+      }, 500);
+    }
+  }, [searchParams, apiTemplates, loadingTemplates]);
 
   const templates = useMemo(
-    () => TRIP_TEMPLATES[selectedRegion] || [],
-    [selectedRegion]
+    () => apiTemplates[selectedRegion] || [],
+    [selectedRegion, apiTemplates]
   );
 
   // Auto-map template tags to vibes
@@ -96,12 +169,22 @@ export default function TripTemplatesPage() {
       setTimeout(() => {
         cardElement.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'nearest',
-          inline: 'nearest'
+          block: 'center',
         });
-      }, 400); // Wait for expansion animation to mostly complete
+      }, 400);
     }
   };
+
+  if (loadingTemplates) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sb-beige-100 via-white to-sb-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#E86B32] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-stone-600 font-medium">Loading templates...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sb-beige-100 via-white to-sb-teal-50">
@@ -208,6 +291,7 @@ function TemplateCard({
   
   return (
     <motion.article
+      id={`template-${template.id}`}
       ref={cardRef}
       layout
       variants={itemVariants}
