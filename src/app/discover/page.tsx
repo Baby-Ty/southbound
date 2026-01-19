@@ -248,3 +248,11 @@ function DiscoverPageContent() {
     </div>
   );
 }
+
+export default function DiscoverPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <DiscoverPageContent />
+    </Suspense>
+  );
+}
