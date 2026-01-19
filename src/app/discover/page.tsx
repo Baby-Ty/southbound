@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { RegionKey } from '@/lib/cityPresets';
@@ -9,7 +9,7 @@ import VibeSelector, { VibeKey } from '@/components/discover/VibeSelector';
 import TripResults from '@/components/discover/TripResults';
 import LeadCaptureForm from '@/components/discover/LeadCaptureForm';
 
-export default function DiscoverPage() {
+function DiscoverPageContent() {
   const searchParams = useSearchParams();
   const [selectedRegions, setSelectedRegions] = useState<RegionKey[]>([]);
   const [selectedVibes, setSelectedVibes] = useState<VibeKey[]>([]);
