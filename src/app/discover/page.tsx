@@ -9,6 +9,9 @@ import VibeSelector, { VibeKey } from '@/components/discover/VibeSelector';
 import TripResults from '@/components/discover/TripResults';
 import LeadCaptureForm from '@/components/discover/LeadCaptureForm';
 
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic';
+
 function DiscoverPageContent() {
   const searchParams = useSearchParams();
   const [selectedRegions, setSelectedRegions] = useState<RegionKey[]>([]);
