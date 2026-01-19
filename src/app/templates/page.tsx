@@ -390,3 +390,12 @@ function TemplateCard({
     </motion.article>
   );
 }
+
+
+export default function TemplatesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading templates...</div>}>
+      <TemplatesPageContent />
+    </Suspense>
+  );
+}
