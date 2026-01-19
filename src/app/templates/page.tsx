@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RegionKey } from '@/lib/cityPresets';
 import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
 import { VibeKey } from '@/components/discover/VibeSelector';
+
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic';
 
 const REGION_ORDER: RegionKey[] = ['southeast-asia', 'latin-america', 'europe'];
 
@@ -41,7 +44,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-export default function TripTemplatesPage() {
+function TemplatesPageContent() {
   const [selectedRegion, setSelectedRegion] = useState<RegionKey>('southeast-asia');
   const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(null);
   const [apiTemplates, setApiTemplates] = useState<Record<RegionKey, TripTemplate[]>>({} as Record<RegionKey, TripTemplate[]>);
@@ -181,18 +184,10 @@ export default function TripTemplatesPage() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#E86B32] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-stone-600 font-medium">Loading templates...</p>
+        </div>
       </div>
-    </div>
-  );
-}
-
-export default function TemplatesPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading templates...</div>}>
-      <TemplatesPageContent />
-    </Suspense>
-  );
-}
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sb-beige-100 via-white to-sb-teal-50">
