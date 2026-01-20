@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { corsHeaders, createCorsResponse } from '../shared/cors';
+import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 import { createTripTemplate, getTripTemplates, TripTemplate } from '../shared/cosmos';
 
 function isCosmosDBConfigured(): boolean {
@@ -12,11 +12,13 @@ function isCosmosDBConfigured(): boolean {
 }
 
 export async function tripTemplates(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  const origin = request.headers.get('origin');
+  
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return {
       status: 204,
-      headers: corsHeaders,
+      headers: getCorsHeaders(origin),
     };
   }
 
@@ -46,7 +48,7 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
             : false;
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ templates: [] });
+        return createCorsResponse({ templates: [] }, 200, origin);
       }
 
       const templates = await getTripTemplates({
@@ -54,7 +56,7 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
         ...(typeof enabled === 'boolean' ? { enabled } : {}),
         ...(typeof isCurated === 'boolean' ? { isCurated } : {}),
       });
-      return createCorsResponse({ templates });
+      return createCorsResponse({ templates }, 200, origin);
     }
 
     if (request.method === 'POST') {
@@ -65,7 +67,8 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
       if (!body?.name || !body?.region || !Array.isArray(body?.presetCities)) {
         return createCorsResponse(
           { error: 'Missing required fields: name, region, presetCities' },
-          400
+          400,
+          origin
         );
       }
 
@@ -73,12 +76,13 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
       if (!validRegions.includes(body.region)) {
         return createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
-          400
+          400,
+          origin
         );
       }
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500, origin);
       }
 
       const template = await createTripTemplate({
@@ -93,10 +97,10 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
         order: typeof body.order === 'number' && Number.isFinite(body.order) ? body.order : 0,
       });
 
-      return createCorsResponse({ template }, 201);
+      return createCorsResponse({ template }, 201, origin);
     }
 
-    return createCorsResponse({ error: 'Method not allowed' }, 405);
+    return createCorsResponse({ error: 'Method not allowed' }, 405, origin);
   } catch (error: any) {
     context.log(
       `Error processing trip templates request: ${error instanceof Error ? error.message : String(error)}`
@@ -106,7 +110,8 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
-      500
+      500,
+      origin
     );
   }
 }

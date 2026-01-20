@@ -30,17 +30,18 @@ export function getApiUrl(): string {
     
     // If on Azure Web App or custom domain, use the Functions URL
     // Check for custom domain first (southbnd.co.za or hub.southbnd.co.za)
-    // Use api.southbnd.co.za if available (set up in GoDaddy DNS)
     if (hostname.includes('southbnd.co.za')) {
-      const functionsUrl = 'https://api.southbnd.co.za';
-      console.log('[API] Using custom domain Functions URL:', functionsUrl);
+      // Use direct Azure Functions URL (has valid SSL cert)
+      // Note: api.southbnd.co.za requires SSL certificate configuration in Azure
+      const functionsUrl = 'https://southbnd-functions.azurewebsites.net';
+      console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
     }
     
     // Fallback: check if on Azure Web App (azurewebsites.net)
     if (hostname.includes('azurewebsites.net')) {
       // Use the actual Functions URL
-      const functionsUrl = 'https://southbound-functions.azurewebsites.net';
+      const functionsUrl = 'https://southbnd-functions.azurewebsites.net';
       console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
     }
