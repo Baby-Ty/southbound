@@ -223,21 +223,55 @@ const DestinationsGrid = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    async function fetchCuratedTemplates() {
+    async function loadCuratedTemplates() {
       try {
         setLoading(true);
         setError(false);
-        const { apiUrl } = await import('@/lib/api');
-        const response = await fetch(apiUrl('trip-templates?curated=true&enabled=true'));
         
-        if (!response.ok) throw new Error('Failed to fetch curated templates');
+        // Try to fetch from API first (works in development)
+        try {
+          const { apiUrl } = await import('@/lib/api');
+          const response = await fetch(apiUrl('trip-templates?curated=true&enabled=true'));
+          
+          if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
+            const data = await response.json();
+            const templates: TripTemplate[] = data.templates || [];
+            
+            if (templates.length > 0) {
+              const mappedDestinations = templates.slice(0, 4).map((template) => ({
+                ...template,
+                image: template.curatedImageUrl || template.imageUrl,
+                tag: template.tags[0] || 'Adventure',
+                price: template.price || 'R25,000/mo',
+                vibe: template.vibe || template.description.split('.')[0],
+                stats: {
+                  internet: template.internetSpeed || '50+ Mbps',
+                  safety: template.safetyRating || '4.5/5',
+                  weather: template.avgWeather || '25°C',
+                },
+                bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
+                link: `/templates?expanded=${template.id}`,
+              }));
+              
+              setDestinations(mappedDestinations);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.log('[DestinationsGrid] API not available, using static templates');
+        }
         
-        const data = await response.json();
-        const templates: TripTemplate[] = data.templates || [];
+        // Fallback: Use static templates (for static export)
+        const { TRIP_TEMPLATES } = await import('@/lib/tripTemplates');
+        const allTemplates = [...TRIP_TEMPLATES['southeast-asia'], ...TRIP_TEMPLATES['latin-america'], ...TRIP_TEMPLATES['europe']];
+        const curatedTemplates = allTemplates
+          .filter(t => t.isCurated && t.enabled)
+          .sort((a, b) => (a.curatedOrder || 999) - (b.curatedOrder || 999))
+          .slice(0, 4);
         
-        if (templates.length > 0) {
-          // Map templates to destination format
-          const mappedDestinations = templates.slice(0, 4).map((template) => ({
+        if (curatedTemplates.length > 0) {
+          const mappedDestinations = curatedTemplates.map((template) => ({
             ...template,
             image: template.curatedImageUrl || template.imageUrl,
             tag: template.tags[0] || 'Adventure',
@@ -254,20 +288,19 @@ const DestinationsGrid = () => {
           
           setDestinations(mappedDestinations);
         } else {
-          // No curated templates found - use fallback
+          // Final fallback to hardcoded destinations
           setDestinations(fallbackDestinations);
         }
       } catch (error) {
-        console.error('Error fetching curated templates:', error);
+        console.error('Error loading curated templates:', error);
         setError(true);
-        // Only show fallback destinations on error, not during loading
         setDestinations(fallbackDestinations);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCuratedTemplates();
+    loadCuratedTemplates();
   }, []);
 
   return (
