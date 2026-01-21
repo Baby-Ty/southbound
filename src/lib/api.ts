@@ -63,12 +63,13 @@ export function apiUrl(path: string): string {
   // Remove leading slash from path if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
-  // Routes that should use local Next.js API (TripAdvisor, activities, attractions, city descriptions, and countries)
+  // Routes that should use local Next.js API (TripAdvisor, activities, attractions, city descriptions, countries, and trip-templates)
   const isTripAdvisorRoute = cleanPath.startsWith('tripadvisor/');
   const isCityActivitiesRoute = cleanPath.includes('/activities');
   const isAttractionsRoute = cleanPath.startsWith('attractions/');
   const isCityDescriptionRoute = cleanPath === 'cities/description';
   const isCountriesRoute = cleanPath.startsWith('countries');
+  const isTripTemplatesRoute = cleanPath.startsWith('trip-templates');
   
   // Check if we're on localhost (for local development)
   const isLocalhost = typeof window !== 'undefined' && 
@@ -85,10 +86,10 @@ export function apiUrl(path: string): string {
     return finalUrl;
   }
   
-  // Countries routes always use local Next.js API (Azure Function may not be deployed yet)
-  if (isCountriesRoute) {
+  // Countries and trip-templates routes always use local Next.js API
+  if (isCountriesRoute || isTripTemplatesRoute) {
     const finalUrl = `/api/${cleanPath}`;
-    console.log('[apiUrl] Using local Next.js API route for countries:', finalUrl);
+    console.log('[apiUrl] Using local Next.js API route:', finalUrl);
     return finalUrl;
   }
   

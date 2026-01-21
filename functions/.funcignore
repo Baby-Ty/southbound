@@ -1,11 +1,9 @@
-*.js.map
 *.ts
 .git*
 .vscode
 local.settings.json
 test
-dist
-node_modules
+tsconfig.json
 
 
 
