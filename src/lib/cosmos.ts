@@ -153,6 +153,7 @@ const REGIONS_CONTAINER_ID = 'regions';
 const ACTIVITIES_CONTAINER_ID = 'activities';
 const ACCOMMODATION_TYPES_CONTAINER_ID = 'accommodationTypes';
 const LEADS_CONTAINER_ID = 'leads';
+const TRIP_TEMPLATES_CONTAINER_ID = 'tripTemplates';
 
 // Route CRUD Operations
 export async function saveRoute(routeData: Omit<SavedRoute, 'id' | 'createdAt' | 'updatedAt'>): Promise<SavedRoute> {

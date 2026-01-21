@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTripTemplates } from '@/../../functions/shared/cosmos';
+import { getTripTemplates } from '@/lib/cosmos';
 
 // Mark as dynamic to exclude from static export
 export const dynamic = 'force-dynamic';
