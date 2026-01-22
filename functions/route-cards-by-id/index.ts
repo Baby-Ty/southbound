@@ -124,9 +124,4 @@ export async function routeCardsById(request: HttpRequest, context: InvocationCo
   }
 }
 
-app.http('route-cards-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'route-cards/{id}',
-  handler: routeCardsById,
-});
+module.exports = { routeCardsById };

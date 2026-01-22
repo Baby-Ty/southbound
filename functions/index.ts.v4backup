@@ -19,6 +19,8 @@ import './leads-by-id/index';
 import './images-search/index';
 import './images-generate/index';
 import './upload-image/index';
+import './compress-image/index';
+import './list-images/index';
 import './migrate-images/index';
 
 

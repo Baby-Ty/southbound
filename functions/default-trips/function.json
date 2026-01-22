@@ -1,0 +1,23 @@
+{
+    "bindings":  [
+                     {
+                         "authLevel":  "anonymous",
+                         "type":  "httpTrigger",
+                         "direction":  "in",
+                         "name":  "req",
+                         "methods":  [
+                                         "get",
+                                         "post",
+                                         "options"
+                                     ],
+                         "route":  "default-trips"
+                     },
+                     {
+                         "type":  "http",
+                         "direction":  "out",
+                         "name":  "res"
+                     }
+                 ],
+    "scriptFile":  "index.js",
+    "entryPoint":  "defaultTrips"
+}

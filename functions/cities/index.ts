@@ -62,8 +62,4 @@ export async function cities(request: HttpRequest, context: InvocationContext): 
   }
 }
 
-app.http('cities', {
-  methods: ['GET', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: cities,
-});
+module.exports = { cities };

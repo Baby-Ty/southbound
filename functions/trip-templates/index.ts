@@ -116,9 +116,4 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
   }
 }
 
-app.http('trip-templates', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: tripTemplates,
-});
-
+module.exports = { tripTemplates };

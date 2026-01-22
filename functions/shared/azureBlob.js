@@ -1,0 +1,129 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.uploadImageFromUrl = uploadImageFromUrl;
+exports.uploadImageBuffer = uploadImageBuffer;
+exports.uploadImageFromBase64 = uploadImageFromBase64;
+exports.uploadActivityPhotos = uploadActivityPhotos;
+const storage_blob_1 = require("@azure/storage-blob");
+const imageCompression_1 = require("./imageCompression");
+let blobServiceClient = null;
+function getBlobServiceClient() {
+    if (blobServiceClient) {
+        return blobServiceClient;
+    }
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (!connectionString) {
+        throw new Error('AZURE_STORAGE_CONNECTION_STRING environment variable is not set');
+    }
+    blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
+    return blobServiceClient;
+}
+async function getContainerClient() {
+    const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'southbound-images';
+    const serviceClient = getBlobServiceClient();
+    const client = serviceClient.getContainerClient(containerName);
+    try {
+        await client.createIfNotExists({
+            access: 'blob',
+        });
+    }
+    catch (error) {
+        if (error.statusCode !== 409) {
+            throw error;
+        }
+    }
+    return client;
+}
+async function uploadImageFromUrl(imageUrl, category, filename) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return await uploadImageBuffer(buffer, category, filename);
+}
+async function uploadImageBuffer(buffer, category, filename, compress = true) {
+    const container = await getContainerClient();
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 9);
+    const originalFilename = filename || `${category}/${timestamp}-${randomId}.png`;
+    let blobName = originalFilename.startsWith(category + '/')
+        ? originalFilename
+        : `${category}/${originalFilename}`;
+    // Compress image if requested and not already WebP
+    let finalBuffer = buffer;
+    let contentType = 'image/webp';
+    if (compress) {
+        try {
+            const compressionResult = await (0, imageCompression_1.compressToWebP)(buffer, { quality: 80 });
+            finalBuffer = compressionResult.buffer;
+            // Update filename extension to .webp
+            blobName = blobName.replace(/\.(jpg|jpeg|png|gif)$/i, '.webp');
+        }
+        catch (error) {
+            // If compression fails, use original buffer
+            console.warn('Image compression failed, using original:', error);
+            const extension = blobName.toLowerCase().split('.').pop();
+            if (extension === 'png')
+                contentType = 'image/png';
+            else if (extension === 'gif')
+                contentType = 'image/gif';
+            else if (extension === 'webp')
+                contentType = 'image/webp';
+            else
+                contentType = 'image/jpeg';
+        }
+    }
+    else {
+        // Determine content type from extension
+        const extension = blobName.toLowerCase().split('.').pop();
+        if (extension === 'png')
+            contentType = 'image/png';
+        else if (extension === 'gif')
+            contentType = 'image/gif';
+        else if (extension === 'webp')
+            contentType = 'image/webp';
+        else
+            contentType = 'image/jpeg';
+    }
+    const blockBlobClient = container.getBlockBlobClient(blobName);
+    await blockBlobClient.upload(finalBuffer, finalBuffer.length, {
+        blobHTTPHeaders: {
+            blobContentType: contentType,
+        },
+    });
+    return blockBlobClient.url;
+}
+async function uploadImageFromBase64(base64Data, category, filename) {
+    const base64String = base64Data.includes(',')
+        ? base64Data.split(',')[1]
+        : base64Data;
+    const buffer = Buffer.from(base64String, 'base64');
+    return await uploadImageBuffer(buffer, category, filename);
+}
+/**
+ * Upload multiple activity photos from URLs
+ * @param photoUrls Array of photo URLs to download and upload
+ * @param cityId City ID for organizing photos
+ * @param locationId TripAdvisor location ID
+ * @returns Array of blob storage URLs
+ */
+async function uploadActivityPhotos(photoUrls, cityId, locationId) {
+    const uploadedUrls = [];
+    for (let i = 0; i < photoUrls.length; i++) {
+        try {
+            const photoUrl = photoUrls[i];
+            const filename = `activities/${cityId}/${locationId}/${i}.jpg`;
+            const blobUrl = await uploadImageFromUrl(photoUrl, 'activities', filename);
+            uploadedUrls.push(blobUrl);
+        }
+        catch (error) {
+            console.error(`Failed to upload activity photo ${i} for ${locationId}:`, error);
+            // Continue with other photos even if one fails
+            // Fallback: use original URL if blob upload fails
+            uploadedUrls.push(photoUrls[i]);
+        }
+    }
+    return uploadedUrls;
+}

@@ -67,10 +67,4 @@ export async function leadsById(request: HttpRequest, context: InvocationContext
   }
 }
 
-app.http('leads-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'leads/{id}',
-  handler: leadsById,
-});
-
+module.exports = { leadsById };

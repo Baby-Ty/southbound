@@ -52,10 +52,4 @@ export async function routesSendLink(request: HttpRequest, context: InvocationCo
   }
 }
 
-app.http('routes-send-link', {
-  methods: ['POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'routes/send-link',
-  handler: routesSendLink,
-});
-
+module.exports = { routesSendLink };

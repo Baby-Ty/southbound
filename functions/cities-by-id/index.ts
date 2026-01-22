@@ -45,10 +45,4 @@ export async function citiesById(request: HttpRequest, context: InvocationContex
   }
 }
 
-app.http('cities-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'cities/{id}',
-  handler: citiesById,
-});
-
+module.exports = { citiesById };

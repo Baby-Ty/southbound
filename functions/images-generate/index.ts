@@ -43,9 +43,4 @@ export async function imagesGenerate(request: HttpRequest, context: InvocationCo
   }
 }
 
-app.http('images-generate', {
-  methods: ['POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: imagesGenerate,
-});
-
+module.exports = { imagesGenerate };

@@ -47,9 +47,4 @@ export async function countriesById(request: HttpRequest, context: InvocationCon
   }
 }
 
-app.http('countries-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'countries/{id}',
-  handler: countriesById,
-});
+module.exports = { countriesById };

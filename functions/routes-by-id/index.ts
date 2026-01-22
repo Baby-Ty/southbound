@@ -91,10 +91,4 @@ export async function routesById(request: HttpRequest, context: InvocationContex
   }
 }
 
-app.http('routes-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'routes/{id}',
-  handler: routesById,
-});
-
+module.exports = { routesById };

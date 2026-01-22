@@ -236,10 +236,4 @@ export async function migrateImages(request: HttpRequest, context: InvocationCon
   }
 }
 
-app.http('migrate-images', {
-  methods: ['POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'migrate-images',
-  handler: migrateImages,
-});
-
+module.exports = { migrateImages };

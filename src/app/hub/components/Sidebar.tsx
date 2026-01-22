@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Map, BookOpen, Users, MessageSquare, Route, Linkedin, List, Sparkles, MapPin } from 'lucide-react';
+import { Home, Map, BookOpen, Users, MessageSquare, Route, Linkedin, List, Sparkles, MapPin, Image } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', href: '/hub', icon: Home },
@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Templates', href: '/hub/templates', icon: Sparkles },
   { name: 'Route Cards', href: '/hub/route-cards', icon: MapPin },
   { name: 'Default Trips', href: '/hub/default-trips', icon: List },
+  { name: 'Images', href: '/hub/images', icon: Image },
   { name: 'Leads', href: '/hub/leads', icon: Users },
   { name: 'LinkedIn', href: '/hub/linkedin', icon: Linkedin },
   { name: 'Ask SB', href: '/hub/ask', icon: MessageSquare },

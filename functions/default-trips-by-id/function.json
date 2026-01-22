@@ -1,0 +1,24 @@
+{
+    "bindings":  [
+                     {
+                         "authLevel":  "anonymous",
+                         "type":  "httpTrigger",
+                         "direction":  "in",
+                         "name":  "req",
+                         "methods":  [
+                                         "get",
+                                         "patch",
+                                         "delete",
+                                         "options"
+                                     ],
+                         "route":  "default-trips/{id}"
+                     },
+                     {
+                         "type":  "http",
+                         "direction":  "out",
+                         "name":  "res"
+                     }
+                 ],
+    "scriptFile":  "index.js",
+    "entryPoint":  "defaultTripsById"
+}

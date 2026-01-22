@@ -85,9 +85,4 @@ export async function defaultTrips(request: HttpRequest, context: InvocationCont
   }
 }
 
-app.http('default-trips', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: defaultTrips,
-});
-
+module.exports = { defaultTrips };

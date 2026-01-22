@@ -72,10 +72,4 @@ export async function defaultTripsById(request: HttpRequest, context: Invocation
   }
 }
 
-app.http('default-trips-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'default-trips/{id}',
-  handler: defaultTripsById,
-});
-
+module.exports = { defaultTripsById };

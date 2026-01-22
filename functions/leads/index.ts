@@ -92,9 +92,4 @@ export async function leads(request: HttpRequest, context: InvocationContext): P
   }
 }
 
-app.http('leads', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: leads,
-});
-
+module.exports = { leads };

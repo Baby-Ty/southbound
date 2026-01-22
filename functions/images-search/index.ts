@@ -57,9 +57,4 @@ export async function imagesSearch(request: HttpRequest, context: InvocationCont
   }
 }
 
-app.http('images-search', {
-  methods: ['GET', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: imagesSearch,
-});
-
+module.exports = { imagesSearch };

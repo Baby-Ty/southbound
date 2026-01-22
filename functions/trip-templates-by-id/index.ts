@@ -257,10 +257,4 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
   }
 }
 
-app.http('trip-templates-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'trip-templates/{id}',
-  handler: tripTemplatesById,
-});
-
+module.exports = { tripTemplatesById };

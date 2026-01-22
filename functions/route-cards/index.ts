@@ -106,8 +106,4 @@ export async function routeCards(request: HttpRequest, context: InvocationContex
   }
 }
 
-app.http('route-cards', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: routeCards,
-});
+module.exports = { routeCards };

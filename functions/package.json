@@ -2,7 +2,6 @@
   "name": "southbound-functions",
   "version": "1.0.0",
   "description": "Azure Functions for Southbnd API",
-  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
@@ -15,7 +14,8 @@
     "@azure/functions": "^4.5.1",
     "@azure/storage-blob": "^12.29.1",
     "openai": "^4.104.0",
-    "nanoid": "^5.1.6"
+    "nanoid": "^5.1.6",
+    "sharp": "^0.33.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

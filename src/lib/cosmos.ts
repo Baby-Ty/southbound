@@ -352,3 +352,78 @@ export async function deleteLead(leadId: string): Promise<void> {
   await container.item(leadId, leadId).delete();
 }
 
+// Trip Template Types
+export interface TripTemplate {
+  id: string;
+  region: 'europe' | 'latin-america' | 'southeast-asia';
+  name: string;
+  description: string;
+  icon: string;
+  imageUrl: string;
+  presetCities: string[];
+  tags: string[];
+  story?: string;
+  enabled: boolean;
+  order: number;
+  isCurated?: boolean;
+  curatedOrder?: number;
+  curatedImageUrl?: string;
+  price?: string;
+  vibe?: string;
+  internetSpeed?: string;
+  safetyRating?: string;
+  avgWeather?: string;
+  bestFor?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Trip Template CRUD Operations
+export async function getTripTemplates(filters?: {
+  region?: 'europe' | 'latin-america' | 'southeast-asia';
+  enabled?: boolean;
+  isCurated?: boolean;
+}): Promise<TripTemplate[]> {
+  try {
+    const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+    
+    let query = 'SELECT * FROM c WHERE 1=1';
+    const params: any[] = [];
+    
+    if (filters?.region) {
+      query += ' AND c.region = @region';
+      params.push({ name: '@region', value: filters.region });
+    }
+    
+    if (typeof filters?.enabled === 'boolean') {
+      query += ' AND c.enabled = @enabled';
+      params.push({ name: '@enabled', value: filters.enabled });
+    }
+    
+    if (typeof filters?.isCurated === 'boolean') {
+      query += ' AND c.isCurated = @isCurated';
+      params.push({ name: '@isCurated', value: filters.isCurated });
+    }
+    
+    // Sort by curatedOrder if filtering for curated, otherwise by order
+    if (filters?.isCurated) {
+      query += ' ORDER BY c.curatedOrder ASC, c.order ASC';
+    } else {
+      query += ' ORDER BY c.order ASC';
+    }
+
+    const { resources } = await container.items.query({
+      query,
+      parameters: params,
+    }).fetchAll();
+
+    return resources as TripTemplate[];
+  } catch (error: any) {
+    console.error('[getTripTemplates] Error:', error);
+    // Return empty array if CosmosDB is not configured
+    if (error.message?.includes('CosmosDB credentials')) {
+      return [];
+    }
+    throw error;
+  }
+}

@@ -83,8 +83,4 @@ export async function countries(request: HttpRequest, context: InvocationContext
   }
 }
 
-app.http('countries', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: countries,
-});
+module.exports = { countries };

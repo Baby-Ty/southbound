@@ -105,9 +105,4 @@ export async function routes(request: HttpRequest, context: InvocationContext): 
   }
 }
 
-app.http('routes', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  handler: routes,
-});
-
+module.exports = { routes };

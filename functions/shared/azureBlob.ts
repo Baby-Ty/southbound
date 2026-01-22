@@ -1,4 +1,5 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
+import { compressToWebP } from './imageCompression';
 
 let blobServiceClient: BlobServiceClient | null = null;
 
@@ -54,27 +55,51 @@ export async function uploadImageFromUrl(
 export async function uploadImageBuffer(
   buffer: Buffer,
   category: 'cities' | 'highlights' | 'activities' | 'accommodations',
-  filename?: string
+  filename?: string,
+  compress: boolean = true
 ): Promise<string> {
   const container = await getContainerClient();
   
   const timestamp = Date.now();
   const randomId = Math.random().toString(36).substring(2, 9);
-  const finalFilename = filename || `${category}/${timestamp}-${randomId}.png`;
+  const originalFilename = filename || `${category}/${timestamp}-${randomId}.png`;
   
-  const blobName = finalFilename.startsWith(category + '/') 
-    ? finalFilename 
-    : `${category}/${finalFilename}`;
+  let blobName = originalFilename.startsWith(category + '/') 
+    ? originalFilename 
+    : `${category}/${originalFilename}`;
+
+  // Compress image if requested and not already WebP
+  let finalBuffer = buffer;
+  let contentType = 'image/webp';
+  
+  if (compress) {
+    try {
+      const compressionResult = await compressToWebP(buffer, { quality: 80 });
+      finalBuffer = compressionResult.buffer;
+      
+      // Update filename extension to .webp
+      blobName = blobName.replace(/\.(jpg|jpeg|png|gif)$/i, '.webp');
+    } catch (error) {
+      // If compression fails, use original buffer
+      console.warn('Image compression failed, using original:', error);
+      const extension = blobName.toLowerCase().split('.').pop();
+      if (extension === 'png') contentType = 'image/png';
+      else if (extension === 'gif') contentType = 'image/gif';
+      else if (extension === 'webp') contentType = 'image/webp';
+      else contentType = 'image/jpeg';
+    }
+  } else {
+    // Determine content type from extension
+    const extension = blobName.toLowerCase().split('.').pop();
+    if (extension === 'png') contentType = 'image/png';
+    else if (extension === 'gif') contentType = 'image/gif';
+    else if (extension === 'webp') contentType = 'image/webp';
+    else contentType = 'image/jpeg';
+  }
 
   const blockBlobClient = container.getBlockBlobClient(blobName);
   
-  let contentType = 'image/jpeg';
-  const extension = blobName.toLowerCase().split('.').pop();
-  if (extension === 'png') contentType = 'image/png';
-  else if (extension === 'gif') contentType = 'image/gif';
-  else if (extension === 'webp') contentType = 'image/webp';
-  
-  await blockBlobClient.upload(buffer, buffer.length, {
+  await blockBlobClient.upload(finalBuffer, finalBuffer.length, {
     blobHTTPHeaders: {
       blobContentType: contentType,
     },

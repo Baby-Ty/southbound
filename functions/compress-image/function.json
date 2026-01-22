@@ -1,0 +1,22 @@
+{
+    "bindings":  [
+                     {
+                         "authLevel":  "anonymous",
+                         "type":  "httpTrigger",
+                         "direction":  "in",
+                         "name":  "req",
+                         "methods":  [
+                                         "post",
+                                         "options"
+                                     ],
+                         "route":  "images/compress"
+                     },
+                     {
+                         "type":  "http",
+                         "direction":  "out",
+                         "name":  "res"
+                     }
+                 ],
+    "scriptFile":  "index.js",
+    "entryPoint":  "compressImage"
+}
