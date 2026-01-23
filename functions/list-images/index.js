@@ -10,7 +10,7 @@ function getBlobServiceClient() {
     }
     return storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
 }
-async function listImages(request, context) {
+async function listImages(context, request) {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
         return {
@@ -19,10 +19,10 @@ async function listImages(request, context) {
         };
     }
     try {
-        const url = new URL(request.url);
-        const category = url.searchParams.get('category'); // Optional filter
-        const page = parseInt(url.searchParams.get('page') || '1', 10);
-        const pageSize = parseInt(url.searchParams.get('pageSize') || '50', 10);
+        // Get query parameters from request.query object (Azure Functions with function.json)
+        const category = request.query.category; // Optional filter
+        const page = parseInt(request.query.page || '1', 10);
+        const pageSize = parseInt(request.query.pageSize || '50', 10);
         const blobServiceClient = getBlobServiceClient();
         const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'southbound-images';
         const containerClient = blobServiceClient.getContainerClient(containerName);
