@@ -337,45 +337,94 @@ export default function RouteDetailClient() {
       {/* Preferences */}
       <div className="bg-white rounded-xl border border-stone-200 p-6">
         <h2 className="text-lg font-semibold text-stone-900 mb-4">Preferences</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <h3 className="text-sm font-medium text-stone-600 mb-2">Lifestyle</h3>
-            <div className="flex flex-wrap gap-2">
-              {route.preferences.lifestyle?.map((item, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
-                >
-                  {item}
-                </span>
-              ))}
+        
+        {/* Check if this is a discover page lead (has vibes instead of lifestyle/workSetup) */}
+        {(route.preferences as any)?.source === 'discover-page' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-stone-600 mb-2">Vibes / Interests</h3>
+              <div className="flex flex-wrap gap-2">
+                {(route.preferences as any).vibes?.map((vibe: string, idx: number) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-1 bg-sb-orange-100 text-sb-orange-700 rounded-md text-sm font-medium"
+                  >
+                    {vibe.replace('-', ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-stone-600 mb-2">Lead Source</h3>
+              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-sm font-medium">
+                Discover Page
+              </span>
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-medium text-stone-600 mb-2">Work Setup</h3>
-            <div className="flex flex-wrap gap-2">
-              {route.preferences.workSetup?.map((item, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
-                >
-                  {item}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-stone-600 mb-2">Lifestyle</h3>
+              <div className="flex flex-wrap gap-2">
+                {route.preferences.lifestyle?.length > 0 ? (
+                  route.preferences.lifestyle.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
+                    >
+                      {item}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-stone-400 italic">Not specified</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-stone-600 mb-2">Work Setup</h3>
+              <div className="flex flex-wrap gap-2">
+                {route.preferences.workSetup?.length > 0 ? (
+                  route.preferences.workSetup.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
+                    >
+                      {item}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-stone-400 italic">Not specified</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-stone-600 mb-2">Travel Style</h3>
+              {route.preferences.travelStyle ? (
+                <span className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">
+                  {route.preferences.travelStyle}
                 </span>
-              ))}
+              ) : (
+                <span className="text-sm text-stone-400 italic">Not specified</span>
+              )}
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-medium text-stone-600 mb-2">Travel Style</h3>
-            <span className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">
-              {route.preferences.travelStyle}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Stops */}
       <div className="bg-white rounded-xl border border-stone-200 p-6">
         <h2 className="text-lg font-semibold text-stone-900 mb-4">Route Stops</h2>
+        {route.stops.length === 0 ? (
+          <div className="text-center py-8">
+            <MapPin className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+            <p className="text-stone-500 mb-2">No itinerary stops yet</p>
+            <p className="text-sm text-stone-400">
+              {(route.preferences as any)?.source === 'discover-page' 
+                ? 'This lead came from the discover page and hasn\'t built an itinerary yet.'
+                : 'This route doesn\'t have any stops added.'}
+            </p>
+          </div>
+        ) : (
         <div className="space-y-4">
           {route.stops.map((stop, index) => (
             <div
@@ -458,6 +507,7 @@ export default function RouteDetailClient() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Notes */}

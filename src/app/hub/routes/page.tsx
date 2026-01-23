@@ -66,11 +66,13 @@ export default function RoutesPage() {
   }
 
   const filteredRoutes = routes.filter((route) => {
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      route.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      route.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      route.name?.toLowerCase().includes(searchLower) ||
+      route.email.toLowerCase().includes(searchLower) ||
+      route.region.toLowerCase().includes(searchLower) ||
       route.stops.some((stop) =>
-        stop.city.toLowerCase().includes(searchTerm.toLowerCase())
+        stop.city.toLowerCase().includes(searchLower)
       );
     return matchesSearch;
   });
@@ -112,7 +114,7 @@ export default function RoutesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <input
             type="text"
-            placeholder="Search by email, region, or city..."
+            placeholder="Search by name, email, region, or city..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400 focus:border-transparent"
@@ -156,7 +158,7 @@ export default function RoutesPage() {
                   className="p-6 hover:bg-stone-50 transition-colors cursor-pointer"
                   onClick={() => router.push(`/hub/routes/${route.id}/`)}
                 >
-                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
                         <span
@@ -168,38 +170,74 @@ export default function RoutesPage() {
                         <span className="text-sm font-medium text-stone-600">
                           {getRegionName(route.region)}
                         </span>
+                        {(route.preferences as any)?.source === 'discover-page' && (
+                          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">
+                            Discover Lead
+                          </span>
+                        )}
                       </div>
+                      
+                      {/* Name if available */}
+                      {route.name && (
+                        <h3 className="text-lg font-semibold text-stone-900 mb-2">
+                          {route.name}
+                        </h3>
+                      )}
                       
                       <div className="flex items-center gap-4 text-sm text-stone-600 mb-3">
                         <div className="flex items-center gap-1.5">
                           <Mail className="w-4 h-4" />
                           {route.email}
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4" />
-                          {route.stops.length} stops
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4" />
-                          {getTotalWeeks(route.stops)} weeks
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {route.stops.slice(0, 3).map((stop, idx) => (
-                          <span
-                            key={stop.id}
-                            className="text-xs px-2 py-1 bg-stone-100 text-stone-700 rounded-md font-medium"
-                          >
-                            {stop.city}
-                            {idx < Math.min(route.stops.length, 3) - 1 && ','}
-                          </span>
-                        ))}
-                        {route.stops.length > 3 && (
-                          <span className="text-xs px-2 py-1 bg-stone-100 text-stone-700 rounded-md font-medium">
-                            +{route.stops.length - 3} more
+                        {route.stops.length > 0 ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4" />
+                              {route.stops.length} stops
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4" />
+                              {getTotalWeeks(route.stops)} weeks
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-xs text-stone-500 italic">
+                            No itinerary yet
                           </span>
                         )}
+                      </div>
+
+                      {/* Show vibes for discover leads, or stops for regular routes */}
+                      <div className="flex flex-wrap gap-2">
+                        {route.stops.length > 0 ? (
+                          <>
+                            {route.stops.slice(0, 3).map((stop, idx) => (
+                              <span
+                                key={stop.id}
+                                className="text-xs px-2 py-1 bg-stone-100 text-stone-700 rounded-md font-medium"
+                              >
+                                {stop.city}
+                                {idx < Math.min(route.stops.length, 3) - 1 && ','}
+                              </span>
+                            ))}
+                            {route.stops.length > 3 && (
+                              <span className="text-xs px-2 py-1 bg-stone-100 text-stone-700 rounded-md font-medium">
+                                +{route.stops.length - 3} more
+                              </span>
+                            )}
+                          </>
+                        ) : (route.preferences as any)?.vibes?.length > 0 ? (
+                          <>
+                            {(route.preferences as any).vibes.map((vibe: string, idx: number) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-1 bg-sb-orange-100 text-sb-orange-700 rounded-md font-medium"
+                              >
+                                {vibe.replace('-', ' ')}
+                              </span>
+                            ))}
+                          </>
+                        ) : null}
                       </div>
                     </div>
 
