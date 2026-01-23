@@ -11,7 +11,7 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function routes(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function routesHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return {
@@ -105,4 +105,10 @@ export async function routes(request: HttpRequest, context: InvocationContext): 
   }
 }
 
-module.exports = { routes };
+// Register with Azure Functions v4 runtime
+app.http('routes', {
+  methods: ['GET', 'POST', 'OPTIONS'],
+  authLevel: 'anonymous',
+  route: 'routes',
+  handler: routesHandler
+});

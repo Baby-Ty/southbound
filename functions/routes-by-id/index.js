@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.routesById = routesById;
+const functions_1 = require("@azure/functions");
 const cosmos_1 = require("../shared/cosmos");
 const cors_1 = require("../shared/cors");
 function isCosmosDBConfigured() {
@@ -9,7 +9,7 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function routesById(request, context) {
+async function routesByIdHandler(request, context) {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
         return {
@@ -72,4 +72,10 @@ async function routesById(request, context) {
         return (0, cors_1.createCorsResponse)({ error: error.message || 'Failed to process request' }, 500);
     }
 }
-module.exports = { routesById };
+// Register with Azure Functions v4 runtime
+functions_1.app.http('routes-by-id', {
+    methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
+    authLevel: 'anonymous',
+    route: 'routes/{id}',
+    handler: routesByIdHandler
+});

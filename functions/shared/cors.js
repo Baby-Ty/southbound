@@ -40,9 +40,13 @@ exports.corsHeaders = {
     'Access-Control-Max-Age': '86400',
 };
 function createCorsResponse(data, status = 200, origin) {
+    const headers = getCorsHeaders(origin);
     return {
         status,
-        headers: getCorsHeaders(origin),
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
     };
 }

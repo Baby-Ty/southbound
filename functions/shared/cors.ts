@@ -39,9 +39,13 @@ export const corsHeaders = {
 };
 
 export function createCorsResponse(data: any, status: number = 200, origin?: string | null) {
+  const headers = getCorsHeaders(origin);
   return {
     status,
-    headers: getCorsHeaders(origin),
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(data),
   };
 }

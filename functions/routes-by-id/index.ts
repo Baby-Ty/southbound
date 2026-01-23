@@ -11,7 +11,7 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function routesById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function routesByIdHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return {
@@ -83,7 +83,7 @@ export async function routesById(request: HttpRequest, context: InvocationContex
       return createCorsResponse({ error: 'Method not allowed' }, 405);
     }
   } catch (error: any) {
-      context.log(`Error processing route request: ${error instanceof Error ? error.message : String(error)}`);
+    context.log(`Error processing route request: ${error instanceof Error ? error.message : String(error)}`);
     return createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
@@ -91,4 +91,10 @@ export async function routesById(request: HttpRequest, context: InvocationContex
   }
 }
 
-module.exports = { routesById };
+// Register with Azure Functions v4 runtime
+app.http('routes-by-id', {
+  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
+  authLevel: 'anonymous',
+  route: 'routes/{id}',
+  handler: routesByIdHandler
+});
