@@ -89,8 +89,9 @@ export function apiUrl(path: string): string {
     return finalUrl;
   }
   
-  // These routes always use local Next.js API (they have handlers in /app/api/)
-  if (isCountriesRoute || isTripTemplatesRoute || isRoutesRoute || isCitiesRoute || isDefaultTripsRoute) {
+  // These routes use local Next.js API only on localhost (for development)
+  // In production, they go to Azure Functions
+  if ((isCountriesRoute || isTripTemplatesRoute || isRoutesRoute || isCitiesRoute || isDefaultTripsRoute) && isLocalhost) {
     const finalUrl = `/api/${cleanPath}`;
     console.log('[apiUrl] Using local Next.js API route:', finalUrl);
     return finalUrl;
