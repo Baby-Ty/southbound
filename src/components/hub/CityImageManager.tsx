@@ -85,7 +85,7 @@ export default function CityImageManager({
         try {
           // Try to upload to Azure if available
           const { apiUrl } = await import('@/lib/api');
-          const response = await fetch(apiUrl('upload-image'), {
+          const response = await fetch(apiUrl('images/upload'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

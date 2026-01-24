@@ -287,7 +287,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName, countryN
     // Automatically upload to blob storage
     try {
       const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl('upload-image'), {
+      const response = await fetch(apiUrl('images/upload'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -325,7 +325,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName, countryN
     // Automatically upload to blob storage
     try {
       const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl('upload-image'), {
+      const response = await fetch(apiUrl('images/upload'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -375,7 +375,7 @@ export default function ImageSearch({ currentImage, onSelect, cityName, countryN
     // Upload to blob storage
     try {
       const { apiUrl } = await import('@/lib/api');
-      const response = await fetch(apiUrl('upload-image'), {
+      const response = await fetch(apiUrl('images/upload'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

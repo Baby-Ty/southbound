@@ -70,7 +70,7 @@ export default function HighlightManager({
     
     setUploading(true);
     try {
-      const response = await fetch(apiUrl('upload-image'), {
+      const response = await fetch(apiUrl('images/upload'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -133,7 +133,7 @@ export default function HighlightManager({
     // Upload to blob
     setUploading(true);
     try {
-      const response = await fetch(apiUrl('upload-image'), {
+      const response = await fetch(apiUrl('images/upload'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

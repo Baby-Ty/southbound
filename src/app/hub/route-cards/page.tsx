@@ -146,7 +146,7 @@ export default function RouteCardsPage() {
         try {
           setUploadingImage(true);
           const base64 = reader.result as string;
-          const url = apiUrl('upload-image');
+          const url = apiUrl('images/upload');
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
