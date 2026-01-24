@@ -463,7 +463,7 @@ function RouteCardModal({
                   setFormData({ ...formData, imageUrl: e.target.value })
                 }
                 className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-sb-orange-400"
-                placeholder="/SouthAmerica.png"
+                placeholder="/SouthAmerica.webp"
               />
               <label className="px-4 py-2 bg-stone-100 border border-stone-300 rounded-lg cursor-pointer hover:bg-stone-200 transition flex items-center gap-2">
                 <Upload className="w-4 h-4" />

@@ -210,7 +210,7 @@ const LetsChatForm: React.FC = () => {
           {/* Form Illustration */}
           <div className="absolute -bottom-8 -left-8 md:-bottom-10 md:-left-10 w-32 h-32 md:w-40 md:h-40 z-10">
             <Image
-              src="images/form-graphic.png"
+              src="/images/form-graphic.webp"
               alt="Travel form illustration"
               width={160}
               height={160}

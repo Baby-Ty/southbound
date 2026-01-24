@@ -411,7 +411,7 @@ const FAQSection = ({ faqs, title = "Frequently Asked Questions" }: FAQSectionPr
           <div className="hidden lg:flex flex-shrink-0 justify-center items-end">
             <div className="w-[380px] h-[380px] xl:w-[480px] xl:h-[480px]">
               <img 
-                src="images/faq-image.png" 
+                src="/images/faq-image.webp" 
                 alt="FAQ illustration" 
                 className="w-full h-full object-contain"
               />

@@ -306,7 +306,7 @@ const FAQPageClient = ({ initialFaqs }: FAQPageClientProps) => {
             >
               <div className="relative w-32 h-32 mx-auto mb-6 overflow-hidden rounded-xl">
                 <Image
-                  src="images/faq-image.png"
+                  src="/images/faq-image.webp"
                   alt="FAQ illustration"
                   fill
                   className="object-contain"

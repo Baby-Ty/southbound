@@ -207,7 +207,7 @@ const AboutPage = () => {
                 <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full">
                   <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl mb-6">
                     <Image
-                      src="images/about-graphic.png"
+                      src="/images/about-graphic.webp"
                       alt="About South Bound illustration"
                       fill
                       className="object-contain"
