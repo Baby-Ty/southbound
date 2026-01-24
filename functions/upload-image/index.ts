@@ -1,11 +1,11 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { uploadImageFromUrl, uploadImageFromBase64 } from '../shared/azureBlob';
 import { compressToWebP } from '../shared/imageCompression';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
-export async function uploadImage(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function uploadImage(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -13,7 +13,7 @@ export async function uploadImage(request: HttpRequest, context: InvocationConte
   }
 
   try {
-    const body = await request.json() as {
+    const body = req.body as {
       imageUrl?: string;
       imageData?: string;
       category?: string;

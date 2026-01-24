@@ -9,19 +9,19 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function cities(request, context) {
-    const origin = request.headers.get('origin');
+async function cities(context, req) {
+    const origin = req.headers['origin'];
     const corsHeaders = (0, cors_1.getCorsHeaders)(origin);
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: corsHeaders,
         };
     }
     try {
-        if (request.method === 'GET') {
-            const region = request.query.get('region');
+        if (req.method === 'GET') {
+            const region = req.query.region;
             // Validate region if provided
             const validRegions = ['europe', 'latin-america', 'southeast-asia'];
             if (region && !validRegions.includes(region)) {

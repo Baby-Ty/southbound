@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 import { createRouteCard, getRouteCards, RouteCard } from '../shared/cosmos';
 
@@ -11,9 +11,9 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function routeCards(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function routeCards(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -21,9 +21,9 @@ export async function routeCards(request: HttpRequest, context: InvocationContex
   }
 
   try {
-    if (request.method === 'GET') {
-      const regionParam = request.query.get('region');
-      const enabledParam = request.query.get('enabled');
+    if (req.method === 'GET') {
+      const regionParam = (req.query as any).region;
+      const enabledParam = (req.query as any).enabled;
       
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       const region = regionParam && validRegions.includes(regionParam)
@@ -48,8 +48,8 @@ export async function routeCards(request: HttpRequest, context: InvocationContex
       return createCorsResponse({ routeCards });
     }
 
-    if (request.method === 'POST') {
-      const body = (await request.json()) as Partial<
+    if (req.method === 'POST') {
+      const body = req.body as Partial<
         Omit<RouteCard, 'id' | 'createdAt' | 'updatedAt'>
       >;
 

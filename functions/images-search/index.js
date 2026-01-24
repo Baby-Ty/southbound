@@ -2,17 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.imagesSearch = imagesSearch;
 const cors_1 = require("../shared/cors");
-async function imagesSearch(request, context) {
-    const origin = request.headers.get('origin');
+async function imagesSearch(context, req) {
+    const origin = req.headers['origin'];
     const corsHeaders = (0, cors_1.getCorsHeaders)(origin);
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: corsHeaders,
         };
     }
-    const query = request.query.get('query');
+    const query = req.query.query;
     if (!query) {
         return (0, cors_1.createCorsResponse)({ error: 'Query required' }, 400, origin);
     }

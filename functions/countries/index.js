@@ -9,19 +9,19 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function countries(request, context) {
-    const origin = request.headers.get('origin');
+async function countries(context, req) {
+    const origin = req.headers['origin'];
     const corsHeaders = (0, cors_1.getCorsHeaders)(origin);
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: corsHeaders,
         };
     }
     try {
-        if (request.method === 'GET') {
-            const region = request.query.get('region');
+        if (req.method === 'GET') {
+            const region = req.query.region;
             // Validate region if provided
             const validRegions = ['europe', 'latin-america', 'southeast-asia'];
             if (region && !validRegions.includes(region)) {
@@ -35,11 +35,11 @@ async function countries(request, context) {
             context.log(`[countries] Retrieved ${countries.length} countries${region ? ` for region: ${region}` : ''}`);
             return (0, cors_1.createCorsResponse)({ countries }, 200, origin);
         }
-        else if (request.method === 'POST') {
+        else if (req.method === 'POST') {
             if (!isCosmosDBConfigured()) {
                 return (0, cors_1.createCorsResponse)({ error: 'CosmosDB not configured' }, 500, origin);
             }
-            const body = await request.json();
+            const body = req.body;
             const country = await (0, cosmos_countries_1.saveCountry)(body);
             context.log(`[countries] Created country: ${country.name}`);
             return (0, cors_1.createCorsResponse)({ country }, 201, origin);

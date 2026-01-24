@@ -33,7 +33,7 @@ export function getApiUrl(): string {
     if (hostname.includes('southbnd.co.za')) {
       // Use direct Azure Functions URL (has valid SSL cert)
       // Note: api.southbnd.co.za requires SSL certificate configuration in Azure
-      const functionsUrl = 'https://southbnd-functions-v3.azurewebsites.net';
+      const functionsUrl = 'https://southbnd-functions-v4.azurewebsites.net';
       console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
     }
@@ -41,7 +41,7 @@ export function getApiUrl(): string {
     // Fallback: check if on Azure Web App (azurewebsites.net)
     if (hostname.includes('azurewebsites.net')) {
       // Use the actual Functions URL
-      const functionsUrl = 'https://southbnd-functions-v3.azurewebsites.net';
+      const functionsUrl = 'https://southbnd-functions-v4.azurewebsites.net';
       console.log('[API] Using Functions URL:', functionsUrl);
       return functionsUrl;
     }

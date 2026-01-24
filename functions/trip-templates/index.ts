@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 import { createTripTemplate, getTripTemplates, TripTemplate } from '../shared/cosmos';
 
@@ -11,11 +11,11 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function tripTemplates(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  const origin = request.headers.get('origin');
+export async function tripTemplates(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
+  const origin = req.headers['origin'] as string | null;
   
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: getCorsHeaders(origin),
@@ -23,10 +23,10 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
   }
 
   try {
-    if (request.method === 'GET') {
-      const regionParam = request.query.get('region');
-      const enabledParam = request.query.get('enabled');
-      const curatedParam = request.query.get('curated');
+    if (req.method === 'GET') {
+      const regionParam = (req.query as any).region;
+      const enabledParam = (req.query as any).enabled;
+      const curatedParam = (req.query as any).curated;
       
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       const region = regionParam && validRegions.includes(regionParam)
@@ -59,8 +59,8 @@ export async function tripTemplates(request: HttpRequest, context: InvocationCon
       return createCorsResponse({ templates }, 200, origin);
     }
 
-    if (request.method === 'POST') {
-      const body = (await request.json()) as Partial<
+    if (req.method === 'POST') {
+      const body = req.body as Partial<
         Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt'>
       >;
 

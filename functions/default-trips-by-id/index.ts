@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 import {
   deleteDefaultTrip,
@@ -16,16 +16,16 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function defaultTripsById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function defaultTripsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
   if (!id) {
     return createCorsResponse({ error: 'Default trip ID is required' }, 400);
   }
@@ -35,14 +35,14 @@ export async function defaultTripsById(request: HttpRequest, context: Invocation
       return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
     }
 
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       const trip = await getDefaultTripById(id);
       if (!trip) return createCorsResponse({ error: 'Not found' }, 404);
       return createCorsResponse({ trip });
     }
 
-    if (request.method === 'PATCH') {
-      const body = (await request.json()) as Partial<DefaultTrip>;
+    if (req.method === 'PATCH') {
+      const body = req.body as Partial<DefaultTrip>;
       const allowed: Partial<DefaultTrip> = {};
 
       if (body.name !== undefined) allowed.name = String(body.name);
@@ -55,7 +55,7 @@ export async function defaultTripsById(request: HttpRequest, context: Invocation
       return createCorsResponse({ trip });
     }
 
-    if (request.method === 'DELETE') {
+    if (req.method === 'DELETE') {
       await deleteDefaultTrip(id);
       return createCorsResponse({ success: true });
     }

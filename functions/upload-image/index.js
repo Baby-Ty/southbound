@@ -3,16 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadImage = uploadImage;
 const azureBlob_1 = require("../shared/azureBlob");
 const cors_1 = require("../shared/cors");
-async function uploadImage(request, context) {
+async function uploadImage(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        const body = await request.json();
+        const body = req.body;
         const { imageUrl, imageData, category, filename } = body;
         if (!imageUrl && !imageData) {
             return (0, cors_1.createCorsResponse)({ error: 'Either imageUrl or imageData is required' }, 400);

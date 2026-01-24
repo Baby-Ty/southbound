@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getLead, updateLead, deleteLead, Lead } from '../shared/cosmos';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,23 +11,23 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function leadsById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function leadsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
 
   if (!id) {
     return createCorsResponse({ error: 'Lead ID is required' }, 400);
   }
 
   try {
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
@@ -39,16 +39,16 @@ export async function leadsById(request: HttpRequest, context: InvocationContext
       }
 
       return createCorsResponse({ lead });
-    } else if (request.method === 'PATCH') {
+    } else if (req.method === 'PATCH') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
 
-      const body = await request.json() as Partial<Lead>;
+      const body = req.body as Partial<Lead>;
       
       const lead = await updateLead(id, body);
       return createCorsResponse({ lead });
-    } else if (request.method === 'DELETE') {
+    } else if (req.method === 'DELETE') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }

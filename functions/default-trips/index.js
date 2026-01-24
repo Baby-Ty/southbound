@@ -9,18 +9,18 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function defaultTrips(request, context) {
+async function defaultTrips(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        if (request.method === 'GET') {
-            const region = request.query.get('region') || undefined;
-            const enabledParam = request.query.get('enabled');
+        if (req.method === 'GET') {
+            const region = req.query.region || undefined;
+            const enabledParam = req.query.enabled;
             const enabled = enabledParam === null || enabledParam === undefined
                 ? undefined
                 : enabledParam === 'true'
@@ -35,8 +35,8 @@ async function defaultTrips(request, context) {
             });
             return (0, cors_1.createCorsResponse)({ trips });
         }
-        if (request.method === 'POST') {
-            const body = (await request.json());
+        if (req.method === 'POST') {
+            const body = req.body;
             if (!body?.name || !body?.region || !Array.isArray(body?.stops)) {
                 return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, region, stops' }, 400);
             }

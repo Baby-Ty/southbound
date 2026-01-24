@@ -1,19 +1,19 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 
-export async function imagesSearch(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  const origin = request.headers.get('origin');
+export async function imagesSearch(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
+  const origin = req.headers['origin'] as string | null;
   const corsHeaders = getCorsHeaders(origin);
   
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const query = request.query.get('query');
+  const query = (req.query as any).query;
 
   if (!query) {
     return createCorsResponse({ error: 'Query required' }, 400, origin);

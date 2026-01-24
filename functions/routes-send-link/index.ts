@@ -1,11 +1,11 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getRoute } from '../shared/cosmos';
 import { sendEmail, generateRouteEmailHtml, generateRouteEmailText } from '../shared/email';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
-export async function routesSendLink(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function routesSendLink(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -13,7 +13,7 @@ export async function routesSendLink(request: HttpRequest, context: InvocationCo
   }
 
   try {
-    const body = await request.json() as {
+    const body = req.body as {
       routeId?: string;
       email?: string;
       routeUrl?: string;

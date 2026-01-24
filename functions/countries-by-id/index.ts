@@ -1,24 +1,24 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getCountry, updateCountry, deleteCountry } from '../shared/cosmos-countries';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
-export async function countriesById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function countriesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
 
   if (!id) {
     return createCorsResponse({ error: 'Country ID is required' }, 400);
   }
 
   try {
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       const country = await getCountry(id);
       
       if (!country) {
@@ -26,12 +26,12 @@ export async function countriesById(request: HttpRequest, context: InvocationCon
       }
 
       return createCorsResponse({ country });
-    } else if (request.method === 'PATCH') {
-      const body = await request.json() as any;
+    } else if (req.method === 'PATCH') {
+      const body = req.body as any;
       const country = await updateCountry(id, body);
       context.log(`[countries-by-id] Updated country: ${country.name}`);
       return createCorsResponse({ country });
-    } else if (request.method === 'DELETE') {
+    } else if (req.method === 'DELETE') {
       await deleteCountry(id);
       context.log(`[countries-by-id] Deleted country: ${id}`);
       return createCorsResponse({ success: true });

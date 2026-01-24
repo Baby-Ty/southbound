@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { compressToWebP } from '../shared/imageCompression';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
@@ -41,9 +41,9 @@ function parseBlobUrl(blobUrl: string): { containerName: string; blobName: strin
   }
 }
 
-export async function compressImage(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function compressImage(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -51,7 +51,9 @@ export async function compressImage(request: HttpRequest, context: InvocationCon
   }
 
   try {
-    const body = await request.json() as {
+    const body = (typeof req.body === 'object' && req.body !== null && !(req.body instanceof ReadableStream) 
+      ? req.body 
+      : {}) as {
       blobUrl: string;
       quality?: number;
       replaceOriginal?: boolean;

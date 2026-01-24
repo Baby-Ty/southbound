@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 import { createDefaultTrip, getDefaultTrips, DefaultTrip } from '../shared/cosmos';
 
@@ -11,9 +11,9 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function defaultTrips(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function defaultTrips(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -21,9 +21,9 @@ export async function defaultTrips(request: HttpRequest, context: InvocationCont
   }
 
   try {
-    if (request.method === 'GET') {
-      const region = request.query.get('region') || undefined;
-      const enabledParam = request.query.get('enabled');
+    if (req.method === 'GET') {
+      const region = (req.query as any).region || undefined;
+      const enabledParam = (req.query as any).enabled;
       const enabled =
         enabledParam === null || enabledParam === undefined
           ? undefined
@@ -42,8 +42,8 @@ export async function defaultTrips(request: HttpRequest, context: InvocationCont
       return createCorsResponse({ trips });
     }
 
-    if (request.method === 'POST') {
-      const body = (await request.json()) as Partial<
+    if (req.method === 'POST') {
+      const body = req.body as Partial<
         Omit<DefaultTrip, 'id' | 'createdAt' | 'updatedAt'>
       >;
 

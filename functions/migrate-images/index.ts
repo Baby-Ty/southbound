@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getAllCities, updateCity, CityData } from '../shared/cosmos-cities';
 import { uploadImageFromUrl } from '../shared/azureBlob';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
@@ -99,9 +99,9 @@ async function migrateCityImages(city: CityData): Promise<Partial<CityData>> {
   return hasChanges ? updates : {};
 }
 
-export async function migrateImages(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function migrateImages(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -109,7 +109,7 @@ export async function migrateImages(request: HttpRequest, context: InvocationCon
   }
 
   try {
-    const body = await request.json() as {
+    const body = req.body as {
       cityId?: string;
       dryRun?: boolean;
     };

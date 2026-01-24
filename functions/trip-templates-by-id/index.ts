@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 import {
   deleteTripTemplate,
@@ -16,16 +16,16 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function tripTemplatesById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function tripTemplatesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
   if (!id) {
     return createCorsResponse({ error: 'Trip template ID is required' }, 400);
   }
@@ -35,9 +35,9 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
       return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
     }
 
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       // For GET, we need region from query params since it's the partition key
-      const region = request.query.get('region');
+      const region = (req.query as any).region;
       if (!region) {
         return createCorsResponse({ error: 'Region query parameter is required' }, 400);
       }
@@ -55,9 +55,9 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
       return createCorsResponse({ template });
     }
 
-    if (request.method === 'PATCH') {
-      const body = (await request.json()) as Partial<TripTemplate>;
-      const region = body.region || request.query.get('region');
+    if (req.method === 'PATCH') {
+      const body = req.body as Partial<TripTemplate>;
+      const region = body.region || (req.query as any).region;
       
       context.log(`[PATCH] Updating template ${id} in region ${region}`);
       context.log('[PATCH] Body received:', JSON.stringify(body, null, 2));
@@ -227,8 +227,8 @@ export async function tripTemplatesById(request: HttpRequest, context: Invocatio
       }
     }
 
-    if (request.method === 'DELETE') {
-      const region = request.query.get('region');
+    if (req.method === 'DELETE') {
+      const region = (req.query as any).region;
       if (!region) {
         return createCorsResponse({ error: 'Region query parameter is required' }, 400);
       }

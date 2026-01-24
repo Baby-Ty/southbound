@@ -9,15 +9,15 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function defaultTripsById(request, context) {
+async function defaultTripsById(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
-    const id = request.params.id;
+    const id = req.params.id;
     if (!id) {
         return (0, cors_1.createCorsResponse)({ error: 'Default trip ID is required' }, 400);
     }
@@ -25,14 +25,14 @@ async function defaultTripsById(request, context) {
         if (!isCosmosDBConfigured()) {
             return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
         }
-        if (request.method === 'GET') {
+        if (req.method === 'GET') {
             const trip = await (0, cosmos_1.getDefaultTripById)(id);
             if (!trip)
                 return (0, cors_1.createCorsResponse)({ error: 'Not found' }, 404);
             return (0, cors_1.createCorsResponse)({ trip });
         }
-        if (request.method === 'PATCH') {
-            const body = (await request.json());
+        if (req.method === 'PATCH') {
+            const body = req.body;
             const allowed = {};
             if (body.name !== undefined)
                 allowed.name = String(body.name);
@@ -47,7 +47,7 @@ async function defaultTripsById(request, context) {
             const trip = await (0, cosmos_1.updateDefaultTrip)(id, allowed);
             return (0, cors_1.createCorsResponse)({ trip });
         }
-        if (request.method === 'DELETE') {
+        if (req.method === 'DELETE') {
             await (0, cosmos_1.deleteDefaultTrip)(id);
             return (0, cors_1.createCorsResponse)({ success: true });
         }

@@ -34,16 +34,18 @@ function parseBlobUrl(blobUrl) {
         return null;
     }
 }
-async function compressImage(request, context) {
+async function compressImage(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        const body = await request.json();
+        const body = (typeof req.body === 'object' && req.body !== null && !(req.body instanceof ReadableStream)
+            ? req.body
+            : {});
         const { blobUrl, quality = 80, replaceOriginal = true } = body;
         if (!blobUrl) {
             return (0, cors_1.createCorsResponse)({ error: 'blobUrl is required' }, 400);

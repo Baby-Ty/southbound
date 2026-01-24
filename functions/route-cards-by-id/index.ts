@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 import {
   deleteRouteCard,
@@ -16,16 +16,16 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function routeCardsById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function routeCardsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
   if (!id) {
     return createCorsResponse({ error: 'Route card ID is required' }, 400);
   }
@@ -35,9 +35,9 @@ export async function routeCardsById(request: HttpRequest, context: InvocationCo
       return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
     }
 
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       // For GET, we need region from query params since it's the partition key
-      const region = request.query.get('region');
+      const region = (req.query as any).region;
       if (!region) {
         return createCorsResponse({ error: 'Region query parameter is required' }, 400);
       }
@@ -55,9 +55,9 @@ export async function routeCardsById(request: HttpRequest, context: InvocationCo
       return createCorsResponse({ routeCard });
     }
 
-    if (request.method === 'PATCH') {
-      const body = (await request.json()) as Partial<RouteCard>;
-      const region = body.region || request.query.get('region');
+    if (req.method === 'PATCH') {
+      const body = req.body as Partial<RouteCard>;
+      const region = body.region || (req.query as any).region;
       
       if (!region) {
         return createCorsResponse({ error: 'Region is required (in body or query)' }, 400);
@@ -94,8 +94,8 @@ export async function routeCardsById(request: HttpRequest, context: InvocationCo
       return createCorsResponse({ routeCard });
     }
 
-    if (request.method === 'DELETE') {
-      const region = request.query.get('region');
+    if (req.method === 'DELETE') {
+      const region = (req.query as any).region;
       if (!region) {
         return createCorsResponse({ error: 'Region query parameter is required' }, 400);
       }

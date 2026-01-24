@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { saveRoute, getAllRoutes, SavedRoute } from '../shared/cosmos';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,9 +11,9 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-async function routesHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function routesHandler(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -21,8 +21,8 @@ async function routesHandler(request: HttpRequest, context: InvocationContext): 
   }
 
   try {
-    if (request.method === 'POST') {
-      const body = await request.json() as {
+    if (req.method === 'POST') {
+      const body = req.body as {
         name?: string;
         email?: string;
         region?: string;
@@ -73,10 +73,10 @@ async function routesHandler(request: HttpRequest, context: InvocationContext): 
       });
 
       return createCorsResponse({ route }, 201);
-    } else if (request.method === 'GET') {
-      const status = request.query.get('status') as SavedRoute['status'] | null;
-      const email = request.query.get('email');
-      const region = request.query.get('region');
+    } else if (req.method === 'GET') {
+      const status = (req.query as any).status as SavedRoute['status'] | null;
+      const email = (req.query as any).email;
+      const region = (req.query as any).region;
 
       const filters = {
         ...(status && { status }),
@@ -105,10 +105,5 @@ async function routesHandler(request: HttpRequest, context: InvocationContext): 
   }
 }
 
-// Register with Azure Functions v4 runtime
-app.http('routes', {
-  methods: ['GET', 'POST', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'routes',
-  handler: routesHandler
-});
+// Export for Azure Functions v3 runtime
+module.exports = { routesHandler };

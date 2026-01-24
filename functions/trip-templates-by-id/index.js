@@ -9,15 +9,15 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function tripTemplatesById(request, context) {
+async function tripTemplatesById(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
-    const id = request.params.id;
+    const id = req.params.id;
     if (!id) {
         return (0, cors_1.createCorsResponse)({ error: 'Trip template ID is required' }, 400);
     }
@@ -25,9 +25,9 @@ async function tripTemplatesById(request, context) {
         if (!isCosmosDBConfigured()) {
             return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
         }
-        if (request.method === 'GET') {
+        if (req.method === 'GET') {
             // For GET, we need region from query params since it's the partition key
-            const region = request.query.get('region');
+            const region = req.query.region;
             if (!region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Region query parameter is required' }, 400);
             }
@@ -40,9 +40,9 @@ async function tripTemplatesById(request, context) {
                 return (0, cors_1.createCorsResponse)({ error: 'Not found' }, 404);
             return (0, cors_1.createCorsResponse)({ template });
         }
-        if (request.method === 'PATCH') {
-            const body = (await request.json());
-            const region = body.region || request.query.get('region');
+        if (req.method === 'PATCH') {
+            const body = req.body;
+            const region = body.region || req.query.region;
             context.log(`[PATCH] Updating template ${id} in region ${region}`);
             context.log('[PATCH] Body received:', JSON.stringify(body, null, 2));
             context.log(`[PATCH] Body keys:`, Object.keys(body));
@@ -207,8 +207,8 @@ async function tripTemplatesById(request, context) {
                 }, 500);
             }
         }
-        if (request.method === 'DELETE') {
-            const region = request.query.get('region');
+        if (req.method === 'DELETE') {
+            const region = req.query.region;
             if (!region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Region query parameter is required' }, 400);
             }

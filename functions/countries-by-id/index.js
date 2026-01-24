@@ -3,33 +3,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.countriesById = countriesById;
 const cosmos_countries_1 = require("../shared/cosmos-countries");
 const cors_1 = require("../shared/cors");
-async function countriesById(request, context) {
+async function countriesById(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
-    const id = request.params.id;
+    const id = req.params.id;
     if (!id) {
         return (0, cors_1.createCorsResponse)({ error: 'Country ID is required' }, 400);
     }
     try {
-        if (request.method === 'GET') {
+        if (req.method === 'GET') {
             const country = await (0, cosmos_countries_1.getCountry)(id);
             if (!country) {
                 return (0, cors_1.createCorsResponse)({ error: 'Country not found' }, 404);
             }
             return (0, cors_1.createCorsResponse)({ country });
         }
-        else if (request.method === 'PATCH') {
-            const body = await request.json();
+        else if (req.method === 'PATCH') {
+            const body = req.body;
             const country = await (0, cosmos_countries_1.updateCountry)(id, body);
             context.log(`[countries-by-id] Updated country: ${country.name}`);
             return (0, cors_1.createCorsResponse)({ country });
         }
-        else if (request.method === 'DELETE') {
+        else if (req.method === 'DELETE') {
             await (0, cosmos_countries_1.deleteCountry)(id);
             context.log(`[countries-by-id] Deleted country: ${id}`);
             return (0, cors_1.createCorsResponse)({ success: true });

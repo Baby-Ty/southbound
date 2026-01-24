@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getAllCities } from '../shared/cosmos-cities';
 import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,12 +11,12 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function cities(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  const origin = request.headers.get('origin');
+export async function cities(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
+  const origin = req.headers['origin'] as string | null;
   const corsHeaders = getCorsHeaders(origin);
   
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -24,8 +24,8 @@ export async function cities(request: HttpRequest, context: InvocationContext): 
   }
 
   try {
-    if (request.method === 'GET') {
-      const region = request.query.get('region');
+    if (req.method === 'GET') {
+      const region = (req.query as any).region as string | undefined;
 
       // Validate region if provided
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];

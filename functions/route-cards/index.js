@@ -9,18 +9,18 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function routeCards(request, context) {
+async function routeCards(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        if (request.method === 'GET') {
-            const regionParam = request.query.get('region');
-            const enabledParam = request.query.get('enabled');
+        if (req.method === 'GET') {
+            const regionParam = req.query.region;
+            const enabledParam = req.query.enabled;
             const validRegions = ['europe', 'latin-america', 'southeast-asia'];
             const region = regionParam && validRegions.includes(regionParam)
                 ? regionParam
@@ -39,8 +39,8 @@ async function routeCards(request, context) {
             });
             return (0, cors_1.createCorsResponse)({ routeCards });
         }
-        if (request.method === 'POST') {
-            const body = (await request.json());
+        if (req.method === 'POST') {
+            const body = req.body;
             if (!body?.name || !body?.region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, region' }, 400);
             }

@@ -9,9 +9,9 @@ const cors_1 = require("../shared/cors");
 const openai = new openai_1.default({
     apiKey: process.env.OPENAI_API_KEY || 'dummy',
 });
-async function imagesGenerate(request, context) {
+async function imagesGenerate(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
@@ -21,7 +21,7 @@ async function imagesGenerate(request, context) {
         return (0, cors_1.createCorsResponse)({ error: 'OpenAI API key missing' }, 500);
     }
     try {
-        const body = await request.json();
+        const body = req.body;
         const { prompt } = body;
         if (!prompt) {
             return (0, cors_1.createCorsResponse)({ error: 'Prompt required' }, 400);

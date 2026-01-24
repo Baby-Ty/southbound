@@ -9,17 +9,17 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function leads(request, context) {
+async function leads(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        if (request.method === 'POST') {
-            const body = await request.json();
+        if (req.method === 'POST') {
+            const body = req.body;
             const { name, destination, stage, notes, lastContact } = body;
             if (!name || !destination) {
                 return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name and destination are required' }, 400);
@@ -39,13 +39,14 @@ async function leads(request, context) {
             });
             return (0, cors_1.createCorsResponse)({ lead }, 201);
         }
-        else if (request.method === 'GET') {
-            const stage = request.query.get('stage');
-            const destination = request.query.get('destination');
-            const filters = {
-                ...(stage && { stage }),
-                ...(destination && { destination }),
-            };
+        else if (req.method === 'GET') {
+            const stage = req.query.stage;
+            const destination = req.query.destination;
+            const filters = {};
+            if (stage)
+                filters.stage = stage;
+            if (destination)
+                filters.destination = destination;
             if (!isCosmosDBConfigured()) {
                 return (0, cors_1.createCorsResponse)({ leads: [] });
             }

@@ -1,24 +1,24 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getCity, updateCity, deleteCity } from '../shared/cosmos-cities';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
-export async function citiesById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function citiesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
 
   if (!id) {
     return createCorsResponse({ error: 'City ID is required' }, 400);
   }
 
   try {
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       const city = await getCity(id);
       
       if (!city) {
@@ -26,11 +26,11 @@ export async function citiesById(request: HttpRequest, context: InvocationContex
       }
 
       return createCorsResponse({ city });
-    } else if (request.method === 'PATCH') {
-      const body = await request.json() as any;
+    } else if (req.method === 'PATCH') {
+      const body = req.body as any;
       const city = await updateCity(id, body);
       return createCorsResponse({ city });
-    } else if (request.method === 'DELETE') {
+    } else if (req.method === 'DELETE') {
       await deleteCity(id);
       return createCorsResponse({ success: true });
     } else {

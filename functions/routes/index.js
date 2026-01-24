@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const functions_1 = require("@azure/functions");
 const cosmos_1 = require("../shared/cosmos");
 const cors_1 = require("../shared/cors");
 function isCosmosDBConfigured() {
@@ -9,17 +8,17 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function routesHandler(request, context) {
+async function routesHandler(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        if (request.method === 'POST') {
-            const body = await request.json();
+        if (req.method === 'POST') {
+            const body = req.body;
             const { name, email, region, stops, preferences, notes } = body;
             if (!name || !email || !region || !stops || !preferences) {
                 return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, email, region, stops, preferences' }, 400);
@@ -45,10 +44,10 @@ async function routesHandler(request, context) {
             });
             return (0, cors_1.createCorsResponse)({ route }, 201);
         }
-        else if (request.method === 'GET') {
-            const status = request.query.get('status');
-            const email = request.query.get('email');
-            const region = request.query.get('region');
+        else if (req.method === 'GET') {
+            const status = req.query.status;
+            const email = req.query.email;
+            const region = req.query.region;
             const filters = {
                 ...(status && { status }),
                 ...(email && { email }),
@@ -72,10 +71,5 @@ async function routesHandler(request, context) {
         }, 500);
     }
 }
-// Register with Azure Functions v4 runtime
-functions_1.app.http('routes', {
-    methods: ['GET', 'POST', 'OPTIONS'],
-    authLevel: 'anonymous',
-    route: 'routes',
-    handler: routesHandler
-});
+// Export for Azure Functions v3 runtime
+module.exports = { routesHandler };

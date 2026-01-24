@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -23,9 +23,9 @@ export interface ImageInfo {
   container: string;
 }
 
-export async function listImages(context: InvocationContext, request: HttpRequest): Promise<HttpResponseInit> {
+export async function listImages(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -33,10 +33,10 @@ export async function listImages(context: InvocationContext, request: HttpReques
   }
 
   try {
-    // Get query parameters from request.query object (Azure Functions with function.json)
-    const category = (request.query as any).category as string | null; // Optional filter
-    const page = parseInt((request.query as any).page || '1', 10);
-    const pageSize = parseInt((request.query as any).pageSize || '50', 10);
+    // Get query parameters from req.query object (Azure Functions with function.json)
+    const category = (req.query as any).category; // Optional filter
+    const page = parseInt((req.query as any).page || '1', 10);
+    const pageSize = parseInt((req.query as any).pageSize || '50', 10);
 
     const blobServiceClient = getBlobServiceClient();
     const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'southbound-images';

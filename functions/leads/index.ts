@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { saveLead, getAllLeads, Lead } from '../shared/cosmos';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,9 +11,9 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function leads(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function leads(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -21,8 +21,8 @@ export async function leads(request: HttpRequest, context: InvocationContext): P
   }
 
   try {
-    if (request.method === 'POST') {
-      const body = await request.json() as {
+    if (req.method === 'POST') {
+      const body = req.body as {
         name?: string;
         destination?: string;
         stage?: Lead['stage'];
@@ -62,14 +62,13 @@ export async function leads(request: HttpRequest, context: InvocationContext): P
       });
 
       return createCorsResponse({ lead }, 201);
-    } else if (request.method === 'GET') {
-      const stage = request.query.get('stage') as Lead['stage'] | null;
-      const destination = request.query.get('destination');
+    } else if (req.method === 'GET') {
+      const stage = (req.query as any).stage as Lead['stage'] | undefined;
+      const destination = (req.query as any).destination as string | undefined;
 
-      const filters = {
-        ...(stage && { stage }),
-        ...(destination && { destination }),
-      };
+      const filters: any = {};
+      if (stage) filters.stage = stage;
+      if (destination) filters.destination = destination;
 
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ leads: [] });

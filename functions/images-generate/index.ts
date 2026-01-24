@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import OpenAI from 'openai';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -6,9 +6,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy',
 });
 
-export async function imagesGenerate(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function imagesGenerate(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -20,7 +20,7 @@ export async function imagesGenerate(request: HttpRequest, context: InvocationCo
   }
 
   try {
-    const body = await request.json() as { prompt?: string };
+    const body = req.body as { prompt?: string };
     const { prompt } = body;
 
     if (!prompt) {

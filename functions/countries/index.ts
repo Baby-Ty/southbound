@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getAllCountries, saveCountry } from '../shared/cosmos-countries';
 import { getCorsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,12 +11,12 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-export async function countries(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  const origin = request.headers.get('origin');
+export async function countries(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
+  const origin = req.headers['origin'] as string | null;
   const corsHeaders = getCorsHeaders(origin);
   
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
@@ -24,8 +24,8 @@ export async function countries(request: HttpRequest, context: InvocationContext
   }
 
   try {
-    if (request.method === 'GET') {
-      const region = request.query.get('region');
+    if (req.method === 'GET') {
+      const region = (req.query as any).region as string | undefined;
 
       // Validate region if provided
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
@@ -46,7 +46,7 @@ export async function countries(request: HttpRequest, context: InvocationContext
       context.log(`[countries] Retrieved ${countries.length} countries${region ? ` for region: ${region}` : ''}`);
       
       return createCorsResponse({ countries }, 200, origin);
-    } else if (request.method === 'POST') {
+    } else if (req.method === 'POST') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse(
           { error: 'CosmosDB not configured' },
@@ -55,7 +55,7 @@ export async function countries(request: HttpRequest, context: InvocationContext
         );
       }
 
-      const body = await request.json() as any;
+      const body = req.body as any;
       const country = await saveCountry(body);
       context.log(`[countries] Created country: ${country.name}`);
       

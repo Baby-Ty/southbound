@@ -407,9 +407,9 @@ export async function getTripTemplates(filters?: {
     
     // Sort by curatedOrder if filtering for curated, otherwise by order
     if (filters?.isCurated) {
-      query += ' ORDER BY c.curatedOrder ASC, c.order ASC';
+      query += ' ORDER BY c.curatedOrder ASC, c["order"] ASC';
     } else {
-      query += ' ORDER BY c.order ASC';
+      query += ' ORDER BY c["order"] ASC';
     }
 
     const { resources } = await container.items.query({

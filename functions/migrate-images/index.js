@@ -109,16 +109,16 @@ async function migrateCityImages(city) {
     }
     return hasChanges ? updates : {};
 }
-async function migrateImages(request, context) {
+async function migrateImages(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        const body = await request.json();
+        const body = req.body;
         const { cityId, dryRun = false } = body;
         if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
             return (0, cors_1.createCorsResponse)({ error: 'Azure Blob Storage is not configured' }, 500);

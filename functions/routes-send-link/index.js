@@ -4,16 +4,16 @@ exports.routesSendLink = routesSendLink;
 const cosmos_1 = require("../shared/cosmos");
 const email_1 = require("../shared/email");
 const cors_1 = require("../shared/cors");
-async function routesSendLink(request, context) {
+async function routesSendLink(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
     try {
-        const body = await request.json();
+        const body = req.body;
         const { routeId, email, routeUrl } = body;
         if (!routeId || !email || !routeUrl) {
             return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: routeId, email, routeUrl' }, 400);

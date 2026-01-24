@@ -9,15 +9,15 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function routeCardsById(request, context) {
+async function routeCardsById(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
-    const id = request.params.id;
+    const id = req.params.id;
     if (!id) {
         return (0, cors_1.createCorsResponse)({ error: 'Route card ID is required' }, 400);
     }
@@ -25,9 +25,9 @@ async function routeCardsById(request, context) {
         if (!isCosmosDBConfigured()) {
             return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
         }
-        if (request.method === 'GET') {
+        if (req.method === 'GET') {
             // For GET, we need region from query params since it's the partition key
-            const region = request.query.get('region');
+            const region = req.query.region;
             if (!region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Region query parameter is required' }, 400);
             }
@@ -40,9 +40,9 @@ async function routeCardsById(request, context) {
                 return (0, cors_1.createCorsResponse)({ error: 'Not found' }, 404);
             return (0, cors_1.createCorsResponse)({ routeCard });
         }
-        if (request.method === 'PATCH') {
-            const body = (await request.json());
-            const region = body.region || request.query.get('region');
+        if (req.method === 'PATCH') {
+            const body = req.body;
+            const region = body.region || req.query.region;
             if (!region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Region is required (in body or query)' }, 400);
             }
@@ -81,8 +81,8 @@ async function routeCardsById(request, context) {
             const routeCard = await (0, cosmos_1.updateRouteCard)(id, region, allowed);
             return (0, cors_1.createCorsResponse)({ routeCard });
         }
-        if (request.method === 'DELETE') {
-            const region = request.query.get('region');
+        if (req.method === 'DELETE') {
+            const region = req.query.region;
             if (!region) {
                 return (0, cors_1.createCorsResponse)({ error: 'Region query parameter is required' }, 400);
             }

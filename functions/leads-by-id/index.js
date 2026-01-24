@@ -9,20 +9,20 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function leadsById(request, context) {
+async function leadsById(context, req) {
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: cors_1.corsHeaders,
         };
     }
-    const id = request.params.id;
+    const id = req.params.id;
     if (!id) {
         return (0, cors_1.createCorsResponse)({ error: 'Lead ID is required' }, 400);
     }
     try {
-        if (request.method === 'GET') {
+        if (req.method === 'GET') {
             if (!isCosmosDBConfigured()) {
                 return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
             }
@@ -32,15 +32,15 @@ async function leadsById(request, context) {
             }
             return (0, cors_1.createCorsResponse)({ lead });
         }
-        else if (request.method === 'PATCH') {
+        else if (req.method === 'PATCH') {
             if (!isCosmosDBConfigured()) {
                 return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
             }
-            const body = await request.json();
+            const body = req.body;
             const lead = await (0, cosmos_1.updateLead)(id, body);
             return (0, cors_1.createCorsResponse)({ lead });
         }
-        else if (request.method === 'DELETE') {
+        else if (req.method === 'DELETE') {
             if (!isCosmosDBConfigured()) {
                 return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
             }

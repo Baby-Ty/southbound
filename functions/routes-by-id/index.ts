@@ -1,4 +1,4 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getRoute, updateRoute, deleteRoute, SavedRoute } from '../shared/cosmos';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
@@ -11,23 +11,23 @@ function isCosmosDBConfigured(): boolean {
   );
 }
 
-async function routesByIdHandler(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function routesByIdHandler(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     return {
       status: 204,
       headers: corsHeaders,
     };
   }
 
-  const id = request.params.id;
+  const id = req.params.id;
 
   if (!id) {
     return createCorsResponse({ error: 'Route ID is required' }, 400);
   }
 
   try {
-    if (request.method === 'GET') {
+    if (req.method === 'GET') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
@@ -39,12 +39,12 @@ async function routesByIdHandler(request: HttpRequest, context: InvocationContex
       }
 
       return createCorsResponse({ route });
-    } else if (request.method === 'PATCH') {
+    } else if (req.method === 'PATCH') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
 
-      const body = await request.json() as {
+      const body = req.body as {
         status?: SavedRoute['status'];
         stops?: any;
         preferences?: any;
@@ -72,7 +72,7 @@ async function routesByIdHandler(request: HttpRequest, context: InvocationContex
 
       const route = await updateRoute(id, allowedUpdates);
       return createCorsResponse({ route });
-    } else if (request.method === 'DELETE') {
+    } else if (req.method === 'DELETE') {
       if (!isCosmosDBConfigured()) {
         return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
       }
@@ -91,10 +91,5 @@ async function routesByIdHandler(request: HttpRequest, context: InvocationContex
   }
 }
 
-// Register with Azure Functions v4 runtime
-app.http('routes-by-id', {
-  methods: ['GET', 'PATCH', 'DELETE', 'OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'routes/{id}',
-  handler: routesByIdHandler
-});
+// Export for Azure Functions v3 runtime
+module.exports = { routesByIdHandler };

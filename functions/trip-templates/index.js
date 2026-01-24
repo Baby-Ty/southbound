@@ -9,20 +9,20 @@ function isCosmosDBConfigured() {
         process.env.COSMOSDB_ENDPOINT.trim() !== '' &&
         process.env.COSMOSDB_KEY.trim() !== '');
 }
-async function tripTemplates(request, context) {
-    const origin = request.headers.get('origin');
+async function tripTemplates(context, req) {
+    const origin = req.headers['origin'];
     // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return {
             status: 204,
             headers: (0, cors_1.getCorsHeaders)(origin),
         };
     }
     try {
-        if (request.method === 'GET') {
-            const regionParam = request.query.get('region');
-            const enabledParam = request.query.get('enabled');
-            const curatedParam = request.query.get('curated');
+        if (req.method === 'GET') {
+            const regionParam = req.query.region;
+            const enabledParam = req.query.enabled;
+            const curatedParam = req.query.curated;
             const validRegions = ['europe', 'latin-america', 'southeast-asia'];
             const region = regionParam && validRegions.includes(regionParam)
                 ? regionParam
@@ -47,8 +47,8 @@ async function tripTemplates(request, context) {
             });
             return (0, cors_1.createCorsResponse)({ templates }, 200, origin);
         }
-        if (request.method === 'POST') {
-            const body = (await request.json());
+        if (req.method === 'POST') {
+            const body = req.body;
             if (!body?.name || !body?.region || !Array.isArray(body?.presetCities)) {
                 return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, region, presetCities' }, 400, origin);
             }
