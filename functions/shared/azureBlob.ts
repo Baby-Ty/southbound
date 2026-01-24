@@ -1,5 +1,6 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
-import { compressToWebP } from './imageCompression';
+// Note: Sharp import removed to avoid native module loading issues in Azure Functions
+// Compression is disabled by default (see uploadImageBuffer compress parameter)
 
 let blobServiceClient: BlobServiceClient | null = null;
 
@@ -73,21 +74,14 @@ export async function uploadImageBuffer(
   let contentType = 'image/webp';
   
   if (compress) {
-    try {
-      const compressionResult = await compressToWebP(buffer, { quality: 80 });
-      finalBuffer = compressionResult.buffer;
-      
-      // Update filename extension to .webp
-      blobName = blobName.replace(/\.(jpg|jpeg|png|gif)$/i, '.webp');
-    } catch (error) {
-      // If compression fails, use original buffer
-      console.warn('Image compression failed, using original:', error);
-      const extension = blobName.toLowerCase().split('.').pop();
-      if (extension === 'png') contentType = 'image/png';
-      else if (extension === 'gif') contentType = 'image/gif';
-      else if (extension === 'webp') contentType = 'image/webp';
-      else contentType = 'image/jpeg';
-    }
+    // Compression is disabled - Sharp native module causes issues in Azure Functions
+    // TODO: Implement compression with a pure JS library or fix Sharp configuration
+    console.warn('Image compression requested but disabled due to Sharp module issues');
+    const extension = blobName.toLowerCase().split('.').pop();
+    if (extension === 'png') contentType = 'image/png';
+    else if (extension === 'gif') contentType = 'image/gif';
+    else if (extension === 'webp') contentType = 'image/webp';
+    else contentType = 'image/jpeg';
   } else {
     // Determine content type from extension
     const extension = blobName.toLowerCase().split('.').pop();
