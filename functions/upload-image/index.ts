@@ -1,6 +1,5 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { uploadImageFromUrl, uploadImageFromBase64 } from '../shared/azureBlob';
-import { compressToWebP } from '../shared/imageCompression';
 import { corsHeaders, createCorsResponse } from '../shared/cors';
 
 export async function uploadImage(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
