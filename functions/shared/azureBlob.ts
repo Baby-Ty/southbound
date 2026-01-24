@@ -38,7 +38,7 @@ async function getContainerClient(): Promise<ContainerClient> {
 
 export async function uploadImageFromUrl(
   imageUrl: string,
-  category: 'cities' | 'highlights' | 'activities' | 'accommodations',
+  category: string,
   filename?: string
 ): Promise<string> {
   const response = await fetch(imageUrl);
@@ -54,7 +54,7 @@ export async function uploadImageFromUrl(
 
 export async function uploadImageBuffer(
   buffer: Buffer,
-  category: 'cities' | 'highlights' | 'activities' | 'accommodations',
+  category: string,
   filename?: string,
   compress: boolean = true
 ): Promise<string> {
@@ -110,7 +110,7 @@ export async function uploadImageBuffer(
 
 export async function uploadImageFromBase64(
   base64Data: string,
-  category: 'cities' | 'highlights' | 'activities' | 'accommodations',
+  category: string,
   filename?: string
 ): Promise<string> {
   const base64String = base64Data.includes(',') 

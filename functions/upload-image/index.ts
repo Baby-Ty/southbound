@@ -35,7 +35,7 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
       ); return;
     }
 
-    const validCategories = ['cities', 'highlights', 'activities', 'accommodations'];
+    const validCategories = ['cities', 'highlights', 'activities', 'accommodations', 'route-cards', 'trip-templates', 'countries'];
     if (!validCategories.includes(category)) {
       (context as any).res = createCorsResponse(
         { error: `Invalid category. Must be one of: ${validCategories.join(', ')}` },
@@ -48,13 +48,13 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
     if (imageData) {
       blobUrl = await uploadImageFromBase64(
         imageData,
-        category as 'cities' | 'highlights' | 'activities' | 'accommodations',
+        category,
         filename
       );
     } else if (imageUrl) {
       blobUrl = await uploadImageFromUrl(
         imageUrl,
-        category as 'cities' | 'highlights' | 'activities' | 'accommodations',
+        category,
         filename
       );
     } else {

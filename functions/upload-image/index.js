@@ -23,7 +23,7 @@ async function uploadImage(context, req) {
             context.res = (0, cors_1.createCorsResponse)({ error: 'Category is required' }, 400);
             return;
         }
-        const validCategories = ['cities', 'highlights', 'activities', 'accommodations'];
+        const validCategories = ['cities', 'highlights', 'activities', 'accommodations', 'route-cards', 'trip-templates', 'countries'];
         if (!validCategories.includes(category)) {
             context.res = (0, cors_1.createCorsResponse)({ error: `Invalid category. Must be one of: ${validCategories.join(', ')}` }, 400);
             return;
