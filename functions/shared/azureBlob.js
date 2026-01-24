@@ -43,7 +43,7 @@ async function uploadImageFromUrl(imageUrl, category, filename) {
     const buffer = Buffer.from(arrayBuffer);
     return await uploadImageBuffer(buffer, category, filename);
 }
-async function uploadImageBuffer(buffer, category, filename, compress = true) {
+async function uploadImageBuffer(buffer, category, filename, compress = false) {
     const container = await getContainerClient();
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 9);

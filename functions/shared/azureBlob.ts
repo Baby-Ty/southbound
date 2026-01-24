@@ -56,7 +56,7 @@ export async function uploadImageBuffer(
   buffer: Buffer,
   category: string,
   filename?: string,
-  compress: boolean = true
+  compress: boolean = false
 ): Promise<string> {
   const container = await getContainerClient();
   

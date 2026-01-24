@@ -13,6 +13,7 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
   }
 
   try {
+    context.log('[upload-image] Processing upload request');
     const body = req.body as {
       imageUrl?: string;
       imageData?: string;
@@ -20,6 +21,7 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
       filename?: string;
     };
     const { imageUrl, imageData, category, filename } = body;
+    context.log(`[upload-image] Category: ${category}, hasImageUrl: ${!!imageUrl}, hasImageData: ${!!imageData}`);
 
     if (!imageUrl && !imageData) {
       (context as any).res = createCorsResponse(
@@ -45,23 +47,32 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
 
     let blobUrl: string;
 
-    if (imageData) {
-      blobUrl = await uploadImageFromBase64(
-        imageData,
-        category,
-        filename
-      );
-    } else if (imageUrl) {
-      blobUrl = await uploadImageFromUrl(
-        imageUrl,
-        category,
-        filename
-      );
-    } else {
-      (context as any).res = createCorsResponse(
-        { error: 'Either imageUrl or imageData is required' },
-        400
-      ); return;
+    try {
+      if (imageData) {
+        context.log('[upload-image] Uploading from base64 data');
+        blobUrl = await uploadImageFromBase64(
+          imageData,
+          category,
+          filename
+        );
+      } else if (imageUrl) {
+        context.log('[upload-image] Uploading from URL');
+        blobUrl = await uploadImageFromUrl(
+          imageUrl,
+          category,
+          filename
+        );
+      } else {
+        (context as any).res = createCorsResponse(
+          { error: 'Either imageUrl or imageData is required' },
+          400
+        ); return;
+      }
+      context.log(`[upload-image] Successfully uploaded to: ${blobUrl}`);
+    } catch (uploadError: any) {
+      context.log(`[upload-image] Upload error: ${uploadError.message}`);
+      context.log(`[upload-image] Stack: ${uploadError.stack}`);
+      throw uploadError;
     }
 
     (context as any).res = createCorsResponse({
@@ -70,12 +81,13 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
       message: 'Image uploaded successfully',
     }); return;
   } catch (error: any) {
-      context.log(`Error uploading image: ${error instanceof Error ? error.message : String(error)}`);
+    context.log(`[upload-image] Error uploading image: ${error instanceof Error ? error.message : String(error)}`);
+    context.log(`[upload-image] Error stack: ${error.stack}`);
     
     (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to upload image',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details: error.stack
       },
       500
     ); return;
