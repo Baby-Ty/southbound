@@ -5,8 +5,7 @@ exports.uploadImageBuffer = uploadImageBuffer;
 exports.uploadImageFromBase64 = uploadImageFromBase64;
 exports.uploadActivityPhotos = uploadActivityPhotos;
 const storage_blob_1 = require("@azure/storage-blob");
-// Note: Sharp import removed to avoid native module loading issues in Azure Functions
-// Compression is disabled by default (see uploadImageBuffer compress parameter)
+const imageCompression_1 = require("./imageCompression");
 let blobServiceClient = null;
 function getBlobServiceClient() {
     if (blobServiceClient) {
@@ -52,22 +51,33 @@ async function uploadImageBuffer(buffer, category, filename, compress = false) {
     let blobName = originalFilename.startsWith(category + '/')
         ? originalFilename
         : `${category}/${originalFilename}`;
-    // Compress image if requested and not already WebP
+    // Compress image if requested using JIMP (pure JavaScript, no native dependencies)
     let finalBuffer = buffer;
-    let contentType = 'image/webp';
+    let contentType = 'image/jpeg'; // Default content type
     if (compress) {
-        // Compression is disabled - Sharp native module causes issues in Azure Functions
-        // TODO: Implement compression with a pure JS library or fix Sharp configuration
-        console.warn('Image compression requested but disabled due to Sharp module issues');
-        const extension = blobName.toLowerCase().split('.').pop();
-        if (extension === 'png')
-            contentType = 'image/png';
-        else if (extension === 'gif')
-            contentType = 'image/gif';
-        else if (extension === 'webp')
-            contentType = 'image/webp';
-        else
-            contentType = 'image/jpeg';
+        try {
+            console.log('Compressing image with JIMP...');
+            const compressionResult = await (0, imageCompression_1.compressWithJimp)(buffer, { quality: 80 });
+            finalBuffer = compressionResult.buffer;
+            // Update blob name extension based on compressed format
+            const extension = compressionResult.format === 'jpeg' ? '.jpg' : '.png';
+            blobName = blobName.replace(/\.(png|jpg|jpeg|gif|webp)$/i, extension);
+            contentType = compressionResult.format === 'jpeg' ? 'image/jpeg' : 'image/png';
+            console.log(`Image compressed: ${compressionResult.originalSize} → ${compressionResult.compressedSize} bytes (${compressionResult.reductionPercent.toFixed(1)}% reduction)`);
+        }
+        catch (error) {
+            console.error('Compression failed, uploading original:', error.message);
+            // Fall back to original buffer if compression fails
+            const extension = blobName.toLowerCase().split('.').pop();
+            if (extension === 'png')
+                contentType = 'image/png';
+            else if (extension === 'gif')
+                contentType = 'image/gif';
+            else if (extension === 'webp')
+                contentType = 'image/webp';
+            else
+                contentType = 'image/jpeg';
+        }
     }
     else {
         // Determine content type from extension
