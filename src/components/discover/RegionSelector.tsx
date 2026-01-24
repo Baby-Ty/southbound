@@ -150,7 +150,16 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
           // Ensure we have all 3 regions (fill missing with fallback)
           const regionIds = mappedRegions.map(r => r.id);
           const missingRegions = FALLBACK_REGIONS.filter(f => !regionIds.includes(f.id));
-          setRegions([...mappedRegions, ...missingRegions]);
+          
+          // Only update if data actually changed (prevent unnecessary re-renders)
+          const newRegions = [...mappedRegions, ...missingRegions];
+          setRegions(prev => {
+            // Check if image URLs changed
+            const hasChanges = prev.some((oldRegion, idx) => 
+              !newRegions[idx] || oldRegion.bgImage !== newRegions[idx].bgImage
+            );
+            return hasChanges ? newRegions : prev;
+          });
         }
       } catch (error) {
         console.error('[RegionSelector] Error loading route cards:', error);
@@ -183,6 +192,7 @@ export default function RegionSelector({ selectedRegions, onRegionToggle }: Regi
             src={region.bgImage}
             alt={region.name}
             fill
+            priority
             sizes="(max-width: 768px) 100vw, 33vw"
             className={`object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
           />
