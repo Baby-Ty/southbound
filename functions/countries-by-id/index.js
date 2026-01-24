@@ -6,41 +6,49 @@ const cors_1 = require("../shared/cors");
 async function countriesById(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     const id = req.params.id;
     if (!id) {
-        return (0, cors_1.createCorsResponse)({ error: 'Country ID is required' }, 400);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'Country ID is required' }, 400);
+        return;
     }
     try {
         if (req.method === 'GET') {
             const country = await (0, cosmos_countries_1.getCountry)(id);
             if (!country) {
-                return (0, cors_1.createCorsResponse)({ error: 'Country not found' }, 404);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Country not found' }, 404);
+                return;
             }
-            return (0, cors_1.createCorsResponse)({ country });
+            context.res = (0, cors_1.createCorsResponse)({ country });
+            return;
         }
         else if (req.method === 'PATCH') {
             const body = req.body;
             const country = await (0, cosmos_countries_1.updateCountry)(id, body);
             context.log(`[countries-by-id] Updated country: ${country.name}`);
-            return (0, cors_1.createCorsResponse)({ country });
+            context.res = (0, cors_1.createCorsResponse)({ country });
+            return;
         }
         else if (req.method === 'DELETE') {
             await (0, cosmos_countries_1.deleteCountry)(id);
             context.log(`[countries-by-id] Deleted country: ${id}`);
-            return (0, cors_1.createCorsResponse)({ success: true });
+            context.res = (0, cors_1.createCorsResponse)({ success: true });
+            return;
         }
         else {
-            return (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            return;
         }
     }
     catch (error) {
         context.log(`[countries-by-id] Error processing country request: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({ error: error.message || 'Failed to process request' }, 500);
+        context.res = (0, cors_1.createCorsResponse)({ error: error.message || 'Failed to process request' }, 500);
+        return;
     }
 }
 module.exports = { countriesById };

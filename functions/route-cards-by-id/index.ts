@@ -19,40 +19,40 @@ function isCosmosDBConfigured(): boolean {
 export async function routeCardsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
   if (!id) {
-    return createCorsResponse({ error: 'Route card ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Route card ID is required' }, 400); return;
   }
 
   try {
     if (!isCosmosDBConfigured()) {
-      return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+      (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
     }
 
     if (req.method === 'GET') {
       // For GET, we need region from query params since it's the partition key
       const region = (req.query as any).region;
       if (!region) {
-        return createCorsResponse({ error: 'Region query parameter is required' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region query parameter is required' }, 400); return;
       }
       
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       const routeCard = await getRouteCard(id, region);
-      if (!routeCard) return createCorsResponse({ error: 'Not found' }, 404);
-      return createCorsResponse({ routeCard });
+      if (!routeCard) (context as any).res = createCorsResponse({ error: 'Not found' }, 404); return;
+      (context as any).res = createCorsResponse({ routeCard }); return;
     }
 
     if (req.method === 'PATCH') {
@@ -60,15 +60,15 @@ export async function routeCardsById(context: InvocationContext, req: HttpReques
       const region = body.region || (req.query as any).region;
       
       if (!region) {
-        return createCorsResponse({ error: 'Region is required (in body or query)' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region is required (in body or query)' }, 400); return;
       }
 
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       const allowed: Partial<Omit<RouteCard, 'id' | 'createdAt' | 'updatedAt' | 'region'>> = {};
@@ -91,36 +91,36 @@ export async function routeCardsById(context: InvocationContext, req: HttpReques
       if (body.order !== undefined) allowed.order = Number(body.order) || 0;
 
       const routeCard = await updateRouteCard(id, region, allowed);
-      return createCorsResponse({ routeCard });
+      (context as any).res = createCorsResponse({ routeCard }); return;
     }
 
     if (req.method === 'DELETE') {
       const region = (req.query as any).region;
       if (!region) {
-        return createCorsResponse({ error: 'Region query parameter is required' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region query parameter is required' }, 400); return;
       }
 
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       await deleteRouteCard(id, region);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     }
 
-    return createCorsResponse({ error: 'Method not allowed' }, 405);
+    (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
   } catch (error: any) {
     context.log(
       `Error processing route card request: ${error instanceof Error ? error.message : String(error)}`
     );
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

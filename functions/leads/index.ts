@@ -14,10 +14,10 @@ function isCosmosDBConfigured(): boolean {
 export async function leads(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -33,24 +33,24 @@ export async function leads(context: InvocationContext, req: HttpRequest): Promi
       const { name, destination, stage, notes, lastContact } = body;
 
       if (!name || !destination) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Missing required fields: name and destination are required' },
           400
-        );
+        ); return;
       }
 
       if (!name.trim()) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Name is required' },
           400
-        );
+        ); return;
       }
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'CosmosDB is not configured' },
           500
-        );
+        ); return;
       }
 
       const lead = await saveLead({
@@ -61,7 +61,7 @@ export async function leads(context: InvocationContext, req: HttpRequest): Promi
         lastContact: lastContact || new Date().toISOString(),
       });
 
-      return createCorsResponse({ lead }, 201);
+      (context as any).res = createCorsResponse({ lead }, 201); return;
     } else if (req.method === 'GET') {
       const stage = (req.query as any).stage as Lead['stage'] | undefined;
       const destination = (req.query as any).destination as string | undefined;
@@ -71,23 +71,23 @@ export async function leads(context: InvocationContext, req: HttpRequest): Promi
       if (destination) filters.destination = destination;
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ leads: [] });
+        (context as any).res = createCorsResponse({ leads: [] }); return;
       }
 
       const leads = await getAllLeads(filters);
-      return createCorsResponse({ leads });
+      (context as any).res = createCorsResponse({ leads }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`Error processing leads request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

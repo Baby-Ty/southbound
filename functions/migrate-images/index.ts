@@ -102,10 +102,10 @@ async function migrateCityImages(city: CityData): Promise<Partial<CityData>> {
 export async function migrateImages(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -116,10 +116,10 @@ export async function migrateImages(context: InvocationContext, req: HttpRequest
     const { cityId, dryRun = false } = body;
 
     if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Azure Blob Storage is not configured' },
         500
-      );
+      ); return;
     }
 
     if (cityId) {
@@ -127,39 +127,39 @@ export async function migrateImages(context: InvocationContext, req: HttpRequest
       const city = await getCity(cityId);
       
       if (!city) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'City not found' },
           404
-        );
+        ); return;
       }
 
       const updates = await migrateCityImages(city);
       
       if (dryRun) {
-        return createCorsResponse({
+        (context as any).res = createCorsResponse({
           success: true,
           dryRun: true,
           city: city.city,
           updates,
           message: 'Dry run completed. No changes were saved.',
-        });
+        }); return;
       }
 
       if (Object.keys(updates).length > 0) {
         await updateCity(cityId, updates);
-        return createCorsResponse({
+        (context as any).res = createCorsResponse({
           success: true,
           city: city.city,
           updates,
           message: 'City images migrated successfully',
-        });
+        }); return;
       }
 
-      return createCorsResponse({
+      (context as any).res = createCorsResponse({
         success: true,
         city: city.city,
         message: 'No images needed migration (all already in blob storage)',
-      });
+      }); return;
     } else {
       const cities = await getAllCities();
       const results = {
@@ -215,24 +215,24 @@ export async function migrateImages(context: InvocationContext, req: HttpRequest
         }
       }
 
-      return createCorsResponse({
+      (context as any).res = createCorsResponse({
         success: true,
         dryRun,
         results,
         message: dryRun 
           ? 'Dry run completed. No changes were saved.'
           : 'Migration completed',
-      });
+      }); return;
     }
   } catch (error: any) {
     context.log(`Migration error: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to migrate images',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

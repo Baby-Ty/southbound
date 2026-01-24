@@ -12,19 +12,22 @@ const openai = new openai_1.default({
 async function imagesGenerate(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     if (!process.env.OPENAI_API_KEY) {
-        return (0, cors_1.createCorsResponse)({ error: 'OpenAI API key missing' }, 500);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'OpenAI API key missing' }, 500);
+        return;
     }
     try {
         const body = req.body;
         const { prompt } = body;
         if (!prompt) {
-            return (0, cors_1.createCorsResponse)({ error: 'Prompt required' }, 400);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Prompt required' }, 400);
+            return;
         }
         const response = await openai.images.generate({
             model: "dall-e-3",
@@ -34,11 +37,13 @@ async function imagesGenerate(context, req) {
             quality: "standard",
             style: "natural"
         });
-        return (0, cors_1.createCorsResponse)({ url: response.data[0].url });
+        context.res = (0, cors_1.createCorsResponse)({ url: response.data[0].url });
+        return;
     }
     catch (error) {
         context.log(`OpenAI Error: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({ error: 'Failed to generate image' }, 500);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'Failed to generate image' }, 500);
+        return;
     }
 }
 module.exports = { imagesGenerate };

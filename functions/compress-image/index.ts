@@ -44,10 +44,10 @@ function parseBlobUrl(blobUrl: string): { containerName: string; blobName: strin
 export async function compressImage(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -62,19 +62,19 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
     const { blobUrl, quality = 80, replaceOriginal = true } = body;
 
     if (!blobUrl) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'blobUrl is required' },
         400
-      );
+      ); return;
     }
 
     // Parse blob URL to get container and blob name
     const parsed = parseBlobUrl(blobUrl);
     if (!parsed) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Invalid blob URL format' },
         400
-      );
+      ); return;
     }
 
     const { containerName, blobName } = parsed;
@@ -85,10 +85,10 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
     // Check if blob exists
     const exists = await blobClient.exists();
     if (!exists) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Blob not found' },
         404
-      );
+      ); return;
     }
 
     // Download the image
@@ -109,7 +109,7 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
     // Check if already WebP
     const isWebP = blobName.toLowerCase().endsWith('.webp');
     if (isWebP) {
-      return createCorsResponse({
+      (context as any).res = createCorsResponse({
         success: true,
         message: 'Image is already in WebP format',
         blobUrl,
@@ -117,7 +117,7 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
         compressedSize: originalSize,
         reductionPercent: 0,
         alreadyCompressed: true,
-      });
+      }); return;
     }
 
     // Compress the image
@@ -148,7 +148,7 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
       }
     }
 
-    return createCorsResponse({
+    (context as any).res = createCorsResponse({
       success: true,
       message: 'Image compressed successfully',
       blobUrl: newBlobUrl,
@@ -157,17 +157,17 @@ export async function compressImage(context: InvocationContext, req: HttpRequest
       compressedSize: compressionResult.compressedSize,
       reductionPercent: compressionResult.reductionPercent,
       format: compressionResult.format,
-    });
+    }); return;
   } catch (error: any) {
     context.log(`Error compressing image: ${error instanceof Error ? error.message : String(error)}`);
     
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to compress image',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

@@ -14,56 +14,56 @@ function isCosmosDBConfigured(): boolean {
 export async function leadsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
 
   if (!id) {
-    return createCorsResponse({ error: 'Lead ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Lead ID is required' }, 400); return;
   }
 
   try {
     if (req.method === 'GET') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       const lead = await getLead(id);
       
       if (!lead) {
-        return createCorsResponse({ error: 'Lead not found' }, 404);
+        (context as any).res = createCorsResponse({ error: 'Lead not found' }, 404); return;
       }
 
-      return createCorsResponse({ lead });
+      (context as any).res = createCorsResponse({ lead }); return;
     } else if (req.method === 'PATCH') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       const body = req.body as Partial<Lead>;
       
       const lead = await updateLead(id, body);
-      return createCorsResponse({ lead });
+      (context as any).res = createCorsResponse({ lead }); return;
     } else if (req.method === 'DELETE') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       await deleteLead(id);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`Error processing lead request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

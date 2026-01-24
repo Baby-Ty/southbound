@@ -37,10 +37,11 @@ function parseBlobUrl(blobUrl) {
 async function compressImage(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     try {
         const body = (typeof req.body === 'object' && req.body !== null && !(req.body instanceof ReadableStream)
@@ -48,12 +49,14 @@ async function compressImage(context, req) {
             : {});
         const { blobUrl, quality = 80, replaceOriginal = true } = body;
         if (!blobUrl) {
-            return (0, cors_1.createCorsResponse)({ error: 'blobUrl is required' }, 400);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'blobUrl is required' }, 400);
+            return;
         }
         // Parse blob URL to get container and blob name
         const parsed = parseBlobUrl(blobUrl);
         if (!parsed) {
-            return (0, cors_1.createCorsResponse)({ error: 'Invalid blob URL format' }, 400);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Invalid blob URL format' }, 400);
+            return;
         }
         const { containerName, blobName } = parsed;
         const blobServiceClient = getBlobServiceClient();
@@ -62,7 +65,8 @@ async function compressImage(context, req) {
         // Check if blob exists
         const exists = await blobClient.exists();
         if (!exists) {
-            return (0, cors_1.createCorsResponse)({ error: 'Blob not found' }, 404);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Blob not found' }, 404);
+            return;
         }
         // Download the image
         const downloadResponse = await blobClient.download();
@@ -78,7 +82,7 @@ async function compressImage(context, req) {
         // Check if already WebP
         const isWebP = blobName.toLowerCase().endsWith('.webp');
         if (isWebP) {
-            return (0, cors_1.createCorsResponse)({
+            context.res = (0, cors_1.createCorsResponse)({
                 success: true,
                 message: 'Image is already in WebP format',
                 blobUrl,
@@ -87,6 +91,7 @@ async function compressImage(context, req) {
                 reductionPercent: 0,
                 alreadyCompressed: true,
             });
+            return;
         }
         // Compress the image
         const compressionResult = await (0, imageCompression_1.compressToWebP)(imageBuffer, { quality });
@@ -112,7 +117,7 @@ async function compressImage(context, req) {
                 // Continue anyway - we've uploaded the compressed version
             }
         }
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             success: true,
             message: 'Image compressed successfully',
             blobUrl: newBlobUrl,
@@ -122,13 +127,15 @@ async function compressImage(context, req) {
             reductionPercent: compressionResult.reductionPercent,
             format: compressionResult.format,
         });
+        return;
     }
     catch (error) {
         context.log(`Error compressing image: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             error: error.message || 'Failed to compress image',
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, 500);
+        return;
     }
 }
 module.exports = { compressImage };

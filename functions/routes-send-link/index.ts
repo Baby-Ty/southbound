@@ -6,10 +6,10 @@ import { corsHeaders, createCorsResponse } from '../shared/cors';
 export async function routesSendLink(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -21,18 +21,18 @@ export async function routesSendLink(context: InvocationContext, req: HttpReques
     const { routeId, email, routeUrl } = body;
 
     if (!routeId || !email || !routeUrl) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Missing required fields: routeId, email, routeUrl' },
         400
-      );
+      ); return;
     }
 
     const route = await getRoute(routeId);
     if (!route) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Route not found' },
         404
-      );
+      ); return;
     }
 
     await sendEmail({
@@ -42,13 +42,13 @@ export async function routesSendLink(context: InvocationContext, req: HttpReques
       text: generateRouteEmailText(routeId, routeUrl, route.name),
     });
 
-    return createCorsResponse({ success: true });
+    (context as any).res = createCorsResponse({ success: true }); return;
   } catch (error: any) {
       context.log(`Error sending email: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to send email' },
       500
-    );
+    ); return;
   }
 }
 

@@ -7,23 +7,23 @@ export async function imagesSearch(context: InvocationContext, req: HttpRequest)
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const query = (req.query as any).query;
 
   if (!query) {
-    return createCorsResponse({ error: 'Query required' }, 400, origin);
+    (context as any).res = createCorsResponse({ error: 'Query required' }, 400, origin); return;
   }
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   
   if (!accessKey) {
     context.log("UNSPLASH_ACCESS_KEY is missing");
-    return createCorsResponse([], 200, origin);
+    (context as any).res = createCorsResponse([], 200, origin); return;
   }
 
   try {
@@ -50,10 +50,10 @@ export async function imagesSearch(context: InvocationContext, req: HttpRequest)
       photographerUrl: img.user.links.html
     }));
 
-    return createCorsResponse(images, 200, origin);
+    (context as any).res = createCorsResponse(images, 200, origin); return;
   } catch (error: any) {
     context.log(`Error: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse({ error: 'Failed to fetch images' }, 500, origin);
+    (context as any).res = createCorsResponse({ error: 'Failed to fetch images' }, 500, origin); return;
   }
 }
 

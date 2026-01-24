@@ -17,10 +17,10 @@ export async function cities(context: InvocationContext, req: HttpRequest): Prom
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -30,35 +30,35 @@ export async function cities(context: InvocationContext, req: HttpRequest): Prom
       // Validate region if provided
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (region && !validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400,
           origin
-        );
+        ); return;
       }
 
       if (!isCosmosDBConfigured()) {
         context.log('[cities] CosmosDB not configured, returning empty array');
-        return createCorsResponse({ cities: [] }, 200, origin);
+        (context as any).res = createCorsResponse({ cities: [] }, 200, origin); return;
       }
 
       const cities = await getAllCities(region || undefined);
       context.log(`[cities] Retrieved ${cities.length} cities${region ? ` for region: ${region}` : ''}`);
       
-      return createCorsResponse({ cities }, 200, origin);
+      (context as any).res = createCorsResponse({ cities }, 200, origin); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405, origin);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405, origin); return;
     }
   } catch (error: any) {
     context.log(`[cities] Error processing cities request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500,
       origin
-    );
+    ); return;
   }
 }
 

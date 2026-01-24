@@ -5,16 +5,16 @@ import { corsHeaders, createCorsResponse } from '../shared/cors';
 export async function countriesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
 
   if (!id) {
-    return createCorsResponse({ error: 'Country ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Country ID is required' }, 400); return;
   }
 
   try {
@@ -22,28 +22,28 @@ export async function countriesById(context: InvocationContext, req: HttpRequest
       const country = await getCountry(id);
       
       if (!country) {
-        return createCorsResponse({ error: 'Country not found' }, 404);
+        (context as any).res = createCorsResponse({ error: 'Country not found' }, 404); return;
       }
 
-      return createCorsResponse({ country });
+      (context as any).res = createCorsResponse({ country }); return;
     } else if (req.method === 'PATCH') {
       const body = req.body as any;
       const country = await updateCountry(id, body);
       context.log(`[countries-by-id] Updated country: ${country.name}`);
-      return createCorsResponse({ country });
+      (context as any).res = createCorsResponse({ country }); return;
     } else if (req.method === 'DELETE') {
       await deleteCountry(id);
       context.log(`[countries-by-id] Deleted country: ${id}`);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`[countries-by-id] Error processing country request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

@@ -12,10 +12,11 @@ function isCosmosDBConfigured() {
 async function defaultTrips(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     try {
         if (req.method === 'GET') {
@@ -27,21 +28,25 @@ async function defaultTrips(context, req) {
                     ? true
                     : false;
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ trips: [] });
+                context.res = (0, cors_1.createCorsResponse)({ trips: [] });
+                return;
             }
             const trips = await (0, cosmos_1.getDefaultTrips)({
                 ...(region ? { region } : {}),
                 ...(typeof enabled === 'boolean' ? { enabled } : {}),
             });
-            return (0, cors_1.createCorsResponse)({ trips });
+            context.res = (0, cors_1.createCorsResponse)({ trips });
+            return;
         }
         if (req.method === 'POST') {
             const body = req.body;
             if (!body?.name || !body?.region || !Array.isArray(body?.stops)) {
-                return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, region, stops' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, region, stops' }, 400);
+                return;
             }
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                return;
             }
             const trip = await (0, cosmos_1.createDefaultTrip)({
                 name: String(body.name).trim(),
@@ -51,16 +56,19 @@ async function defaultTrips(context, req) {
                 stops: body.stops,
                 notes: body.notes ? String(body.notes) : undefined,
             });
-            return (0, cors_1.createCorsResponse)({ trip }, 201);
+            context.res = (0, cors_1.createCorsResponse)({ trip }, 201);
+            return;
         }
-        return (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+        return;
     }
     catch (error) {
         context.log(`Error processing default trips request: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             error: error.message || 'Failed to process request',
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         }, 500);
+        return;
     }
 }
 module.exports = { defaultTrips };

@@ -12,23 +12,27 @@ function isCosmosDBConfigured() {
 async function leads(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     try {
         if (req.method === 'POST') {
             const body = req.body;
             const { name, destination, stage, notes, lastContact } = body;
             if (!name || !destination) {
-                return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name and destination are required' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name and destination are required' }, 400);
+                return;
             }
             if (!name.trim()) {
-                return (0, cors_1.createCorsResponse)({ error: 'Name is required' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Name is required' }, 400);
+                return;
             }
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                return;
             }
             const lead = await (0, cosmos_1.saveLead)({
                 name: name.trim(),
@@ -37,7 +41,8 @@ async function leads(context, req) {
                 notes: notes || '',
                 lastContact: lastContact || new Date().toISOString(),
             });
-            return (0, cors_1.createCorsResponse)({ lead }, 201);
+            context.res = (0, cors_1.createCorsResponse)({ lead }, 201);
+            return;
         }
         else if (req.method === 'GET') {
             const stage = req.query.stage;
@@ -48,21 +53,25 @@ async function leads(context, req) {
             if (destination)
                 filters.destination = destination;
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ leads: [] });
+                context.res = (0, cors_1.createCorsResponse)({ leads: [] });
+                return;
             }
             const leads = await (0, cosmos_1.getAllLeads)(filters);
-            return (0, cors_1.createCorsResponse)({ leads });
+            context.res = (0, cors_1.createCorsResponse)({ leads });
+            return;
         }
         else {
-            return (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            return;
         }
     }
     catch (error) {
         context.log(`Error processing leads request: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             error: error.message || 'Failed to process request',
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, 500);
+        return;
     }
 }
 module.exports = { leads };

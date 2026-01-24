@@ -13,10 +13,11 @@ function getBlobServiceClient() {
 async function listImages(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     try {
         // Get query parameters from req.query object (Azure Functions with function.json)
@@ -29,13 +30,14 @@ async function listImages(context, req) {
         // Check if container exists
         const exists = await containerClient.exists();
         if (!exists) {
-            return (0, cors_1.createCorsResponse)({
+            context.res = (0, cors_1.createCorsResponse)({
                 images: [],
                 total: 0,
                 page,
                 pageSize,
                 totalPages: 0,
             });
+            return;
         }
         const images = [];
         const categories = category
@@ -82,7 +84,7 @@ async function listImages(context, req) {
         const uncompressedSize = images
             .filter(img => !img.isCompressed)
             .reduce((sum, img) => sum + img.size, 0);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             images: paginatedImages,
             total,
             page,
@@ -97,13 +99,15 @@ async function listImages(context, req) {
                 averageSize: total > 0 ? Math.round(totalSize / total) : 0,
             },
         });
+        return;
     }
     catch (error) {
         context.log(`Error listing images: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             error: error.message || 'Failed to list images',
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, 500);
+        return;
     }
 }
 module.exports = { listImages };

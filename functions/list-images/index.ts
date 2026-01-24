@@ -26,10 +26,10 @@ export interface ImageInfo {
 export async function listImages(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -45,13 +45,13 @@ export async function listImages(context: InvocationContext, req: HttpRequest): 
     // Check if container exists
     const exists = await containerClient.exists();
     if (!exists) {
-      return createCorsResponse({
+      (context as any).res = createCorsResponse({
         images: [],
         total: 0,
         page,
         pageSize,
         totalPages: 0,
-      });
+      }); return;
     }
 
     const images: ImageInfo[] = [];
@@ -107,7 +107,7 @@ export async function listImages(context: InvocationContext, req: HttpRequest): 
       .filter(img => !img.isCompressed)
       .reduce((sum, img) => sum + img.size, 0);
 
-    return createCorsResponse({
+    (context as any).res = createCorsResponse({
       images: paginatedImages,
       total,
       page,
@@ -121,17 +121,17 @@ export async function listImages(context: InvocationContext, req: HttpRequest): 
         uncompressedSize,
         averageSize: total > 0 ? Math.round(totalSize / total) : 0,
       },
-    });
+    }); return;
   } catch (error: any) {
     context.log(`Error listing images: ${error instanceof Error ? error.message : String(error)}`);
     
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to list images',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

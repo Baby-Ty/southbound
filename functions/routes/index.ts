@@ -14,10 +14,10 @@ function isCosmosDBConfigured(): boolean {
 async function routesHandler(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -34,32 +34,32 @@ async function routesHandler(context: InvocationContext, req: HttpRequest): Prom
       const { name, email, region, stops, preferences, notes } = body;
 
       if (!name || !email || !region || !stops || !preferences) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Missing required fields: name, email, region, stops, preferences' },
           400
-        );
+        ); return;
       }
 
       if (!name.trim()) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Name is required' },
           400
-        );
+        ); return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+(\.[^\s@]+)?$/;
       if (!emailRegex.test(email)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Invalid email format' },
           400
-        );
+        ); return;
       }
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'CosmosDB is not configured' },
           500
-        );
+        ); return;
       }
 
       const route = await saveRoute({
@@ -72,7 +72,7 @@ async function routesHandler(context: InvocationContext, req: HttpRequest): Prom
         notes: notes || '',
       });
 
-      return createCorsResponse({ route }, 201);
+      (context as any).res = createCorsResponse({ route }, 201); return;
     } else if (req.method === 'GET') {
       const status = (req.query as any).status as SavedRoute['status'] | null;
       const email = (req.query as any).email;
@@ -85,23 +85,23 @@ async function routesHandler(context: InvocationContext, req: HttpRequest): Prom
       };
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ routes: [] });
+        (context as any).res = createCorsResponse({ routes: [] }); return;
       }
 
       const routes = await getAllRoutes(filters);
-      return createCorsResponse({ routes });
+      (context as any).res = createCorsResponse({ routes }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`Error processing routes request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

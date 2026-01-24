@@ -12,24 +12,29 @@ function isCosmosDBConfigured() {
 async function defaultTripsById(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     const id = req.params.id;
     if (!id) {
-        return (0, cors_1.createCorsResponse)({ error: 'Default trip ID is required' }, 400);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'Default trip ID is required' }, 400);
+        return;
     }
     try {
         if (!isCosmosDBConfigured()) {
-            return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+            return;
         }
         if (req.method === 'GET') {
             const trip = await (0, cosmos_1.getDefaultTripById)(id);
             if (!trip)
-                return (0, cors_1.createCorsResponse)({ error: 'Not found' }, 404);
-            return (0, cors_1.createCorsResponse)({ trip });
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Not found' }, 404);
+            return;
+            context.res = (0, cors_1.createCorsResponse)({ trip });
+            return;
         }
         if (req.method === 'PATCH') {
             const body = req.body;
@@ -45,17 +50,21 @@ async function defaultTripsById(context, req) {
             if (body.notes !== undefined)
                 allowed.notes = body.notes ? String(body.notes) : undefined;
             const trip = await (0, cosmos_1.updateDefaultTrip)(id, allowed);
-            return (0, cors_1.createCorsResponse)({ trip });
+            context.res = (0, cors_1.createCorsResponse)({ trip });
+            return;
         }
         if (req.method === 'DELETE') {
             await (0, cosmos_1.deleteDefaultTrip)(id);
-            return (0, cors_1.createCorsResponse)({ success: true });
+            context.res = (0, cors_1.createCorsResponse)({ success: true });
+            return;
         }
-        return (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+        context.res = (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+        return;
     }
     catch (error) {
         context.log(`Error processing default trip request: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({ error: error.message || 'Failed to process request' }, 500);
+        context.res = (0, cors_1.createCorsResponse)({ error: error.message || 'Failed to process request' }, 500);
+        return;
     }
 }
 module.exports = { defaultTripsById };

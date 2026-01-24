@@ -19,26 +19,26 @@ function isCosmosDBConfigured(): boolean {
 export async function defaultTripsById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
   if (!id) {
-    return createCorsResponse({ error: 'Default trip ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Default trip ID is required' }, 400); return;
   }
 
   try {
     if (!isCosmosDBConfigured()) {
-      return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+      (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
     }
 
     if (req.method === 'GET') {
       const trip = await getDefaultTripById(id);
-      if (!trip) return createCorsResponse({ error: 'Not found' }, 404);
-      return createCorsResponse({ trip });
+      if (!trip) (context as any).res = createCorsResponse({ error: 'Not found' }, 404); return;
+      (context as any).res = createCorsResponse({ trip }); return;
     }
 
     if (req.method === 'PATCH') {
@@ -52,23 +52,23 @@ export async function defaultTripsById(context: InvocationContext, req: HttpRequ
       if (body.notes !== undefined) allowed.notes = body.notes ? String(body.notes) : undefined;
 
       const trip = await updateDefaultTrip(id, allowed as any);
-      return createCorsResponse({ trip });
+      (context as any).res = createCorsResponse({ trip }); return;
     }
 
     if (req.method === 'DELETE') {
       await deleteDefaultTrip(id);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     }
 
-    return createCorsResponse({ error: 'Method not allowed' }, 405);
+    (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
   } catch (error: any) {
     context.log(
       `Error processing default trip request: ${error instanceof Error ? error.message : String(error)}`
     );
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

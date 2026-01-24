@@ -14,34 +14,34 @@ function isCosmosDBConfigured(): boolean {
 async function routesByIdHandler(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
 
   if (!id) {
-    return createCorsResponse({ error: 'Route ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Route ID is required' }, 400); return;
   }
 
   try {
     if (req.method === 'GET') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       const route = await getRoute(id);
       
       if (!route) {
-        return createCorsResponse({ error: 'Route not found' }, 404);
+        (context as any).res = createCorsResponse({ error: 'Route not found' }, 404); return;
       }
 
-      return createCorsResponse({ route });
+      (context as any).res = createCorsResponse({ route }); return;
     } else if (req.method === 'PATCH') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       const body = req.body as {
@@ -71,23 +71,23 @@ async function routesByIdHandler(context: InvocationContext, req: HttpRequest): 
       }
 
       const route = await updateRoute(id, allowedUpdates);
-      return createCorsResponse({ route });
+      (context as any).res = createCorsResponse({ route }); return;
     } else if (req.method === 'DELETE') {
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       await deleteRoute(id);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`Error processing route request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

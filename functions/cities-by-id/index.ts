@@ -5,16 +5,16 @@ import { corsHeaders, createCorsResponse } from '../shared/cors';
 export async function citiesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
 
   if (!id) {
-    return createCorsResponse({ error: 'City ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'City ID is required' }, 400); return;
   }
 
   try {
@@ -22,26 +22,26 @@ export async function citiesById(context: InvocationContext, req: HttpRequest): 
       const city = await getCity(id);
       
       if (!city) {
-        return createCorsResponse({ error: 'City not found' }, 404);
+        (context as any).res = createCorsResponse({ error: 'City not found' }, 404); return;
       }
 
-      return createCorsResponse({ city });
+      (context as any).res = createCorsResponse({ city }); return;
     } else if (req.method === 'PATCH') {
       const body = req.body as any;
       const city = await updateCity(id, body);
-      return createCorsResponse({ city });
+      (context as any).res = createCorsResponse({ city }); return;
     } else if (req.method === 'DELETE') {
       await deleteCity(id);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     } else {
-      return createCorsResponse({ error: 'Method not allowed' }, 405);
+      (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
     }
   } catch (error: any) {
     context.log(`Error processing city request: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

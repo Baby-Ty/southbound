@@ -11,27 +11,32 @@ function isCosmosDBConfigured() {
 async function routesHandler(context, req) {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return {
+        context.res = {
             status: 204,
             headers: cors_1.corsHeaders,
         };
+        return;
     }
     try {
         if (req.method === 'POST') {
             const body = req.body;
             const { name, email, region, stops, preferences, notes } = body;
             if (!name || !email || !region || !stops || !preferences) {
-                return (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, email, region, stops, preferences' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Missing required fields: name, email, region, stops, preferences' }, 400);
+                return;
             }
             if (!name.trim()) {
-                return (0, cors_1.createCorsResponse)({ error: 'Name is required' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Name is required' }, 400);
+                return;
             }
             const emailRegex = /^[^\s@]+@[^\s@]+(\.[^\s@]+)?$/;
             if (!emailRegex.test(email)) {
-                return (0, cors_1.createCorsResponse)({ error: 'Invalid email format' }, 400);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'Invalid email format' }, 400);
+                return;
             }
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                context.res = (0, cors_1.createCorsResponse)({ error: 'CosmosDB is not configured' }, 500);
+                return;
             }
             const route = await (0, cosmos_1.saveRoute)({
                 name: name.trim(),
@@ -42,7 +47,8 @@ async function routesHandler(context, req) {
                 status: 'draft',
                 notes: notes || '',
             });
-            return (0, cors_1.createCorsResponse)({ route }, 201);
+            context.res = (0, cors_1.createCorsResponse)({ route }, 201);
+            return;
         }
         else if (req.method === 'GET') {
             const status = req.query.status;
@@ -54,21 +60,25 @@ async function routesHandler(context, req) {
                 ...(region && { region }),
             };
             if (!isCosmosDBConfigured()) {
-                return (0, cors_1.createCorsResponse)({ routes: [] });
+                context.res = (0, cors_1.createCorsResponse)({ routes: [] });
+                return;
             }
             const routes = await (0, cosmos_1.getAllRoutes)(filters);
-            return (0, cors_1.createCorsResponse)({ routes });
+            context.res = (0, cors_1.createCorsResponse)({ routes });
+            return;
         }
         else {
-            return (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            context.res = (0, cors_1.createCorsResponse)({ error: 'Method not allowed' }, 405);
+            return;
         }
     }
     catch (error) {
         context.log(`Error processing routes request: ${error instanceof Error ? error.message : String(error)}`);
-        return (0, cors_1.createCorsResponse)({
+        context.res = (0, cors_1.createCorsResponse)({
             error: error.message || 'Failed to process request',
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, 500);
+        return;
     }
 }
 // Export for Azure Functions v3 runtime

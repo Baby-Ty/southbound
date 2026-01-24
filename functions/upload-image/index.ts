@@ -6,10 +6,10 @@ import { corsHeaders, createCorsResponse } from '../shared/cors';
 export async function uploadImage(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -22,25 +22,25 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
     const { imageUrl, imageData, category, filename } = body;
 
     if (!imageUrl && !imageData) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Either imageUrl or imageData is required' },
         400
-      );
+      ); return;
     }
 
     if (!category) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Category is required' },
         400
-      );
+      ); return;
     }
 
     const validCategories = ['cities', 'highlights', 'activities', 'accommodations'];
     if (!validCategories.includes(category)) {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: `Invalid category. Must be one of: ${validCategories.join(', ')}` },
         400
-      );
+      ); return;
     }
 
     let blobUrl: string;
@@ -58,27 +58,27 @@ export async function uploadImage(context: InvocationContext, req: HttpRequest):
         filename
       );
     } else {
-      return createCorsResponse(
+      (context as any).res = createCorsResponse(
         { error: 'Either imageUrl or imageData is required' },
         400
-      );
+      ); return;
     }
 
-    return createCorsResponse({
+    (context as any).res = createCorsResponse({
       success: true,
       blobUrl,
       message: 'Image uploaded successfully',
-    });
+    }); return;
   } catch (error: any) {
       context.log(`Error uploading image: ${error instanceof Error ? error.message : String(error)}`);
     
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { 
         error: error.message || 'Failed to upload image',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       500
-    );
+    ); return;
   }
 }
 

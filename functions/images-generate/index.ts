@@ -9,14 +9,14 @@ const openai = new OpenAI({
 export async function imagesGenerate(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return createCorsResponse({ error: 'OpenAI API key missing' }, 500);
+    (context as any).res = createCorsResponse({ error: 'OpenAI API key missing' }, 500); return;
   }
 
   try {
@@ -24,7 +24,7 @@ export async function imagesGenerate(context: InvocationContext, req: HttpReques
     const { prompt } = body;
 
     if (!prompt) {
-      return createCorsResponse({ error: 'Prompt required' }, 400);
+      (context as any).res = createCorsResponse({ error: 'Prompt required' }, 400); return;
     }
 
     const response = await openai.images.generate({
@@ -36,10 +36,10 @@ export async function imagesGenerate(context: InvocationContext, req: HttpReques
       style: "natural"
     });
 
-    return createCorsResponse({ url: response.data[0].url });
+    (context as any).res = createCorsResponse({ url: response.data[0].url }); return;
   } catch (error: any) {
     context.log(`OpenAI Error: ${error instanceof Error ? error.message : String(error)}`);
-    return createCorsResponse({ error: 'Failed to generate image' }, 500);
+    (context as any).res = createCorsResponse({ error: 'Failed to generate image' }, 500); return;
   }
 }
 

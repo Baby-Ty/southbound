@@ -19,40 +19,40 @@ function isCosmosDBConfigured(): boolean {
 export async function tripTemplatesById(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   const id = req.params.id;
   if (!id) {
-    return createCorsResponse({ error: 'Trip template ID is required' }, 400);
+    (context as any).res = createCorsResponse({ error: 'Trip template ID is required' }, 400); return;
   }
 
   try {
     if (!isCosmosDBConfigured()) {
-      return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+      (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
     }
 
     if (req.method === 'GET') {
       // For GET, we need region from query params since it's the partition key
       const region = (req.query as any).region;
       if (!region) {
-        return createCorsResponse({ error: 'Region query parameter is required' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region query parameter is required' }, 400); return;
       }
       
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       const template = await getTripTemplateById(id, region);
-      if (!template) return createCorsResponse({ error: 'Not found' }, 404);
-      return createCorsResponse({ template });
+      if (!template) (context as any).res = createCorsResponse({ error: 'Not found' }, 404); return;
+      (context as any).res = createCorsResponse({ template }); return;
     }
 
     if (req.method === 'PATCH') {
@@ -66,15 +66,15 @@ export async function tripTemplatesById(context: InvocationContext, req: HttpReq
       context.log(`[PATCH] body.curatedOrder:`, body.curatedOrder, `(type: ${typeof body.curatedOrder}, in body: ${'curatedOrder' in body})`);
       
       if (!region) {
-        return createCorsResponse({ error: 'Region is required (in body or query)' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region is required (in body or query)' }, 400); return;
       }
 
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       const allowed: Partial<Omit<TripTemplate, 'id' | 'createdAt' | 'updatedAt' | 'region'>> = {};
@@ -203,8 +203,8 @@ export async function tripTemplatesById(context: InvocationContext, req: HttpReq
       if (Object.keys(allowed).length === 0) {
         context.log('[PATCH] No updates to apply, returning existing template');
         const existing = await getTripTemplateById(id, region);
-        if (!existing) return createCorsResponse({ error: 'Template not found' }, 404);
-        return createCorsResponse({ template: existing });
+        if (!existing) (context as any).res = createCorsResponse({ error: 'Template not found' }, 404); return;
+        (context as any).res = createCorsResponse({ template: existing }); return;
       }
 
       try {
@@ -213,47 +213,47 @@ export async function tripTemplatesById(context: InvocationContext, req: HttpReq
         context.log('[PATCH] Updated template:', JSON.stringify(template, null, 2));
         context.log(`[PATCH] Successfully updated template ${id} - isCurated: ${template.isCurated}, curatedOrder: ${template.curatedOrder}`);
         
-        return createCorsResponse({ template });
+        (context as any).res = createCorsResponse({ template }); return;
       } catch (updateError: any) {
         context.log(`[PATCH] Error updating template ${id}:`, updateError.message);
         context.log(`[PATCH] Error stack:`, updateError.stack);
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { 
             error: updateError.message || 'Failed to update template',
             details: process.env.NODE_ENV === 'development' ? updateError.stack : undefined
           },
           500
-        );
+        ); return;
       }
     }
 
     if (req.method === 'DELETE') {
       const region = (req.query as any).region;
       if (!region) {
-        return createCorsResponse({ error: 'Region query parameter is required' }, 400);
+        (context as any).res = createCorsResponse({ error: 'Region query parameter is required' }, 400); return;
       }
 
       const validRegions = ['europe', 'latin-america', 'southeast-asia'];
       if (!validRegions.includes(region)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: `Invalid region. Must be one of: ${validRegions.join(', ')}` },
           400
-        );
+        ); return;
       }
 
       await deleteTripTemplate(id, region);
-      return createCorsResponse({ success: true });
+      (context as any).res = createCorsResponse({ success: true }); return;
     }
 
-    return createCorsResponse({ error: 'Method not allowed' }, 405);
+    (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
   } catch (error: any) {
     context.log(
       `Error processing trip template request: ${error instanceof Error ? error.message : String(error)}`
     );
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       { error: error.message || 'Failed to process request' },
       500
-    );
+    ); return;
   }
 }
 

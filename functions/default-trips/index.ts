@@ -14,10 +14,10 @@ function isCosmosDBConfigured(): boolean {
 export async function defaultTrips(context: InvocationContext, req: HttpRequest): Promise<HttpResponseInit> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return {
+    (context as any).res = {
       status: 204,
       headers: corsHeaders,
-    };
+    }; return;
   }
 
   try {
@@ -32,14 +32,14 @@ export async function defaultTrips(context: InvocationContext, req: HttpRequest)
             : false;
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ trips: [] });
+        (context as any).res = createCorsResponse({ trips: [] }); return;
       }
 
       const trips = await getDefaultTrips({
         ...(region ? { region } : {}),
         ...(typeof enabled === 'boolean' ? { enabled } : {}),
       });
-      return createCorsResponse({ trips });
+      (context as any).res = createCorsResponse({ trips }); return;
     }
 
     if (req.method === 'POST') {
@@ -48,14 +48,14 @@ export async function defaultTrips(context: InvocationContext, req: HttpRequest)
       >;
 
       if (!body?.name || !body?.region || !Array.isArray(body?.stops)) {
-        return createCorsResponse(
+        (context as any).res = createCorsResponse(
           { error: 'Missing required fields: name, region, stops' },
           400
-        );
+        ); return;
       }
 
       if (!isCosmosDBConfigured()) {
-        return createCorsResponse({ error: 'CosmosDB is not configured' }, 500);
+        (context as any).res = createCorsResponse({ error: 'CosmosDB is not configured' }, 500); return;
       }
 
       const trip = await createDefaultTrip({
@@ -67,21 +67,21 @@ export async function defaultTrips(context: InvocationContext, req: HttpRequest)
         notes: body.notes ? String(body.notes) : undefined,
       });
 
-      return createCorsResponse({ trip }, 201);
+      (context as any).res = createCorsResponse({ trip }, 201); return;
     }
 
-    return createCorsResponse({ error: 'Method not allowed' }, 405);
+    (context as any).res = createCorsResponse({ error: 'Method not allowed' }, 405); return;
   } catch (error: any) {
     context.log(
       `Error processing default trips request: ${error instanceof Error ? error.message : String(error)}`
     );
-    return createCorsResponse(
+    (context as any).res = createCorsResponse(
       {
         error: error.message || 'Failed to process request',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       500
-    );
+    ); return;
   }
 }
 
