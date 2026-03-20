@@ -253,7 +253,6 @@ function TemplatesPageContent() {
 
 function TemplateCard({
   template,
-  onBuildRoute
 }: {
   template: TripTemplate;
   isExpanded: boolean;
@@ -336,23 +335,14 @@ function TemplateCard({
           )}
         </div>
 
-        {/* CTAs */}
-        <div className="pt-1 mt-auto flex items-center gap-2">
+        {/* CTA */}
+        <div className="pt-1 mt-auto">
           <Link
             href={`/templates/${template.id}`}
-            className="flex-1 text-center py-2.5 px-4 bg-gradient-to-r from-sb-orange-500 to-sb-orange-600 hover:from-sb-orange-600 hover:to-sb-orange-700 text-white text-sm font-bold rounded-full transition-all shadow hover:shadow-lg"
+            className="block w-full text-center py-2.5 px-4 bg-gradient-to-r from-sb-orange-500 to-sb-orange-600 hover:from-sb-orange-600 hover:to-sb-orange-700 text-white text-sm font-bold rounded-full transition-all shadow hover:shadow-lg"
           >
             View itinerary →
           </Link>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBuildRoute();
-            }}
-            className="py-2.5 px-4 border-2 border-sb-navy-200 hover:border-sb-navy-400 text-sb-navy-600 hover:text-sb-navy-800 text-sm font-semibold rounded-full transition"
-          >
-            Customise
-          </button>
         </div>
       </div>
     </motion.article>
