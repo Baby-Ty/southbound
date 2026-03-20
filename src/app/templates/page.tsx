@@ -47,43 +47,11 @@ const itemVariants = {
 
 function TemplatesPageContent() {
   const [selectedRegion, setSelectedRegion] = useState<RegionKey>('southeast-asia');
-  const [apiTemplates, setApiTemplates] = useState<Record<RegionKey, TripTemplate[]>>({} as Record<RegionKey, TripTemplate[]>);
-  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  // Always use static templates — these have slug IDs that match pre-rendered pages
+  const apiTemplates = TRIP_TEMPLATES;
+  const loadingTemplates = false;
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Fetch templates from API
-  useEffect(() => {
-    async function fetchTemplates() {
-      try {
-        const { apiUrl } = await import('@/lib/api');
-        const templatesData: Record<RegionKey, TripTemplate[]> = {
-          'europe': [],
-          'latin-america': [],
-          'southeast-asia': [],
-        };
-        
-        // Fetch templates for each region
-        for (const region of REGION_ORDER) {
-          const response = await fetch(apiUrl(`trip-templates?region=${region}&enabled=true`));
-          if (response.ok) {
-            const data = await response.json();
-            templatesData[region] = data.templates || [];
-          }
-        }
-        
-        setApiTemplates(templatesData);
-      } catch (error) {
-        console.error('Error fetching templates:', error);
-        // Fallback to static templates
-        setApiTemplates(TRIP_TEMPLATES);
-      } finally {
-        setLoadingTemplates(false);
-      }
-    }
-    
-    fetchTemplates();
-  }, []);
 
   // Handle deep linking - scroll to template from URL parameter
   useEffect(() => {
