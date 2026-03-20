@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useMemo, useState, useEffect, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RegionKey } from '@/lib/cityPresets';
 import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
@@ -46,7 +47,6 @@ const itemVariants = {
 
 function TemplatesPageContent() {
   const [selectedRegion, setSelectedRegion] = useState<RegionKey>('southeast-asia');
-  const [expandedTemplateId, setExpandedTemplateId] = useState<string | null>(null);
   const [apiTemplates, setApiTemplates] = useState<Record<RegionKey, TripTemplate[]>>({} as Record<RegionKey, TripTemplate[]>);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const router = useRouter();
@@ -85,13 +85,12 @@ function TemplatesPageContent() {
     fetchTemplates();
   }, []);
 
-  // Handle deep linking - expand template from URL parameter
+  // Handle deep linking - scroll to template from URL parameter
   useEffect(() => {
-    if (loadingTemplates) return; // Wait for templates to load
-    
+    if (loadingTemplates) return;
+
     const expandedParam = searchParams.get('expanded');
     if (expandedParam) {
-      // Find which region this template belongs to
       let foundRegion: RegionKey | null = null;
       for (const region of REGION_ORDER) {
         const templates = apiTemplates[region] || [];
@@ -101,23 +100,10 @@ function TemplatesPageContent() {
           break;
         }
       }
-      
-      if (foundRegion) {
-        setSelectedRegion(foundRegion);
-      }
-      
-      // Set expanded state
-      setExpandedTemplateId(expandedParam);
-      
-      // Scroll to the template after a delay to allow rendering
+      if (foundRegion) setSelectedRegion(foundRegion);
       setTimeout(() => {
         const element = document.getElementById(`template-${expandedParam}`);
-        if (element) {
-          element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-          });
-        }
+        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 500);
     }
   }, [searchParams, apiTemplates, loadingTemplates]);
@@ -163,20 +149,6 @@ function TemplatesPageContent() {
     router.push(`/discover?${params.toString()}`);
   };
 
-  const handleCardClick = (templateId: string, cardElement: HTMLElement | null) => {
-    const isExpanding = expandedTemplateId !== templateId;
-    setExpandedTemplateId(expandedTemplateId === templateId ? null : templateId);
-    
-    // Scroll expanded card into view
-    if (isExpanding && cardElement) {
-      setTimeout(() => {
-        cardElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-        });
-      }, 400);
-    }
-  };
 
   if (loadingTemplates) {
     return (
@@ -264,11 +236,11 @@ function TemplatesPageContent() {
             style={{ gridAutoFlow: 'dense' }}
           >
             {templates.map((template) => (
-              <TemplateCard 
-                key={template.id} 
+              <TemplateCard
+                key={template.id}
                 template={template}
-                isExpanded={expandedTemplateId === template.id}
-                onClick={(el) => handleCardClick(template.id, el)}
+                isExpanded={false}
+                onClick={() => {}}
                 onBuildRoute={() => handleBuildRoute(template)}
               />
             ))}
@@ -279,113 +251,109 @@ function TemplatesPageContent() {
   );
 }
 
-function TemplateCard({ 
-  template, 
-  isExpanded, 
-  onClick, 
-  onBuildRoute 
-}: { 
-  template: TripTemplate; 
+function TemplateCard({
+  template,
+  onBuildRoute
+}: {
+  template: TripTemplate;
   isExpanded: boolean;
   onClick: (el: HTMLElement | null) => void;
   onBuildRoute: () => void;
 }) {
-  const cardRef = React.useRef<HTMLElement>(null);
-  
+  const duration = `${template.presetCities.length * 30} days`;
+
   return (
     <motion.article
       id={`template-${template.id}`}
-      ref={cardRef}
       layout
       variants={itemVariants}
-      whileHover={!isExpanded ? { y: -6, scale: 1.01 } : {}}
+      whileHover={{ y: -6, scale: 1.01 }}
       transition={{ type: 'spring', stiffness: 250, damping: 22 }}
-      onClick={() => onClick(cardRef.current)}
-      className={`group relative overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-gray-100 hover:shadow-xl cursor-pointer ${
-        isExpanded ? 'lg:col-span-2 lg:row-span-2' : ''
-      }`}
+      className="group relative overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-gray-100 hover:shadow-xl flex flex-col"
     >
-      <div className={`relative ${isExpanded ? 'aspect-[16/9] lg:aspect-[2/1]' : 'aspect-[4/3]'}`}>
+      {/* Image */}
+      <Link href={`/templates/${template.id}`} className="block relative aspect-[4/3] flex-shrink-0">
         <Image
           src={template.imageUrl}
           alt={template.name}
           fill
-          sizes={isExpanded ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 768px) 100vw, 33vw'}
+          sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-        <div className={`absolute ${isExpanded ? 'bottom-6 left-6 right-6' : 'bottom-4 left-4 right-4'} text-white`}>
-          <div className={`flex items-center gap-2 ${isExpanded ? 'text-base' : 'text-sm'} font-semibold`}>
-            <span className={isExpanded ? 'text-3xl' : 'text-xl'}>{template.icon}</span>
+
+        {/* Duration badge */}
+        <div className="absolute top-3 right-3 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs font-bold px-3 py-1">
+          {duration}
+        </div>
+
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <span className="text-xl">{template.icon}</span>
             <span>{template.name}</span>
           </div>
-          <p className={`mt-2 ${isExpanded ? 'text-sm' : 'text-xs'} text-white/85 ${isExpanded ? 'line-clamp-3' : 'line-clamp-2'}`}>
+          <p className="mt-1 text-xs text-white/85 line-clamp-2">
             {template.description}
           </p>
         </div>
-      </div>
+      </Link>
 
-      <div className={`${isExpanded ? 'p-8' : 'p-5'} space-y-4`}>
+      {/* Body */}
+      <div className="p-5 space-y-3 flex flex-col flex-1">
+        {/* Route */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-sb-navy-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-sb-navy-500 mb-1.5">
             Popular route
           </p>
-          <div className={`mt-2 flex flex-wrap items-center gap-2 ${isExpanded ? 'text-base' : 'text-sm'} text-sb-navy-800`}>
+          <div className="flex flex-wrap items-center gap-1.5 text-sm text-sb-navy-800">
             {template.presetCities.map((city, idx) => (
-              <span key={city} className="inline-flex items-center gap-2">
-                <span className={`rounded-full bg-sb-beige-100 ${isExpanded ? 'px-4 py-2' : 'px-3 py-1'} font-medium`}>
+              <span key={city} className="inline-flex items-center gap-1.5">
+                <span className="rounded-full bg-sb-beige-100 px-3 py-1 font-medium text-xs">
                   {city}
                 </span>
                 {idx < template.presetCities.length - 1 && (
-                  <span className="text-sb-navy-300">→</span>
+                  <span className="text-sb-navy-300 text-xs">→</span>
                 )}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {(isExpanded ? template.tags : template.tags.slice(0, 3)).map((tag) => (
-            <span
-              key={tag}
-              className={`rounded-full bg-sb-teal-50 ${isExpanded ? 'px-4 py-1.5 text-sm' : 'px-3 py-1 text-xs'} font-semibold text-sb-teal-700`}
-            >
-              {tag}
-            </span>
-          ))}
+        {/* Tags + price row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {template.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-sb-teal-50 px-2.5 py-0.5 text-xs font-semibold text-sb-teal-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          {template.price && (
+            <span className="text-xs font-black text-sb-orange-500 whitespace-nowrap">{template.price}</span>
+          )}
         </div>
 
-        {/* Expanded Content */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4 pt-4 border-t border-gray-200"
-            >
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-sb-navy-500 mb-2">
-                  The Journey
-                </h3>
-                <p className="text-sm text-sb-navy-700 leading-relaxed">
-                  {template.story}
-                </p>
-              </div>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBuildRoute();
-                }}
-                className="w-full py-3 px-6 bg-gradient-to-r from-sb-orange-500 to-sb-orange-600 hover:from-sb-orange-600 hover:to-sb-orange-700 text-white font-bold rounded-full transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                Build Your Route →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* CTAs */}
+        <div className="pt-1 mt-auto flex items-center gap-2">
+          <Link
+            href={`/templates/${template.id}`}
+            className="flex-1 text-center py-2.5 px-4 bg-gradient-to-r from-sb-orange-500 to-sb-orange-600 hover:from-sb-orange-600 hover:to-sb-orange-700 text-white text-sm font-bold rounded-full transition-all shadow hover:shadow-lg"
+          >
+            View itinerary →
+          </Link>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuildRoute();
+            }}
+            className="py-2.5 px-4 border-2 border-sb-navy-200 hover:border-sb-navy-400 text-sb-navy-600 hover:text-sb-navy-800 text-sm font-semibold rounded-full transition"
+          >
+            Customise
+          </button>
+        </div>
       </div>
     </motion.article>
   );
