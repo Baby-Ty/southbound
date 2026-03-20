@@ -1,11 +1,32 @@
 import { Hero, PreFooterCTA } from '@/components';
 import IntroSection from '@/components/sections/IntroSection';
-import HowItWorksSection from '@/components/HowItWorksSection';
-import DestinationsGrid from '@/components/sections/DestinationsGrid';
-import ExperienceSection from '@/components/sections/ExperienceSection';
-import { FAQsSection } from '@/components/sections/FAQs';
-import OurPromiseSection from '@/components/OurPromiseSection';
-import { TornPaperDivider } from '@/components/ui/TornPaperDivider';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+// Lazy load below-the-fold sections for better performance
+const HowItWorksSection = dynamic(() => import('@/components/HowItWorksSection'), {
+  loading: () => <div className="py-24 bg-white" />,
+});
+
+const DestinationsGrid = dynamic(() => import('@/components/sections/DestinationsGrid'), {
+  loading: () => <div className="py-24 bg-white" />,
+});
+
+const ExperienceSection = dynamic(() => import('@/components/sections/ExperienceSection'), {
+  loading: () => <div className="py-24 bg-stone-900" />,
+});
+
+const OurPromiseSection = dynamic(() => import('@/components/OurPromiseSection'), {
+  loading: () => <div className="min-h-[200px]" />,
+});
+
+const FAQsSection = dynamic(() => import('@/components/sections/FAQs').then(mod => ({ default: mod.FAQsSection })), {
+  loading: () => <div className="min-h-[200px]" />,
+});
+
+const TornPaperDivider = dynamic(() => import('@/components/ui/TornPaperDivider').then(mod => ({ default: mod.TornPaperDivider })), {
+  loading: () => null,
+});
 
 export default function Home() {
   return (

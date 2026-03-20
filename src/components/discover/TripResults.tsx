@@ -5,16 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { RegionKey, CITY_PRESETS } from '@/lib/cityPresets';
-import { TripTemplate, TRIP_TEMPLATES } from '@/lib/tripTemplates';
-import { VibeKey, VIBE_TAG_MAP } from './VibeSelector';
+import { TripTemplate, TRIP_TEMPLATES, BudgetKey } from '@/lib/tripTemplates';
 
 interface TripResultsProps {
   selectedRegions: RegionKey[];
-  selectedVibes: VibeKey[];
+  selectedBudget: BudgetKey | null;
   preselectedTemplateId?: string | null;
 }
 
-export default function TripResults({ selectedRegions, selectedVibes, preselectedTemplateId }: TripResultsProps) {
+export default function TripResults({ selectedRegions, selectedBudget, preselectedTemplateId }: TripResultsProps) {
   const [matchedTrips, setMatchedTrips] = useState<TripTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
@@ -40,7 +39,7 @@ export default function TripResults({ selectedRegions, selectedVibes, preselecte
   useEffect(() => {
     async function filterTrips() {
       setLoading(true);
-      
+
       // Gather all templates from selected regions
       const allTemplates: TripTemplate[] = [];
       for (const region of selectedRegions) {
@@ -48,15 +47,12 @@ export default function TripResults({ selectedRegions, selectedVibes, preselecte
         allTemplates.push(...templates);
       }
 
-      // Filter by vibes
+      // Filter by budget tier
       const filtered = allTemplates.filter((template) => {
-        // Check if any selected vibe matches the template tags
-        return selectedVibes.some((vibe) => {
-          const vibeTags = VIBE_TAG_MAP[vibe];
-          
-          // Check if template tags match any vibe tags
-          return vibeTags.some((tag) => template.tags.includes(tag));
-        });
+        if (!selectedBudget) return true;
+        // If template has no budgetTiers defined, include it as a fallback
+        if (!template.budgetTiers || template.budgetTiers.length === 0) return true;
+        return template.budgetTiers.includes(selectedBudget);
       });
 
       setMatchedTrips(filtered);
@@ -66,7 +62,7 @@ export default function TripResults({ selectedRegions, selectedVibes, preselecte
     }
 
     filterTrips();
-  }, [selectedRegions, selectedVibes]);
+  }, [selectedRegions, selectedBudget]);
 
   // Reorder trips: selected trip goes to top
   const orderedTrips = selectedTripId
@@ -321,7 +317,7 @@ export default function TripResults({ selectedRegions, selectedVibes, preselecte
         <div className="text-6xl mb-4">🤔</div>
         <h3 className="text-2xl font-bold text-sb-navy-900 mb-2">No matches yet</h3>
         <p className="text-sb-navy-600">
-          Try selecting different vibes or regions to see more trip options
+          Try selecting a different budget range or region to see more options
         </p>
       </motion.div>
     );

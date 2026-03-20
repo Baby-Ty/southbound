@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Download, MessageCircle, Wifi, Thermometer, Shield, Star, Clock, MapPin, Globe, ChevronDown } from 'lucide-react';
+import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
+import { CITY_PRESETS, CityPreset, RegionKey } from '@/lib/cityPresets';
 
 // ─── Flag emoji → CDN image ───────────────────────────────────────────────────
 function flagUrl(emoji: string): string {
@@ -58,8 +60,6 @@ function totalMonthlyZar(accommodation: string, coworking: string, meals: string
   const low = Math.round(((aL + cL) * SB_FEE + mL) * USD_TO_ZAR / 500) * 500;
   return `from R${low.toLocaleString()}`;
 }
-import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
-import { CITY_PRESETS, CityPreset, RegionKey } from '@/lib/cityPresets';
 
 // ─── Lifestyle price hints by region ─────────────────────────────────────────
 type LifestyleHint = { emoji: string; label: string; price: string };

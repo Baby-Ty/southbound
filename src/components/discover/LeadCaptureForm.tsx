@@ -4,15 +4,15 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MessageCircle, Check } from 'lucide-react';
 import { RegionKey } from '@/lib/cityPresets';
-import { VibeKey } from './VibeSelector';
+import { BudgetKey } from '@/lib/tripTemplates';
 import Link from 'next/link';
 
 interface LeadCaptureFormProps {
   selectedRegions: RegionKey[];
-  selectedVibes: VibeKey[];
+  selectedBudget: BudgetKey | null;
 }
 
-export default function LeadCaptureForm({ selectedRegions, selectedVibes }: LeadCaptureFormProps) {
+export default function LeadCaptureForm({ selectedRegions, selectedBudget }: LeadCaptureFormProps) {
   const [name, setName] = useState('');
   const [contactType, setContactType] = useState<'email' | 'whatsapp'>('email');
   const [contactValue, setContactValue] = useState('');
@@ -63,8 +63,8 @@ export default function LeadCaptureForm({ selectedRegions, selectedVibes }: Lead
       const email = contactType === 'email' ? contactValue : `${contactValue}@whatsapp`;
       
       // Create notes with user selections
-      const vibeNames = selectedVibes.map(v => v.replace('-', ' ')).join(', ');
-      const notes = `Lead from discover page. Interested in: ${vibeNames}. Regions: ${selectedRegions.join(', ')}`;
+      const budgetLabel = selectedBudget ? `R${selectedBudget}k/mo` : 'not specified';
+      const notes = `Lead from discover page. Budget: ${budgetLabel}. Regions: ${selectedRegions.join(', ')}`;
 
       const response = await fetch(apiUrl('routes'), {
         method: 'POST',
@@ -77,7 +77,7 @@ export default function LeadCaptureForm({ selectedRegions, selectedVibes }: Lead
           region: selectedRegions.join(','),
           stops: [],
           preferences: {
-            vibes: selectedVibes,
+            budget: selectedBudget,
             source: 'discover-page',
           },
           notes: notes,
@@ -151,7 +151,7 @@ export default function LeadCaptureForm({ selectedRegions, selectedVibes }: Lead
             </svg>
           </Link>
           <Link
-            href="/popular-trips"
+            href="/templates"
             className="inline-flex items-center justify-center px-8 py-4 bg-white hover:bg-gray-50 text-sb-navy-900 font-bold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-gray-200"
           >
             Browse Popular Trips
