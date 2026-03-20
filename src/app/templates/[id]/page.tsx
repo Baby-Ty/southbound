@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { TRIP_TEMPLATES } from '@/lib/tripTemplates';
-import { RegionKey } from '@/lib/cityPresets';
 import TemplateDetailClient from './TemplateDetailClient';
 
 // Pre-render every template at build time for static export
@@ -18,8 +17,9 @@ function findTemplate(id: string) {
   return null;
 }
 
-export default function TemplateDetailPage({ params }: { params: { id: string } }) {
-  const template = findTemplate(params.id);
+export default async function TemplateDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const template = findTemplate(id);
   if (!template) notFound();
-  return <TemplateDetailClient id={params.id} />;
+  return <TemplateDetailClient id={id} />;
 }

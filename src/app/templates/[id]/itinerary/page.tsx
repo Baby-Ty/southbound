@@ -17,8 +17,9 @@ function findTemplate(id: string) {
   return null;
 }
 
-export default function ItineraryPage({ params }: { params: { id: string } }) {
-  const template = findTemplate(params.id);
+export default async function ItineraryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const template = findTemplate(id);
   if (!template) notFound();
-  return <ItineraryClient id={params.id} />;
+  return <ItineraryClient id={id} />;
 }
