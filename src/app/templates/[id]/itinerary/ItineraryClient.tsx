@@ -5,6 +5,46 @@ import Image from 'next/image';
 import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
 import { CITY_PRESETS, CityPreset, RegionKey } from '@/lib/cityPresets';
 
+// ─── Flag emoji → CDN image ───────────────────────────────────────────────────
+function flagUrl(emoji: string): string {
+  try {
+    const code = [...emoji]
+      .map(c => (c.codePointAt(0)! - 0x1F1E6 + 65))
+      .map(n => String.fromCharCode(n))
+      .join('')
+      .toLowerCase();
+    return `https://flagcdn.com/w80/${code}.png`;
+  } catch {
+    return '';
+  }
+}
+
+// ─── Currency helpers ─────────────────────────────────────────────────────────
+const USD_TO_ZAR = 18.5;
+const SB_FEE = 1.15;
+
+function usdToZar(usdStr: string): string {
+  if (!usdStr || usdStr === '—') return usdStr;
+  const match = usdStr.match(/\$[\d,]+/);
+  if (!match) return usdStr;
+  const num = parseInt(match[0].replace(/[$,]/g, ''), 10);
+  const zar = Math.round((num * USD_TO_ZAR) / 500) * 500;
+  return `from R${zar.toLocaleString()}`;
+}
+
+function parseBounds(str: string): [number, number] {
+  const nums = [...str.matchAll(/\$[\d,]+/g)].map(m => parseInt(m[0].replace(/[$,]/g, ''), 10));
+  if (!nums.length) return [0, 0];
+  return [nums[0], nums[nums.length - 1]];
+}
+
+function sbPackageZar(accommodation: string, coworking: string): string {
+  const [aL] = parseBounds(accommodation);
+  const [cL] = parseBounds(coworking);
+  const low = Math.round(((aL + cL) * SB_FEE * USD_TO_ZAR) / 500) * 500;
+  return `from R${low.toLocaleString()}`;
+}
+
 // ─── Visa info for SA passport holders ───────────────────────────────────────
 const VISA_INFO: Record<string, { days: string; type: string; notes: string }> = {
   Thailand:        { days: '30 days',  type: 'Visa-free',         notes: 'Extendable to 60 days at immigration.' },
@@ -164,7 +204,7 @@ export default function ItineraryClient({ id }: { id: string }) {
                   {[
                     ['Duration', duration],
                     ['Region', REGION_LABELS[template.regionKey]],
-                    ...(template.price ? [['Est. monthly cost', template.price]] : []),
+                    ...(template.price ? [['Est. monthly cost (ZAR)', template.price]] : []),
                     ...(template.avgWeather ? [['Avg weather', template.avgWeather]] : []),
                     ...(template.internetSpeed ? [['Internet speed', template.internetSpeed]] : []),
                     ...(template.bestFor ? [['Best for', template.bestFor]] : []),
@@ -182,24 +222,87 @@ export default function ItineraryClient({ id }: { id: string }) {
           {/* ── Route ──────────────────────────────────────────────────── */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Your route</h2>
-            <div className="flex items-center gap-3 flex-wrap">
-              {template.presetCities.map((city, idx) => {
-                const preset = findCityPreset(city);
-                return (
-                  <React.Fragment key={city}>
-                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2 border border-gray-200">
-                      {preset?.flag && <span>{preset.flag}</span>}
-                      <div>
-                        <div className="font-bold text-gray-800 text-sm">{city}</div>
-                        <div className="text-xs text-gray-500">~30 days</div>
+            <div className="rounded-2xl bg-[#1C2D3A] p-5 overflow-x-auto print:overflow-visible">
+              <div className="flex items-center gap-1 min-w-max print:flex-wrap print:gap-2">
+                {/* SA origin */}
+                <div className="flex flex-col items-center gap-1.5 w-16">
+                  <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-2xl">🇿🇦</div>
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-white leading-tight">S. Africa</div>
+                    <div className="text-xs text-white/40">Depart</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5 pb-5 mx-1">
+                  <div className="w-3 h-px bg-[#FFA069]/60" />
+                  <span className="text-[#FFA069] text-xs">✈</span>
+                  <div className="w-3 h-px bg-[#FFA069]/60" />
+                </div>
+
+                {template.presetCities.map((city, idx) => {
+                  const preset = findCityPreset(city);
+                  return (
+                    <React.Fragment key={city}>
+                      <div className="flex flex-col items-center gap-1.5 w-20">
+                        <div className="relative w-16 h-16 rounded-full bg-white/10 border-2 border-[#FFA069]/50 overflow-hidden shadow flex items-center justify-center">
+                          {preset?.flag ? (
+                            <img
+                              src={flagUrl(preset.flag)}
+                              alt={preset.country}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl">🌍</span>
+                          )}
+                          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FFA069] text-white font-black flex items-center justify-center" style={{ fontSize: '10px' }}>
+                            {idx + 1}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-white font-black leading-tight" style={{ fontSize: '10px' }}>{city}</div>
+                          <div className="text-white/50" style={{ fontSize: '10px' }}>{preset?.country}</div>
+                          <div className="text-white/30" style={{ fontSize: '10px' }}>~30 days</div>
+                        </div>
                       </div>
-                    </div>
-                    {idx < template.presetCities.length - 1 && (
-                      <span className="text-gray-300 font-bold text-lg">→</span>
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                      {idx < template.presetCities.length - 1 && (
+                        <div className="flex items-center gap-0.5 pb-6 mx-0.5">
+                          <div className="w-3 h-px bg-white/20" />
+                          <span className="text-white/30 text-xs">›</span>
+                          <div className="w-3 h-px bg-white/20" />
+                        </div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+
+                <div className="flex items-center gap-0.5 pb-5 mx-1">
+                  <div className="w-3 h-px bg-[#FFA069]/60" />
+                  <span className="text-[#FFA069] text-xs" style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>✈</span>
+                  <div className="w-3 h-px bg-[#FFA069]/60" />
+                </div>
+                {/* Home */}
+                <div className="flex flex-col items-center gap-1.5 w-16">
+                  <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-2xl">🏠</div>
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-white leading-tight">Home</div>
+                    <div className="text-xs text-white/40">Return</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Route summary */}
+              <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-4 text-xs">
+                <span className="text-white/50">
+                  <span className="text-white/80 font-semibold">{template.presetCities.length * 30} days</span> total
+                </span>
+                <span className="text-white/50">
+                  <span className="text-white/80 font-semibold">{template.presetCities.length} cities</span>
+                </span>
+                {countries.length > 0 && (
+                  <span className="text-white/50">
+                    {countries.join(' → ')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -228,8 +331,8 @@ export default function ItineraryClient({ id }: { id: string }) {
                       </div>
                       {preset && (
                         <div className="text-right text-xs text-white/60">
-                          <div className="font-bold text-white">{preset.costs.monthlyTotal}</div>
-                          <div>monthly est.</div>
+                          <div className="font-bold text-white">{sbPackageZar(preset.costs.accommodation, preset.costs.coworking)}</div>
+                          <div>SB package/mo</div>
                         </div>
                       )}
                     </div>
@@ -290,19 +393,17 @@ export default function ItineraryClient({ id }: { id: string }) {
                             <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Monthly costs</h4>
                             <table className="w-full text-xs">
                               <tbody>
-                                {[
-                                  ['Accommodation', preset.costs.accommodation],
-                                  ['Coworking', preset.costs.coworking],
-                                  ['Food & life', preset.costs.meals],
-                                ].map(([label, value]) => (
-                                  <tr key={label} className="border-b border-gray-100">
-                                    <td className="py-1.5 pr-3 text-gray-500 font-medium">{label}</td>
-                                    <td className="py-1.5 text-gray-800">{value}</td>
-                                  </tr>
-                                ))}
+                                <tr className="border-b border-gray-100">
+                                  <td className="py-1.5 pr-3 font-semibold text-gray-700">SB Package</td>
+                                  <td className="py-1.5 font-bold text-gray-900">{sbPackageZar(preset.costs.accommodation, preset.costs.coworking)}<span className="text-gray-400 font-normal text-xs">/mo</span></td>
+                                </tr>
+                                <tr className="border-b border-gray-100">
+                                  <td className="py-1.5 pr-3 text-gray-500">Your lifestyle spend</td>
+                                  <td className="py-1.5 text-gray-700">{usdToZar(preset.costs.meals)}<span className="text-gray-400 text-xs">/mo</span></td>
+                                </tr>
                                 <tr className="bg-gray-50">
-                                  <td className="py-2 pr-3 font-bold text-gray-800">Total est.</td>
-                                  <td className="py-2 font-black text-gray-900">{preset.costs.monthlyTotal}</td>
+                                  <td className="py-2 pr-3 font-bold text-gray-800">Monthly total est.</td>
+                                  <td className="py-2 font-black text-gray-900">{usdToZar(preset.costs.monthlyTotal)}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -394,7 +495,7 @@ export default function ItineraryClient({ id }: { id: string }) {
           <p className="text-xs text-gray-400 text-center pb-6">
             Prepared by South Bound · southbnd.co.za · hello@southbnd.co.za
             {' · '}
-            Information correct at time of preparation. Always verify visa, safety, and travel requirements before booking.
+            Costs shown in ZAR at ~R18.50/USD. Always verify visa, safety, and current costs before booking.
           </p>
 
         </div>

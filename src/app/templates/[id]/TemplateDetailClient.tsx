@@ -1,13 +1,103 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Download, MessageCircle, Wifi, Thermometer, Shield, Star, Clock, MapPin, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Download, MessageCircle, Wifi, Thermometer, Shield, Star, Clock, MapPin, Globe, ChevronDown } from 'lucide-react';
+
+// ─── Flag emoji → CDN image ───────────────────────────────────────────────────
+function flagUrl(emoji: string): string {
+  try {
+    const code = [...emoji]
+      .map(c => (c.codePointAt(0)! - 0x1F1E6 + 65))
+      .map(n => String.fromCharCode(n))
+      .join('')
+      .toLowerCase();
+    return `https://flagcdn.com/w80/${code}.png`;
+  } catch {
+    return '';
+  }
+}
+
+// ─── Currency helpers ─────────────────────────────────────────────────────────
+const USD_TO_ZAR = 18.5;
+const SB_FEE = 1.15; // 15% service fee baked into package cost
+
+function usdToZar(usdStr: string): string {
+  if (!usdStr || usdStr === '—') return usdStr;
+  // Only use the first (lower) value and prefix with "from"
+  const match = usdStr.match(/\$[\d,]+/);
+  if (!match) return usdStr;
+  const num = parseInt(match[0].replace(/[$,]/g, ''), 10);
+  const zar = Math.round((num * USD_TO_ZAR) / 500) * 500;
+  return `from R${zar.toLocaleString()}`;
+}
+
+// Parse lower and upper bounds out of a "$x - $y" string
+function parseBounds(str: string): [number, number] {
+  const nums = [...str.matchAll(/\$[\d,]+/g)].map(m => parseInt(m[0].replace(/[$,]/g, ''), 10));
+  if (!nums.length) return [0, 0];
+  return [nums[0], nums[nums.length - 1]];
+}
+
+// SB Package = (accommodation + coworking) × 1.15, in ZAR — lower bound only
+function sbPackageZar(accommodation: string, coworking: string): string {
+  const [aL] = parseBounds(accommodation);
+  const [cL] = parseBounds(coworking);
+  const low = Math.round(((aL + cL) * SB_FEE * USD_TO_ZAR) / 500) * 500;
+  return `from R${low.toLocaleString()}`;
+}
+
+// Total monthly = SB Package + lifestyle — lower bound only
+function totalMonthlyZar(accommodation: string, coworking: string, meals: string): string {
+  const [aL] = parseBounds(accommodation);
+  const [cL] = parseBounds(coworking);
+  const [mL] = parseBounds(meals);
+  const low = Math.round(((aL + cL) * SB_FEE + mL) * USD_TO_ZAR / 500) * 500;
+  return `from R${low.toLocaleString()}`;
+}
 import { TRIP_TEMPLATES, TripTemplate } from '@/lib/tripTemplates';
 import { CITY_PRESETS, CityPreset, RegionKey } from '@/lib/cityPresets';
+
+// ─── Lifestyle price hints by region ─────────────────────────────────────────
+type LifestyleHint = { emoji: string; label: string; price: string };
+
+const LIFESTYLE_HINTS: Record<RegionKey, LifestyleHint[]> = {
+  'southeast-asia': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R90' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R55' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R65' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R1,200' },
+    { emoji: '🏄', label: 'Activities & nights out', price: 'from R2,500/mo' },
+  ],
+  'europe': [
+    { emoji: '🍝', label: 'Meal at a restaurant',   price: 'from R250' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R100' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R130' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R2,200' },
+    { emoji: '🎭', label: 'Activities & nights out', price: 'from R3,500/mo' },
+  ],
+  'latin-america': [
+    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R130' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R65' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R80' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R1,400' },
+    { emoji: '💃', label: 'Activities & nights out', price: 'from R2,500/mo' },
+  ],
+};
+
+function findCityRegion(cityName: string): RegionKey | null {
+  const normalised = cityName.toLowerCase().replace(/[^a-z]/g, '');
+  for (const [region, presets] of Object.entries(CITY_PRESETS)) {
+    if (presets.some(p => {
+      const cn = p.city.toLowerCase().replace(/[^a-z]/g, '');
+      return cn === normalised || normalised.includes(cn) || cn.includes(normalised);
+    })) return region as RegionKey;
+  }
+  return null;
+}
 
 // ─── Visa info for SA passport holders ───────────────────────────────────────
 const VISA_INFO: Record<string, { days: string; type: string; notes: string }> = {
@@ -80,6 +170,9 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 // ─── City card ────────────────────────────────────────────────────────────────
 function CityCard({ city, index, total }: { city: string; index: number; total: number }) {
   const preset = findCityPreset(city);
+  const [showLifestyle, setShowLifestyle] = useState(false);
+  const region = findCityRegion(city);
+  const hints = region ? LIFESTYLE_HINTS[region] : null;
 
   return (
     <motion.div
@@ -167,10 +260,42 @@ function CityCard({ city, index, total }: { city: string; index: number; total: 
               </div>
             )}
 
-            {/* Monthly cost */}
-            <div className="rounded-xl bg-gradient-to-r from-sb-navy-700 to-sb-navy-800 text-white p-3 flex items-center justify-between">
-              <span className="text-xs font-semibold text-white/70">Monthly budget</span>
-              <span className="font-black text-sm">{preset.costs.monthlyTotal}</span>
+            {/* Monthly cost — two-part pricing */}
+            <div className="rounded-xl bg-gradient-to-r from-sb-navy-700 to-sb-navy-800 text-white p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/60">SB package</span>
+                <span className="font-black text-sm">{sbPackageZar(preset.costs.accommodation, preset.costs.coworking)}<span className="text-white/50 font-normal text-xs">/mo</span></span>
+              </div>
+              <button
+                onClick={() => setShowLifestyle(v => !v)}
+                className="w-full flex items-center justify-between border-t border-white/10 pt-2 text-left"
+              >
+                <span className="text-xs text-white/50">+ your lifestyle spend</span>
+                <ChevronDown className={`w-3 h-3 text-white/40 transition-transform ${showLifestyle ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {showLifestyle && hints && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-2 space-y-1.5 border-t border-white/10">
+                      {hints.map(h => (
+                        <div key={h.label} className="flex items-center justify-between text-xs">
+                          <span className="text-white/50 flex items-center gap-1.5">
+                            <span>{h.emoji}</span>
+                            {h.label}
+                          </span>
+                          <span className="text-white/70 font-semibold">{h.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Best months */}
@@ -191,6 +316,13 @@ function CityCard({ city, index, total }: { city: string; index: number; total: 
 export default function TemplateDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const template = findTemplate(id);
+  const [expandedLifestyle, setExpandedLifestyle] = useState<Set<string>>(new Set());
+  const toggleLifestyle = (city: string) =>
+    setExpandedLifestyle(prev => {
+      const next = new Set(prev);
+      next.has(city) ? next.delete(city) : next.add(city);
+      return next;
+    });
 
   if (!template) return null;
 
@@ -304,40 +436,113 @@ export default function TemplateDetailClient({ id }: { id: string }) {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-xs font-bold uppercase tracking-wider text-sb-navy-500 mb-6">Your route</p>
-          <div className="flex items-center flex-wrap gap-3">
-            {template.presetCities.map((city, idx) => {
-              const preset = findCityPreset(city);
-              return (
-                <React.Fragment key={city}>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-white shadow-md relative">
-                      <Image
-                        src={preset?.imageUrl || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=200'}
-                        alt={city}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs font-black text-sb-navy-800">{city}</div>
-                      {preset && (
-                        <div className="text-xs text-sb-navy-500">{preset.flag} 30 days</div>
-                      )}
-                    </div>
+          <p className="text-xs font-bold uppercase tracking-wider text-sb-navy-500 mb-4">Your route</p>
+          <div className="rounded-3xl bg-sb-navy-800 p-6 md:p-8 overflow-hidden">
+            {/* Scrollable city strip */}
+            <div className="overflow-x-auto pb-2">
+              <div className="flex items-center gap-1 min-w-max">
+
+                {/* Origin: South Africa */}
+                <div className="flex flex-col items-center gap-2 w-20">
+                  <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl shadow-inner">
+                    🇿🇦
                   </div>
-                  {idx < template.presetCities.length - 1 && (
-                    <div className="flex items-center gap-1 text-sb-orange-400 pb-5">
-                      <div className="w-6 h-0.5 bg-sb-orange-300" />
-                      <ChevronRight className="w-4 h-4" />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            <div className="ml-2 flex flex-col items-center gap-1.5 pb-5">
-              <div className="text-3xl">🏠</div>
-              <div className="text-xs font-semibold text-sb-navy-500">Home</div>
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-white leading-tight">South Africa</div>
+                    <div className="text-xs text-white/40 mt-0.5">Depart</div>
+                  </div>
+                </div>
+
+                {/* Flight line out */}
+                <div className="flex items-center gap-0.5 pb-6 mx-1">
+                  <div className="w-4 h-px bg-sb-orange-400/50" />
+                  <div className="text-sb-orange-400 text-sm">✈</div>
+                  <div className="w-4 h-px bg-sb-orange-400/50" />
+                </div>
+
+                {template.presetCities.map((city, idx) => {
+                  const preset = findCityPreset(city);
+                  return (
+                    <React.Fragment key={city}>
+                      <div className="flex flex-col items-center gap-2 w-24">
+                        {/* Flag circle */}
+                        <div className="relative w-20 h-20 rounded-full bg-white/10 border-2 border-sb-orange-400/60 overflow-hidden shadow-lg flex items-center justify-center">
+                          {preset?.flag ? (
+                            <img
+                              src={flagUrl(preset.flag)}
+                              alt={preset.country}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl">🌍</span>
+                          )}
+                          {/* Step badge */}
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-sb-orange-500 text-white text-xs font-black flex items-center justify-center shadow">
+                            {idx + 1}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs font-black text-white leading-tight">{city}</div>
+                          <div className="text-xs text-white/50 mt-0.5">{preset?.country}</div>
+                          <div className="text-xs text-white/30">~30 days</div>
+                        </div>
+                      </div>
+
+                      {/* Arrow between cities */}
+                      {idx < template.presetCities.length - 1 && (
+                        <div className="flex items-center gap-1 pb-8 mx-1">
+                          <div className="w-5 h-px bg-white/20" />
+                          <div className="text-white/30 text-xs">›</div>
+                          <div className="w-5 h-px bg-white/20" />
+                        </div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+
+                {/* Flight line back */}
+                <div className="flex items-center gap-0.5 pb-6 mx-1">
+                  <div className="w-4 h-px bg-sb-orange-400/50" />
+                  <div className="text-sb-orange-400 text-sm" style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>✈</div>
+                  <div className="w-4 h-px bg-sb-orange-400/50" />
+                </div>
+
+                {/* Home */}
+                <div className="flex flex-col items-center gap-2 w-20">
+                  <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl shadow-inner">
+                    🏠
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-white leading-tight">Home</div>
+                    <div className="text-xs text-white/40 mt-0.5">Return</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Stats strip */}
+            <div className="mt-5 pt-5 border-t border-white/10 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <div className="flex items-center gap-2 text-white/50 text-xs">
+                <Clock className="w-3.5 h-3.5 text-sb-orange-400" />
+                <span className="text-white/80 font-semibold">{template.presetCities.length * 30} days</span> total
+              </div>
+              <div className="flex items-center gap-2 text-white/50 text-xs">
+                <MapPin className="w-3.5 h-3.5 text-sb-orange-400" />
+                <span className="text-white/80 font-semibold">{template.presetCities.length} cities</span>
+              </div>
+              {countries.length > 0 && (
+                <div className="flex items-center gap-2 text-white/50 text-xs">
+                  <Globe className="w-3.5 h-3.5 text-sb-orange-400" />
+                  <span className="text-white/80 font-semibold">{countries.length} {countries.length === 1 ? 'country' : 'countries'}:</span>
+                  <span>{countries.join(', ')}</span>
+                </div>
+              )}
+              {template.price && (
+                <div className="ml-auto flex items-center gap-1.5 rounded-full bg-sb-orange-500 px-4 py-1.5">
+                  <span className="text-xs font-black text-white">from {template.price}</span>
+                </div>
+              )}
             </div>
           </div>
         </motion.section>
@@ -480,34 +685,109 @@ export default function TemplateDetailClient({ id }: { id: string }) {
             Monthly budget by city
           </h2>
           <div className="rounded-3xl bg-white shadow-md ring-1 ring-gray-100 overflow-hidden">
-            <div className="grid grid-cols-5 bg-sb-navy-800 text-white text-xs font-bold uppercase tracking-wider p-4 gap-3">
+            {/* Header */}
+            <div className="grid grid-cols-3 bg-sb-navy-800 text-white text-xs font-bold uppercase tracking-wider px-5 py-4 gap-4">
               <div>City</div>
-              <div>Accommodation</div>
-              <div>Coworking</div>
-              <div>Food & life</div>
-              <div>Total est.</div>
+              <div>
+                SB Package
+                <div className="text-white/50 font-normal normal-case tracking-normal mt-0.5">apartment + coworking, all fees incl.</div>
+              </div>
+              <div>
+                Your lifestyle budget
+                <div className="text-white/50 font-normal normal-case tracking-normal mt-0.5">food, transport, activities</div>
+              </div>
             </div>
             {template.presetCities.map((city, idx) => {
               const preset = findCityPreset(city);
+              const region = findCityRegion(city);
+              const hints = region ? LIFESTYLE_HINTS[region] : null;
+              const isOpen = expandedLifestyle.has(city);
+              const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-sb-beige-50';
               return (
-                <div
-                  key={city}
-                  className={`grid grid-cols-5 gap-3 p-4 text-sm items-center ${idx % 2 === 0 ? 'bg-white' : 'bg-sb-beige-50'}`}
-                >
-                  <div className="font-semibold text-sb-navy-800 flex items-center gap-1.5">
-                    {preset?.flag && <span>{preset.flag}</span>}
-                    {city}
+                <React.Fragment key={city}>
+                  <div className={`grid grid-cols-3 gap-4 px-5 py-4 items-center ${rowBg}`}>
+                    <div className="font-semibold text-sb-navy-800 flex items-center gap-2">
+                      {preset?.flag && (
+                        <img src={flagUrl(preset.flag)} alt={preset.country} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                      )}
+                      <div>
+                        <div className="text-sm">{city}</div>
+                        <div className="text-xs text-sb-navy-400 font-normal">{preset?.country}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-black text-sb-navy-800 text-sm">
+                        {preset ? sbPackageZar(preset.costs.accommodation, preset.costs.coworking) : '—'}
+                        <span className="text-sb-navy-400 font-normal text-xs">/mo</span>
+                      </div>
+                      <div className="text-xs text-sb-navy-400 mt-0.5">paid to South Bound</div>
+                    </div>
+                    {/* Lifestyle — clickable */}
+                    <button
+                      onClick={() => toggleLifestyle(city)}
+                      className="text-left group flex items-center gap-1.5"
+                    >
+                      <div>
+                        <div className="text-xs font-semibold text-sb-navy-600">
+                          {isOpen ? 'hide breakdown' : 'see breakdown'}
+                        </div>
+                        <div className="text-xs text-sb-navy-400 mt-0.5">food, transport, activities</div>
+                      </div>
+                      <ChevronDown className={`w-3.5 h-3.5 text-sb-navy-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
                   </div>
-                  <div className="text-sb-navy-600 text-xs">{preset?.costs.accommodation || '—'}</div>
-                  <div className="text-sb-navy-600 text-xs">{preset?.costs.coworking || '—'}</div>
-                  <div className="text-sb-navy-600 text-xs">{preset?.costs.meals || '—'}</div>
-                  <div className="font-black text-sb-navy-800 text-xs">{preset?.costs.monthlyTotal || '—'}</div>
-                </div>
+
+                  {/* Expandable lifestyle breakdown */}
+                  <AnimatePresence>
+                    {isOpen && hints && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className={`overflow-hidden ${rowBg}`}
+                      >
+                        <div className="px-5 pb-4 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-sb-navy-100/50 pt-3">
+                          {hints.map(h => (
+                            <div key={h.label} className="flex items-center gap-2 rounded-lg bg-white border border-sb-navy-100 px-3 py-2">
+                              <span className="text-base">{h.emoji}</span>
+                              <div>
+                                <div className="text-xs font-bold text-sb-navy-800">{h.price}</div>
+                                <div className="text-xs text-sb-navy-400">{h.label}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </React.Fragment>
               );
             })}
+            {/* Total row */}
+            <div className="border-t-2 border-sb-navy-100 px-5 py-4 bg-sb-beige-50 flex items-center justify-between flex-wrap gap-3">
+              <div className="text-sm font-bold text-sb-navy-700">Estimated monthly total across all cities</div>
+              <div className="text-right">
+                <div className="font-black text-sb-navy-800 text-lg">
+                  {(() => {
+                    const presets = template.presetCities.map(c => findCityPreset(c)).filter(Boolean) as ReturnType<typeof findCityPreset>[];
+                    if (!presets.length) return '—';
+                    const validPresets = presets.filter(p => p != null) as NonNullable<ReturnType<typeof findCityPreset>>[];
+                    const [low] = validPresets.reduce(([l], p) => {
+                      const [aL] = parseBounds(p.costs.accommodation);
+                      const [cL] = parseBounds(p.costs.coworking);
+                      const [mL] = parseBounds(p.costs.meals);
+                      return [l + Math.round(((aL + cL) * SB_FEE + mL) * USD_TO_ZAR / 500) * 500];
+                    }, [0]);
+                    return `from R${low.toLocaleString()}`;
+                  })()}
+                </div>
+                <div className="text-xs text-sb-navy-400">package + lifestyle, per month</div>
+              </div>
+            </div>
           </div>
           <p className="mt-3 text-xs text-sb-navy-400">
-            Costs are mid-range estimates in USD. Exchange rates vary — compare against your rand budget at the time of booking.
+            SB package covers your apartment, coworking space, and all South Bound fees. Lifestyle budget is your own spend — food, transport, and activities. Estimates in ZAR at ~R18.50/USD.
           </p>
         </motion.section>
 
