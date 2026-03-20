@@ -4,27 +4,28 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Briefcase, House, Scale, Compass } from 'lucide-react';
 
 const features = [
   {
     title: "Same job. Better days.",
     description: "The details are handled so you can focus on living and working somewhere better.",
-    icon: "💼"
+    icon: Briefcase
   },
   {
     title: "Easy to live in",
     description: "Comfortable, work-friendly places in good neighbourhoods, set up so you can settle in quickly and enjoy everyday life.",
-    icon: "🏡"
+    icon: House
   },
   {
     title: "A better rhythm",
     description: "Enough structure to stay productive, enough freedom to enjoy where you are.",
-    icon: "⚖️"
+    icon: Scale
   },
   {
     title: "Move at your pace",
     description: "Want to stay longer, move cities, or slow things down? Your trip isn't locked in. It can evolve as you go.",
-    icon: "🚶"
+    icon: Compass
   }
 ];
 
@@ -60,8 +61,8 @@ const ExperienceSection = () => {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl mb-4 border border-white/10 shadow-inner">
-                    {feature.icon}
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-4 border border-white/10 shadow-inner">
+                    <feature.icon size={22} className="text-[#E86B32]" strokeWidth={1.5} />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-white">{feature.title}</h3>
                   <p className="text-stone-300 leading-relaxed text-sm font-medium">
@@ -84,15 +85,22 @@ const ExperienceSection = () => {
               src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"
               alt="Remote working community"
               fill
+              loading="lazy"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/40 to-transparent"></div>
             
             <Link href="/discover" className="absolute bottom-8 left-8 right-8 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:bg-white/15 transition-all duration-300 cursor-pointer group">
               <div className="flex items-center gap-4">
-                <div className="flex -space-x-4">
-                    {[1,2,3].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full bg-stone-300 border-2 border-stone-800"></div>
+                <div className="flex -space-x-3">
+                    {[
+                      { initials: 'TK', bg: 'bg-orange-500' },
+                      { initials: 'SM', bg: 'bg-teal-500' },
+                      { initials: 'AB', bg: 'bg-indigo-500' },
+                    ].map((avatar) => (
+                        <div key={avatar.initials} className={`w-10 h-10 rounded-full ${avatar.bg} border-2 border-stone-800 flex items-center justify-center text-[11px] font-bold text-white`}>
+                          {avatar.initials}
+                        </div>
                     ))}
                 </div>
                 <div>

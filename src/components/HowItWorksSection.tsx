@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { SlidersHorizontal, Map, Home } from 'lucide-react';
 
 const HowItWorksSection: React.FC = () => {
   const steps = [
@@ -10,19 +11,19 @@ const HowItWorksSection: React.FC = () => {
       number: '01',
       title: 'Define your lifestyle',
       description: 'Work hours, pace, budget, and priorities. This sets the foundation for the route ahead.',
-      icon: '✨'
+      icon: SlidersHorizontal
     },
     {
       number: '02',
       title: 'Shape your route',
       description: 'Your route comes together around real workdays, routines, and everyday life, with room to adjust as you go.',
-      icon: '📅'
+      icon: Map
     },
     {
       number: '03',
       title: 'Settle in',
       description: 'Arrive, find your rhythm, and start living and working from day one.',
-      icon: '🚀'
+      icon: Home
     }
   ];
 
@@ -52,8 +53,8 @@ const HowItWorksSection: React.FC = () => {
               className="bg-white relative group"
             >
               <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 bg-white border-2 border-stone-100 rounded-full flex items-center justify-center text-4xl mb-6 shadow-sm group-hover:shadow-md group-hover:scale-110 group-hover:border-[#E86B32] transition-all duration-300 z-10 relative">
-                  {step.icon}
+                <div className="w-24 h-24 bg-white border-2 border-stone-100 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:shadow-md group-hover:scale-110 group-hover:border-[#E86B32] transition-all duration-300 z-10 relative">
+                  <step.icon size={32} className="text-stone-700 group-hover:text-[#E86B32] transition-colors duration-300" strokeWidth={1.5} />
                   <div className="absolute -top-2 -right-2 bg-stone-900 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
                     {index + 1}
                   </div>

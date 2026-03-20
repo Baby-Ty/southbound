@@ -20,6 +20,7 @@ const Hero = ({
   const highlightRef = useRef<HTMLSpanElement | null>(null)
   const boardingPassRef = useRef<HTMLDivElement | null>(null)
   const backgroundRef = useRef<HTMLDivElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   // Highlight animation for "scenery" word
   useEffect(() => {
@@ -151,16 +152,22 @@ const Hero = ({
       {/* Lively Full-Color Video Background with Parallax */}
       <div className="absolute inset-0 z-0">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           className="w-full h-full object-cover opacity-60"
           style={{ 
             filter: 'contrast(1.1) brightness(0.9)'
           }}
         >
+          {/* WebM for better compression (modern browsers) */}
+          <source src="/south-bound.webm" type="video/webm" />
+          {/* MP4 fallback - using compressed version */}
+          <source src="/south-bound-compressed.mp4" type="video/mp4" />
+          {/* Original MP4 as final fallback */}
           <source src="/south-bound.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
@@ -207,10 +214,14 @@ const Hero = ({
               
               <div className="mt-8 flex items-center gap-4 text-sm text-stone-400">
                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-stone-700 border-2 border-stone-900 flex items-center justify-center text-xs">
-                            {/* Placeholder avatars */}
-                            👤
+                    {[
+                      { initials: 'JS', bg: 'bg-orange-500' },
+                      { initials: 'KM', bg: 'bg-teal-600' },
+                      { initials: 'RL', bg: 'bg-indigo-500' },
+                      { initials: 'NP', bg: 'bg-rose-500' },
+                    ].map((avatar) => (
+                        <div key={avatar.initials} className={`w-8 h-8 rounded-full ${avatar.bg} border-2 border-stone-900 flex items-center justify-center text-[10px] font-bold text-white`}>
+                            {avatar.initials}
                         </div>
                     ))}
                  </div>
@@ -236,7 +247,7 @@ const Hero = ({
                         <span className="text-[#E86B32] text-xl">✈️</span>
                         <span className="font-bold text-stone-900 tracking-widest text-sm uppercase">Boarding Pass</span>
                     </div>
-                    <div className="text-xs font-mono text-stone-400">SB-2024</div>
+                    <div className="text-xs font-mono text-stone-400">SB-2025</div>
                   </div>
 
                   {/* Destination Rotator */}

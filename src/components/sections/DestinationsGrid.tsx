@@ -26,17 +26,17 @@ const fallbackDestinations = [
   },
   {
     id: 2,
-    name: 'Ko Samui, Thailand',
-    tag: 'Tropical Paradise',
-    image: 'https://images.unsplash.com/photo-1738921993722-988364cd90ee?auto=format&fit=crop&w=800&q=80',
-    price: 'R28,000/mo',
-    vibe: 'Beach & Relaxation',
+    name: 'Chiang Mai, Thailand',
+    tag: 'Digital Nomad Hub',
+    image: 'https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?auto=format&fit=crop&w=800&q=80',
+    price: 'R20,000/mo',
+    vibe: 'Culture & Cafes',
     stats: {
-      internet: '60 Mbps',
-      safety: '4.6/5',
-      weather: '30°C',
+      internet: '80 Mbps',
+      safety: '4.7/5',
+      weather: '28°C',
     },
-    bestFor: 'Beaches & Wellness',
+    bestFor: 'Temples & Coworking',
     link: '/discover?region=southeast-asia'
   },
   {
@@ -103,6 +103,7 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
           src={image}
           alt={dest.name}
           fill
+          loading="lazy"
           className={`object-cover transition-transform duration-700 ${isExpanded ? 'scale-110' : 'scale-100'}`}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ${isExpanded ? 'opacity-90' : 'opacity-80'}`} />
