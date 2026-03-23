@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { RegionKey, CITY_PRESETS } from '@/lib/cityPresets';
 import { TripTemplate, TRIP_TEMPLATES, BudgetKey } from '@/lib/tripTemplates';
@@ -268,17 +269,17 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
               </div>
             </div>
 
-            {/* CTA Button */}
-            <div className="pt-2">
+            {/* CTA Buttons */}
+            <div className="pt-2 flex flex-wrap gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   // Scroll to lead capture form
                   const formElement = document.getElementById('lead-capture-form');
                   if (formElement) {
-                    formElement.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'start' 
+                    formElement.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
                     });
                     // Focus the name input after scroll
                     setTimeout(() => {
@@ -287,10 +288,17 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
                     }, 500);
                   }
                 }}
-                className="w-full md:w-auto px-8 py-3 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all hover:scale-105 shadow-medium"
+                className="px-8 py-3 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all hover:scale-105 shadow-medium"
               >
                 Use this as a starting point
               </button>
+              <Link
+                href={`/templates/${trip.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="px-8 py-3 border-2 border-sb-orange-500 text-sb-orange-500 hover:bg-sb-orange-50 font-semibold rounded-full transition-all hover:scale-105"
+              >
+                View itinerary →
+              </Link>
             </div>
             </motion.div>
           )}

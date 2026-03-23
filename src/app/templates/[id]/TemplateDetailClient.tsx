@@ -61,30 +61,328 @@ function totalMonthlyZar(accommodation: string, coworking: string, meals: string
   return `from R${low.toLocaleString()}`;
 }
 
-// ─── Lifestyle price hints by region ─────────────────────────────────────────
+// ─── Lifestyle price hints by city (fallback to region) ──────────────────────
 type LifestyleHint = { emoji: string; label: string; price: string };
 
-const LIFESTYLE_HINTS: Record<RegionKey, LifestyleHint[]> = {
-  'southeast-asia': [
-    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R90' },
-    { emoji: '☕', label: 'Coffee',                  price: 'from R55' },
-    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R65' },
+const CITY_LIFESTYLE_HINTS: Record<string, LifestyleHint[]> = {
+  // ── Southeast Asia ──────────────────────────────────────────────────────────
+  // Bali (Canggu): tourist-heavy, pricier than rest of Bali. Bintang ~R35-40 at warung, R45-55 at bar
+  'Bali (Canggu)': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R45' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R45' },
     { emoji: '🛵', label: 'Monthly transport',       price: 'from R1,200' },
-    { emoji: '🏄', label: 'Activities & nights out', price: 'from R2,500/mo' },
+    { emoji: '🏄', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  // Ubud: slightly cheaper, more local feel
+  'Ubud': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R35' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R35' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R1,100' },
+    { emoji: '🧘', label: 'Activities & nights out', price: 'from R1,800/mo' },
+  ],
+  // Chiang Mai: very affordable. Pad thai ~50-80 THB = R30-45. Chang beer ~60-80 THB = R35-45
+  'Chiang Mai': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R35' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R28' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R650' },
+    { emoji: '🏯', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // Bangkok: slightly pricier than CM. Street food R35-45, Chang at bar R45-60
+  'Bangkok': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R40' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R45' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R1,000' },
+    { emoji: '🌃', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  // Thai islands: scooter-dependent, slightly more than mainland
+  'Koh Lanta': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R50' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R50' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R950' },
+    { emoji: '🤿', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  'Koh Samui': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R55' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R45' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R55' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R1,000' },
+    { emoji: '🏖️', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  'Phuket': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R50' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R50' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R1,000' },
+    { emoji: '🥊', label: 'Activities & nights out', price: 'from R1,800/mo' },
+  ],
+  // Vietnam: very cheap. Pho/banh mi R22-35. Bia Hoi R15-22. Vietnamese drip coffee R12-18
+  'Da Nang': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R25' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R15' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R22' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '🏖️', label: 'Activities & nights out', price: 'from R1,000/mo' },
+  ],
+  'Ho Chi Minh City': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R30' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R18' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R25' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R650' },
+    { emoji: '🌆', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  'Hanoi': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R25' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R18' },
+    { emoji: '🍺', label: 'Bia Hoi (street beer)',  price: 'from R15' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '🏮', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // Cambodia: USD economy, cheap
+  'Phnom Penh': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R28' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R22' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R25' },
+    { emoji: '🛺', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '🌅', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // KL: hawker food cheap. Alcohol heavily taxed in Malaysia — beer R70+ is accurate
+  'Kuala Lumpur': [
+    { emoji: '🍜', label: 'Meal at a hawker centre', price: 'from R30' },
+    { emoji: '☕', label: 'Coffee (kopi)',            price: 'from R22' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R70' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R700' },
+    { emoji: '🛍️', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // Singapore: hawker meal $3-5 = R55-90. Beer at bar $8-12 = R150-220
+  'Singapore': [
+    { emoji: '🍜', label: 'Meal at a hawker centre', price: 'from R55' },
+    { emoji: '☕', label: 'Coffee (kopi)',            price: 'from R22' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R150' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R1,500' },
+    { emoji: '🌃', label: 'Activities & nights out', price: 'from R3,000/mo' },
+  ],
+  // ── Latin America ───────────────────────────────────────────────────────────
+  // Mexico City: tacos R25-40, café coffee R40-55, beer at cantina R35-50, metro cheap
+  'Mexico City': [
+    { emoji: '🌮', label: 'Tacos / local meal',     price: 'from R45' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R45' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R400' },
+    { emoji: '🎨', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  // Playa: tourist prices, higher than CDMX
+  'Playa del Carmen': [
+    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R55' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R45' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R45' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '🤿', label: 'Activities & nights out', price: 'from R1,800/mo' },
+  ],
+  // Oaxaca: cheaper than CDMX
+  'Oaxaca': [
+    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R40' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R35' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R30' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R450' },
+    { emoji: '🏺', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // Colombia: tinto (black coffee) is R8-15 at street stalls, R25-40 at cafés
+  'Medellín': [
+    { emoji: '🍱', label: 'Meal (almuerzo)',         price: 'from R45' },
+    { emoji: '☕', label: 'Coffee (tinto)',           price: 'from R20' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R500' },
+    { emoji: '💃', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  'Bogotá': [
+    { emoji: '🍱', label: 'Meal (almuerzo)',         price: 'from R45' },
+    { emoji: '☕', label: 'Coffee (tinto)',           price: 'from R18' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R450' },
+    { emoji: '🏔️', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  // Cartagena: tourist prices, higher
+  'Cartagena': [
+    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R60' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R500' },
+    { emoji: '🏝️', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  // Brazil: boteco beer R35-50, café coffee R28-40
+  'Rio': [
+    { emoji: '🥗', label: 'Meal at a local spot',   price: 'from R65' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R30' },
+    { emoji: '🍺', label: 'Beer (boteco)',           price: 'from R40' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R700' },
+    { emoji: '🎉', label: 'Activities & nights out', price: 'from R1,800/mo' },
+  ],
+  'São Paulo': [
+    { emoji: '🥗', label: 'Meal at a local spot',   price: 'from R65' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R30' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R45' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R750' },
+    { emoji: '🌃', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  // Argentina: prices at official USD rate
+  'Buenos Aires': [
+    { emoji: '🥩', label: 'Meal at a local spot',   price: 'from R55' },
+    { emoji: '☕', label: 'Coffee (cortado)',        price: 'from R30' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R350' },
+    { emoji: '💃', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  'Lima': [
+    { emoji: '🐟', label: 'Meal (menú del día)',     price: 'from R50' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R30' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R500' },
+    { emoji: '🏄', label: 'Activities & nights out', price: 'from R1,200/mo' },
+  ],
+  'Santiago': [
+    { emoji: '🥗', label: 'Meal at a local spot',   price: 'from R70' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R55' },
+    { emoji: '🚇', label: 'Monthly transport',       price: 'from R700' },
+    { emoji: '⛷️', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  'Montevideo': [
+    { emoji: '🥗', label: 'Meal at a local spot',   price: 'from R80' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R55' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R700' },
+    { emoji: '🏖️', label: 'Activities & nights out', price: 'from R1,500/mo' },
+  ],
+  // ── Europe ──────────────────────────────────────────────────────────────────
+  // Portugal: bica/espresso €0.80-1.20 = R16-24. Beer €1.50-2.50 = R30-50. Monthly pass ~€40 = R800
+  'Lisbon': [
+    { emoji: '🐟', label: 'Meal at a restaurant',   price: 'from R130' },
+    { emoji: '☕', label: 'Coffee (bica)',           price: 'from R20' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R900' },
+    { emoji: '🎭', label: 'Activities & nights out', price: 'from R2,500/mo' },
+  ],
+  'Porto': [
+    { emoji: '🐟', label: 'Meal at a restaurant',   price: 'from R110' },
+    { emoji: '☕', label: 'Coffee (bica)',           price: 'from R18' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R30' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R800' },
+    { emoji: '🍷', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  // Spain: café con leche €1.50-2. Caña €2-3. Monthly metro pass varies
+  'Barcelona': [
+    { emoji: '🥘', label: 'Menú del día (lunch)',   price: 'from R200' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R35' },
+    { emoji: '🍺', label: 'Beer (caña) at a bar',   price: 'from R45' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R900' },
+    { emoji: '🎨', label: 'Activities & nights out', price: 'from R3,000/mo' },
+  ],
+  'Valencia': [
+    { emoji: '🥘', label: 'Menú del día (lunch)',   price: 'from R160' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R28' },
+    { emoji: '🍺', label: 'Beer (caña) at a bar',   price: 'from R35' },
+    { emoji: '🚌', label: 'Monthly transport pass',  price: 'from R500' },
+    { emoji: '🚴', label: 'Activities & nights out', price: 'from R2,500/mo' },
+  ],
+  'Seville': [
+    { emoji: '🥘', label: 'Meal (tapas)',            price: 'from R140' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R25' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🚌', label: 'Monthly transport pass',  price: 'from R700' },
+    { emoji: '💃', label: 'Activities & nights out', price: 'from R2,200/mo' },
+  ],
+  // Croatia: beer €2.50-4 = R50-80. No monthly pass, mostly local buses
+  'Split': [
+    { emoji: '🐟', label: 'Meal at a restaurant',   price: 'from R150' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R35' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R50' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '⛵', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  'Dubrovnik': [
+    { emoji: '🐟', label: 'Meal at a restaurant',   price: 'from R180' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R65' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R600' },
+    { emoji: '🏰', label: 'Activities & nights out', price: 'from R2,500/mo' },
+  ],
+  // Greece: souvlaki R55-80. Frappé/freddo €2-3. Monthly pass ~€30 = R600
+  'Athens': [
+    { emoji: '🥙', label: 'Meal (souvlaki/taverna)', price: 'from R100' },
+    { emoji: '☕', label: 'Coffee (frappé)',          price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a bar',            price: 'from R60' },
+    { emoji: '🚇', label: 'Monthly transport pass',   price: 'from R600' },
+    { emoji: '🏛️', label: 'Activities & nights out',  price: 'from R1,800/mo' },
+  ],
+  // Hungary: very affordable. Beer at ruin bar R50-80. Monthly BKK pass ~€32 = R640
+  'Budapest': [
+    { emoji: '🥩', label: 'Meal at a restaurant',   price: 'from R100' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer (ruin bar)',         price: 'from R50' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R650' },
+    { emoji: '♨️', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  // Czech Republic: famously cheap beer. €1.50-2.50 = R30-50. Monthly pass ~€24 = R480
+  'Prague': [
+    { emoji: '🥩', label: 'Meal at a restaurant',   price: 'from R100' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R40' },
+    { emoji: '🍺', label: 'Beer at a pub',           price: 'from R35' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R500' },
+    { emoji: '🏰', label: 'Activities & nights out', price: 'from R2,000/mo' },
+  ],
+  // Germany: Deutschlandticket €58 = R1,160. Döner kebab R65-85
+  'Berlin': [
+    { emoji: '🌭', label: 'Meal (döner/restaurant)', price: 'from R100' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R50' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R60' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R1,100' },
+    { emoji: '🎶', label: 'Activities & nights out', price: 'from R3,000/mo' },
+  ],
+  // Netherlands: expensive. OV-chipkaart ~€100/mo = R2,000
+  'Amsterdam': [
+    { emoji: '🍟', label: 'Meal at a restaurant',   price: 'from R190' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R60' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R80' },
+    { emoji: '🚲', label: 'Monthly transport pass',  price: 'from R2,000' },
+    { emoji: '🎨', label: 'Activities & nights out', price: 'from R4,000/mo' },
+  ],
+  // Italy: espresso at bar €1-1.50 = R20-30. Trattoria meal €10-18
+  'Florence': [
+    { emoji: '🍝', label: 'Meal at a trattoria',    price: 'from R180' },
+    { emoji: '☕', label: 'Espresso at a bar',       price: 'from R22' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R60' },
+    { emoji: '🚌', label: 'Monthly transport pass',  price: 'from R700' },
+    { emoji: '🖼️', label: 'Activities & nights out', price: 'from R2,800/mo' },
+  ],
+};
+
+// Region-level fallbacks
+const REGION_LIFESTYLE_HINTS: Record<RegionKey, LifestyleHint[]> = {
+  'southeast-asia': [
+    { emoji: '🍜', label: 'Meal at a local spot',   price: 'from R35' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R28' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R35' },
+    { emoji: '🛵', label: 'Monthly transport',       price: 'from R700' },
+    { emoji: '🏄', label: 'Activities & nights out', price: 'from R1,500/mo' },
   ],
   'europe': [
-    { emoji: '🍝', label: 'Meal at a restaurant',   price: 'from R250' },
-    { emoji: '☕', label: 'Coffee',                  price: 'from R100' },
-    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R130' },
-    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R2,200' },
-    { emoji: '🎭', label: 'Activities & nights out', price: 'from R3,500/mo' },
+    { emoji: '🍝', label: 'Meal at a restaurant',   price: 'from R130' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R30' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R50' },
+    { emoji: '🚇', label: 'Monthly transport pass',  price: 'from R700' },
+    { emoji: '🎭', label: 'Activities & nights out', price: 'from R2,500/mo' },
   ],
   'latin-america': [
-    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R130' },
-    { emoji: '☕', label: 'Coffee',                  price: 'from R65' },
-    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R80' },
-    { emoji: '🚌', label: 'Monthly transport',       price: 'from R1,400' },
-    { emoji: '💃', label: 'Activities & nights out', price: 'from R2,500/mo' },
+    { emoji: '🌮', label: 'Meal at a local spot',   price: 'from R50' },
+    { emoji: '☕', label: 'Coffee',                  price: 'from R30' },
+    { emoji: '🍺', label: 'Beer at a bar',           price: 'from R40' },
+    { emoji: '🚌', label: 'Monthly transport',       price: 'from R500' },
+    { emoji: '💃', label: 'Activities & nights out', price: 'from R1,500/mo' },
   ],
 };
 
@@ -95,6 +393,18 @@ function findCityRegion(cityName: string): RegionKey | null {
       const cn = p.city.toLowerCase().replace(/[^a-z]/g, '');
       return cn === normalised || normalised.includes(cn) || cn.includes(normalised);
     })) return region as RegionKey;
+  }
+  return null;
+}
+
+function getCityLifestyleHints(cityName: string): LifestyleHint[] | null {
+  // Exact match first
+  if (CITY_LIFESTYLE_HINTS[cityName]) return CITY_LIFESTYLE_HINTS[cityName];
+  // Partial match (handles slight name variations)
+  const normalised = cityName.toLowerCase().replace(/[^a-z]/g, '');
+  for (const [key, hints] of Object.entries(CITY_LIFESTYLE_HINTS)) {
+    const kn = key.toLowerCase().replace(/[^a-z]/g, '');
+    if (kn === normalised || normalised.includes(kn) || kn.includes(normalised)) return hints;
   }
   return null;
 }
@@ -172,7 +482,7 @@ function CityCard({ city, index, total }: { city: string; index: number; total: 
   const preset = findCityPreset(city);
   const [showLifestyle, setShowLifestyle] = useState(false);
   const region = findCityRegion(city);
-  const hints = region ? LIFESTYLE_HINTS[region] : null;
+  const hints = getCityLifestyleHints(city) ?? (region ? REGION_LIFESTYLE_HINTS[region] : null);
 
   return (
     <motion.div
@@ -700,7 +1010,7 @@ export default function TemplateDetailClient({ id }: { id: string }) {
             {template.presetCities.map((city, idx) => {
               const preset = findCityPreset(city);
               const region = findCityRegion(city);
-              const hints = region ? LIFESTYLE_HINTS[region] : null;
+              const hints = getCityLifestyleHints(city) ?? (region ? REGION_LIFESTYLE_HINTS[region] : null);
               const isOpen = expandedLifestyle.has(city);
               const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-sb-beige-50';
               return (
@@ -745,15 +1055,15 @@ export default function TemplateDetailClient({ id }: { id: string }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className={`overflow-hidden ${rowBg}`}
+                        className="overflow-hidden bg-sb-navy-800"
                       >
-                        <div className="px-5 pb-4 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-sb-navy-100/50 pt-3">
+                        <div className="px-5 pb-4 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-white/10 pt-3">
                           {hints.map(h => (
-                            <div key={h.label} className="flex items-center gap-2 rounded-lg bg-white border border-sb-navy-100 px-3 py-2">
+                            <div key={h.label} className="flex items-center gap-2 rounded-lg bg-white/10 border border-white/10 px-3 py-2">
                               <span className="text-base">{h.emoji}</span>
                               <div>
-                                <div className="text-xs font-bold text-sb-navy-800">{h.price}</div>
-                                <div className="text-xs text-sb-navy-400">{h.label}</div>
+                                <div className="text-xs font-bold text-white">{h.price}</div>
+                                <div className="text-xs text-white/50">{h.label}</div>
                               </div>
                             </div>
                           ))}
@@ -773,16 +1083,16 @@ export default function TemplateDetailClient({ id }: { id: string }) {
                     const presets = template.presetCities.map(c => findCityPreset(c)).filter(Boolean) as ReturnType<typeof findCityPreset>[];
                     if (!presets.length) return '—';
                     const validPresets = presets.filter(p => p != null) as NonNullable<ReturnType<typeof findCityPreset>>[];
-                    const [low] = validPresets.reduce(([l], p) => {
+                    const totalLow = validPresets.reduce((sum, p) => {
                       const [aL] = parseBounds(p.costs.accommodation);
                       const [cL] = parseBounds(p.costs.coworking);
-                      const [mL] = parseBounds(p.costs.meals);
-                      return [l + Math.round(((aL + cL) * SB_FEE + mL) * USD_TO_ZAR / 500) * 500];
-                    }, [0]);
-                    return `from R${low.toLocaleString()}`;
+                      return sum + (aL + cL) * SB_FEE * USD_TO_ZAR;
+                    }, 0);
+                    const avgLow = Math.round((totalLow / validPresets.length) / 500) * 500;
+                    return `from R${avgLow.toLocaleString()}`;
                   })()}
                 </div>
-                <div className="text-xs text-sb-navy-400">package + lifestyle, per month</div>
+                <div className="text-xs text-sb-navy-400">avg. SB package per month</div>
               </div>
             </div>
           </div>

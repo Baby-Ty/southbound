@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Wifi, Shield, Sun, ArrowRight, MapPin, Zap, Loader2 } from 'lucide-react';
 import { TripTemplate } from '@/lib/tripTemplates';
@@ -83,11 +84,17 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
       ? dest.imageUrl 
       : dest.image;
 
-  // Determine the link
-  const link = 'link' in dest ? dest.link : `/templates?expanded=${dest.id}`;
+  // Determine the link — curated templates go directly to their itinerary page
+  const rawLink = 'link' in dest ? dest.link : `/templates/${dest.id}`;
+  // If the link points to a templates?expanded= pattern, rewrite to the clean path
+  const link = rawLink.startsWith('/templates?expanded=')
+    ? `/templates/${rawLink.replace('/templates?expanded=', '')}`
+    : rawLink;
+
+  const router = useRouter();
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -95,7 +102,7 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
       className="group relative h-[480px] w-full overflow-hidden rounded-3xl cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-500"
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
-      onClick={() => setIsExpanded(!isExpanded)}
+      onClick={() => router.push(link)}
     >
       {/* Background Image */}
       <div className="absolute inset-0 w-full h-full">
@@ -161,12 +168,12 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
                 </div>
               </div>
 
-              <Link 
+              <Link
                 href={link}
                 className="flex items-center justify-center gap-2 w-full bg-[#E86B32] hover:bg-[#d55a24] text-white font-bold py-3.5 rounded-xl transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                Build This Trip
+                View Itinerary
                 <ArrowRight size={18} />
               </Link>
             </div>
@@ -251,7 +258,7 @@ const DestinationsGrid = () => {
                   weather: template.avgWeather || '25°C',
                 },
                 bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
-                link: `/templates?expanded=${template.id}`,
+                link: `/templates/${template.id}`,
               }));
               
               setDestinations(mappedDestinations);
@@ -284,7 +291,7 @@ const DestinationsGrid = () => {
               weather: template.avgWeather || '25°C',
             },
             bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
-            link: `/templates?expanded=${template.id}`,
+            link: `/templates/${template.id}`,
           }));
           
           setDestinations(mappedDestinations);
