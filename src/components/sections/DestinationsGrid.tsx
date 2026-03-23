@@ -240,26 +240,42 @@ const DestinationsGrid = () => {
         try {
           const { apiUrl } = await import('@/lib/api');
           const response = await fetch(apiUrl('trip-templates?curated=true&enabled=true'));
-          
+
           if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
             const data = await response.json();
             const templates: TripTemplate[] = data.templates || [];
-            
+
             if (templates.length > 0) {
-              const mappedDestinations = templates.slice(0, 4).map((template) => ({
-                ...template,
-                image: template.curatedImageUrl || template.imageUrl,
-                tag: template.tags[0] || 'Adventure',
-                price: template.price || 'R25,000/mo',
-                vibe: template.vibe || template.description.split('.')[0],
-                stats: {
-                  internet: template.internetSpeed || '50+ Mbps',
-                  safety: template.safetyRating || '4.5/5',
-                  weather: template.avgWeather || '25°C',
-                },
-                bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
-                link: `/templates/${template.id}`,
-              }));
+              // Load static templates so we can resolve slug IDs by name match.
+              // The API returns Cosmos nanoid IDs which don't have pre-rendered pages —
+              // we need the static slug (e.g. "euro-rail-classic") for the link to work.
+              const { TRIP_TEMPLATES: STATIC } = await import('@/lib/tripTemplates');
+              const allStatic = Object.values(STATIC).flat();
+              const slugById = (apiName: string): string => {
+                const match = allStatic.find(
+                  (s) => s.name.toLowerCase() === apiName.toLowerCase()
+                );
+                return match ? match.id : '';
+              };
+
+              const mappedDestinations = templates.slice(0, 4).map((template) => {
+                const slugId = slugById(template.name);
+                return {
+                  ...template,
+                  image: template.curatedImageUrl || template.imageUrl,
+                  tag: template.tags[0] || 'Adventure',
+                  price: template.price || 'R25,000/mo',
+                  vibe: template.vibe || template.description.split('.')[0],
+                  stats: {
+                    internet: template.internetSpeed || '50+ Mbps',
+                    safety: template.safetyRating || '4.5/5',
+                    weather: template.avgWeather || '25°C',
+                  },
+                  bestFor: template.bestFor || template.tags.slice(0, 2).join(' & '),
+                  // Use static slug if found, otherwise fall back to API id
+                  link: slugId ? `/templates/${slugId}` : `/templates/${template.id}`,
+                };
+              });
               
               setDestinations(mappedDestinations);
               setLoading(false);
