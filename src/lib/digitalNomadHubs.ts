@@ -100,7 +100,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Lisbon, Portugal',
     title: 'Lisbon: Where History Meets Innovation',
     description: 'Discover the charm of Europe\'s sunniest capital, where cobblestone streets lead to cutting-edge coworking spaces. Enjoy world-class coffee culture, historic tram rides, and a thriving creative community.',
-    imageUrl: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=800&q=75',
     highlights: ['🏛️ Historic neighborhoods & modern cafes', '☕ Vibrant coffee culture', '🌊 Coastal views & beach escapes']
   },
   'medellin': {
@@ -108,7 +108,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Medellín, Colombia',
     title: 'Medellín: City of Eternal Spring',
     description: 'Experience Latin America\'s most innovative city with perfect year-round weather. Work from mountain-view coworking spaces, explore colorful neighborhoods, and immerse yourself in a welcoming local culture.',
-    imageUrl: 'https://images.unsplash.com/photo-1568742647318-6b508a7b22c6?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1568742647318-6b508a7b22c6?auto=format&fit=crop&w=800&q=75',
     highlights: ['🌡️ Perfect climate year-round', '💡 Thriving innovation scene', '🎨 Rich culture & friendly locals']
   },
   'bangkok': {
@@ -116,7 +116,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Bangkok, Thailand',
     title: 'Bangkok: Where Ancient Meets Modern',
     description: 'Balance productivity with adventure in Thailand\'s vibrant capital. From golden temples to sleek coworking spaces, rooftop bars to street food markets, Bangkok offers endless inspiration.',
-    imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=75',
     highlights: ['🛕 Ancient temples & modern life', '🍜 World-class street food', '🏙️ Affordable luxury living']
   },
   'canggu': {
@@ -124,7 +124,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Canggu, Bali',
     title: 'Canggu: Surf, Work, Connect',
     description: 'Start your day with sunrise surf sessions, work from beachfront cafes, and end with sunset drinks overlooking rice paddies. Canggu is the ultimate digital nomad paradise.',
-    imageUrl: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=75',
     highlights: ['🏄‍♀️ Morning surf sessions', '☕ Beachfront coworking cafes', '🌅 Vibrant expat community']
   },
   'cape-town': {
@@ -132,7 +132,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Cape Town, South Africa',
     title: 'Cape Town: Between Mountain and Ocean',
     description: 'Work with Table Mountain as your backdrop and two oceans at your doorstep. Explore wine lands, penguin colonies, and one of the world\'s most stunning coastal cities.',
-    imageUrl: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=75',
     highlights: ['⛰️ Iconic Table Mountain views', '🍷 World-class wine regions', '🐧 Unique wildlife encounters']
   },
   'mexico-city': {
@@ -140,7 +140,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Mexico City, Mexico',
     title: 'Mexico City: Creative Capital of Latin America',
     description: 'Immerse yourself in one of the world\'s largest cities, bursting with art, culture, and culinary excellence. From trendy Roma cafes to ancient Aztec ruins, CDMX never stops inspiring.',
-    imageUrl: 'https://images.unsplash.com/photo-1568402102990-bc541580b59f?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1568402102990-bc541580b59f?auto=format&fit=crop&w=800&q=75',
     highlights: ['🎨 World-class art & museums', '🌮 Incredible food scene', '🏛️ Rich history & culture']
   },
   'playa-del-carmen': {
@@ -148,7 +148,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Playa del Carmen, Mexico',
     title: 'Playa del Carmen: Caribbean Work Paradise',
     description: 'Trade your office view for Caribbean turquoise waters. Work from beachfront cafes, explore cenotes and Mayan ruins, and enjoy Mexico\'s most relaxed beach town vibe.',
-    imageUrl: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=75',
     highlights: ['🏖️ Pristine Caribbean beaches', '💎 Hidden cenotes nearby', '🌴 Laid-back beach lifestyle']
   },
   'chiang-mai': {
@@ -156,7 +156,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Chiang Mai, Thailand',
     title: 'Chiang Mai: Mountain Serenity',
     description: 'Find your focus in the mountains of northern Thailand. Ancient temples, affordable living, and a peaceful atmosphere make Chiang Mai perfect for deep work and cultural exploration.',
-    imageUrl: 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?auto=format&fit=crop&w=800&q=75',
     highlights: ['⛰️ Peaceful mountain setting', '🛕 Ancient temple culture', '💰 Incredibly affordable']
   },
   'tbilisi': {
@@ -164,7 +164,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Tbilisi, Georgia',
     title: 'Tbilisi: Hidden Gem of the Caucasus',
     description: 'Discover Europe\'s best-kept secret with a unique blend of ancient tradition and modern startup culture. Incredible cuisine, warm hospitality, and affordable living await.',
-    imageUrl: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?auto=format&fit=crop&w=800&q=75',
     highlights: ['🍷 Ancient wine culture', '🏛️ Unique architecture', '💻 Growing tech scene']
   },
   'buenos-aires': {
@@ -172,7 +172,7 @@ export const featuredJourneys: Record<string, FeaturedJourney> = {
     destination: 'Buenos Aires, Argentina',
     title: 'Buenos Aires: The Paris of South America',
     description: 'Experience European elegance with Latin passion. From tango in San Telmo to coworking in Palermo, Buenos Aires combines sophistication with affordability.',
-    imageUrl: 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=800&q=75',
     highlights: ['💃 Tango & vibrant nightlife', '🥩 World-famous steakhouses', '🎭 Rich cultural scene']
   },
 };
@@ -183,7 +183,7 @@ export const defaultFeaturedJourney: FeaturedJourney = {
   destination: 'Global Adventures',
   title: 'Your Next Adventure Awaits',
   description: 'Click on any pin to discover incredible digital nomad destinations around the world. Each location is carefully selected for its community, connectivity, and culture.',
-  imageUrl: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+  imageUrl: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=75',
   highlights: ['🌍 10+ Countries', '✨ Curated experiences', '👥 Global community']
 };
 

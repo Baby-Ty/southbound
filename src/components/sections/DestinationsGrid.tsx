@@ -14,7 +14,7 @@ const fallbackDestinations = [
     id: 1,
     name: 'Bali, Indonesia',
     tag: 'Tropical Coworking',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=600&q=75',
     price: 'R25,000/mo',
     vibe: 'Chill & Surf',
     stats: {
@@ -29,7 +29,7 @@ const fallbackDestinations = [
     id: 2,
     name: 'Chiang Mai, Thailand',
     tag: 'Digital Nomad Hub',
-    image: 'https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?auto=format&fit=crop&w=600&q=75',
     price: 'R20,000/mo',
     vibe: 'Culture & Cafes',
     stats: {
@@ -44,7 +44,7 @@ const fallbackDestinations = [
     id: 3,
     name: 'Buenos Aires, Argentina',
     tag: 'Latin Culture',
-    image: 'https://images.unsplash.com/photo-1637580980556-085dee659c7e?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1637580980556-085dee659c7e?auto=format&fit=crop&w=600&q=75',
     price: 'R18,000/mo',
     vibe: 'City & Tango',
     stats: {
@@ -59,7 +59,7 @@ const fallbackDestinations = [
     id: 4,
     name: 'Playa del Carmen, Mexico',
     tag: 'Caribbean Coast',
-    image: 'https://images.unsplash.com/photo-1726147417354-cf82fb0548af?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1726147417354-cf82fb0548af?auto=format&fit=crop&w=600&q=75',
     price: 'R24,000/mo',
     vibe: 'Beach & Adventure',
     stats: {
@@ -111,6 +111,7 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
           alt={dest.name}
           fill
           loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className={`object-cover transition-transform duration-700 ${isExpanded ? 'scale-110' : 'scale-100'}`}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ${isExpanded ? 'opacity-90' : 'opacity-80'}`} />
