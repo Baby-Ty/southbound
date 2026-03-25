@@ -427,3 +427,45 @@ export async function getTripTemplates(filters?: {
     throw error;
   }
 }
+
+export async function getTripTemplateById(
+  id: string,
+  region: 'europe' | 'latin-america' | 'southeast-asia'
+): Promise<TripTemplate | null> {
+  try {
+    const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+    const { resource } = await container.item(id, region).read<TripTemplate>();
+    return resource ?? null;
+  } catch (error: any) {
+    if (error.code === 404) return null;
+    console.error('[getTripTemplateById] Error:', error);
+    throw error;
+  }
+}
+
+export async function updateTripTemplate(
+  id: string,
+  region: 'europe' | 'latin-america' | 'southeast-asia',
+  updates: Partial<Omit<TripTemplate, 'id' | 'region' | 'createdAt'>>
+): Promise<TripTemplate> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  const existing = await getTripTemplateById(id, region);
+  if (!existing) throw new Error(`Trip template not found: ${id}`);
+  const updated: TripTemplate = {
+    ...existing,
+    ...updates,
+    id,
+    region,
+    updatedAt: new Date().toISOString(),
+  };
+  const { resource } = await container.item(id, region).replace(updated);
+  return resource as TripTemplate;
+}
+
+export async function deleteTripTemplate(
+  id: string,
+  region: 'europe' | 'latin-america' | 'southeast-asia'
+): Promise<void> {
+  const container = await getContainer(TRIP_TEMPLATES_CONTAINER_ID);
+  await container.item(id, region).delete();
+}
