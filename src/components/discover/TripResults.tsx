@@ -6,15 +6,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { RegionKey, CITY_PRESETS } from '@/lib/cityPresets';
-import { TripTemplate, TRIP_TEMPLATES, BudgetKey } from '@/lib/tripTemplates';
+import { TripTemplate, TRIP_TEMPLATES } from '@/lib/tripTemplates';
+import { VibeKey, VIBE_TAG_MAP } from '@/components/discover/VibeSelector';
 
 interface TripResultsProps {
   selectedRegions: RegionKey[];
-  selectedBudget: BudgetKey | null;
+  selectedVibes: VibeKey[];
   preselectedTemplateId?: string | null;
+  onTripSelect?: (tripId: string | null) => void;
 }
 
-export default function TripResults({ selectedRegions, selectedBudget, preselectedTemplateId }: TripResultsProps) {
+export default function TripResults({ selectedRegions, selectedVibes, preselectedTemplateId, onTripSelect }: TripResultsProps) {
   const [matchedTrips, setMatchedTrips] = useState<TripTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
@@ -48,12 +50,13 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
         allTemplates.push(...templates);
       }
 
-      // Filter by budget tier
+      // Filter by vibe tags
       const filtered = allTemplates.filter((template) => {
-        if (!selectedBudget) return true;
-        // If template has no budgetTiers defined, include it as a fallback
-        if (!template.budgetTiers || template.budgetTiers.length === 0) return true;
-        return template.budgetTiers.includes(selectedBudget);
+        if (selectedVibes.length === 0) return true;
+        if (!template.tags || template.tags.length === 0) return true;
+        // Collect all tags that match the selected vibes
+        const vibeTags = selectedVibes.flatMap((vibe) => VIBE_TAG_MAP[vibe] || []);
+        return template.tags.some((tag) => vibeTags.includes(tag));
       });
 
       setMatchedTrips(filtered);
@@ -63,7 +66,7 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
     }
 
     filterTrips();
-  }, [selectedRegions, selectedBudget]);
+  }, [selectedRegions, selectedVibes]);
 
   // Reorder trips: selected trip goes to top
   const orderedTrips = selectedTripId
@@ -77,9 +80,11 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
     if (selectedTripId === tripId) {
       // Clicking the same trip collapses it
       setSelectedTripId(null);
+      onTripSelect?.(null);
     } else {
       // Selecting a new trip
       setSelectedTripId(tripId);
+      onTripSelect?.(tripId);
       // Scroll to top of cards container smoothly
       setTimeout(() => {
         cardsContainerRef.current?.scrollIntoView({ 
@@ -325,7 +330,7 @@ export default function TripResults({ selectedRegions, selectedBudget, preselect
         <div className="text-6xl mb-4">🤔</div>
         <h3 className="text-2xl font-bold text-sb-navy-900 mb-2">No matches yet</h3>
         <p className="text-sb-navy-600">
-          Try selecting a different budget range or region to see more options
+          Try selecting a different vibe or region to see more options
         </p>
       </motion.div>
     );

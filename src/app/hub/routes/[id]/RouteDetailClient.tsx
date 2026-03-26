@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   Mail,
+  MessageCircle,
   MapPin,
   Calendar,
   Clock,
@@ -307,73 +308,131 @@ export default function RouteDetailClient() {
         </div>
       </div>
 
-      {/* Route Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-stone-200 p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Contact Information</h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-stone-400" />
-              <span className="text-stone-700">{route.email}</span>
-            </div>
-          </div>
-        </div>
+      {/* ── Client Profile ── */}
+      {(() => {
+        const prefs = route.preferences as any;
+        const isWhatsApp = route.email?.endsWith('@whatsapp');
+        const contactValue = isWhatsApp ? route.email.replace('@whatsapp', '') : route.email;
+        const vibeLabels: Record<string, { label: string; icon: string; color: string }> = {
+          'beach':             { label: 'Beach & Chill',        icon: '🏝️', color: 'bg-cyan-100 text-cyan-800' },
+          'city-culture':      { label: 'City & Culture',       icon: '🏙️', color: 'bg-violet-100 text-violet-800' },
+          'adventure-wellness':{ label: 'Adventure & Wellness', icon: '🌄', color: 'bg-emerald-100 text-emerald-800' },
+        };
+        const regionLabels: Record<string, string> = {
+          'europe': 'Europe',
+          'latin-america': 'Latin America',
+          'southeast-asia': 'Southeast Asia',
+        };
+        const vibes: string[] = prefs?.vibes || [];
+        const selectedRoute: string | null = prefs?.selectedRoute || null;
+        const contactPref: string = prefs?.contactPreference || (isWhatsApp ? 'whatsapp' : 'email');
 
-        <div className="bg-white rounded-xl border border-stone-200 p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Route Summary</h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-stone-400" />
-              <span className="text-stone-700">{route.stops.length} stops</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-stone-400" />
-              <span className="text-stone-700">{getTotalWeeks(route.stops)} weeks total</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Preferences */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Preferences</h2>
-        
-        {/* Check if this is a discover page lead (has vibes instead of lifestyle/workSetup) */}
-        {(route.preferences as any)?.source === 'discover-page' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-sm font-medium text-stone-600 mb-2">Vibes / Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {(route.preferences as any).vibes?.map((vibe: string, idx: number) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-1 bg-sb-orange-100 text-sb-orange-700 rounded-md text-sm font-medium"
-                  >
-                    {vibe.replace('-', ' ')}
-                  </span>
-                ))}
+        return (
+          <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+            {/* Profile header strip */}
+            <div className="bg-stone-900 px-6 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-0.5">Client Profile</p>
+                <h2 className="text-xl font-bold text-white">{route.name || 'Unnamed Lead'}</h2>
               </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-stone-600 mb-2">Lead Source</h3>
-              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-sm font-medium">
-                Discover Page
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${STATUS_COLORS[route.status]}`}>
+                <StatusIcon className="w-4 h-4" />
+                {route.status.replace('-', ' ')}
               </span>
             </div>
+
+            <div className="p-6 space-y-6">
+              {/* Contact + Region row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Contact</p>
+                  <div className="flex items-center gap-2">
+                    {contactPref === 'whatsapp' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                        <MessageCircle className="w-3 h-3" /> WhatsApp
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                        <Mail className="w-3 h-3" /> Email
+                      </span>
+                    )}
+                    <span className="text-sm text-stone-700 font-medium truncate">{contactValue}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Region</p>
+                  <p className="text-sm font-medium text-stone-800">
+                    {route.region?.split(',').map((r: string) => regionLabels[r.trim()] || r.trim()).join(', ') || 'Not specified'}
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Enquired</p>
+                  <p className="text-sm font-medium text-stone-800">
+                    {new Date(route.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Vibes */}
+              {vibes.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Vibes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {vibes.map((vibe: string) => {
+                      const v = vibeLabels[vibe] || { label: vibe, icon: '✨', color: 'bg-stone-100 text-stone-700' };
+                      return (
+                        <span key={vibe} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${v.color}`}>
+                          <span>{v.icon}</span> {v.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Route of interest */}
+              {selectedRoute && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Route of Interest</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-2 bg-sb-orange-50 border border-sb-orange-200 rounded-lg">
+                    <MapPin className="w-4 h-4 text-sb-orange-500" />
+                    <span className="text-sm font-semibold text-sb-orange-800">{selectedRoute.replace(/-/g, ' ')}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Call brief */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+                <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Call Brief</p>
+                <ul className="text-sm text-amber-900 space-y-1.5">
+                  {contactPref === 'whatsapp' && (
+                    <li>• Prefers <strong>WhatsApp</strong> — open with a voice note or short message, not a cold call</li>
+                  )}
+                  {vibes.includes('beach') && <li>• Into beach and coastal destinations — lean into Bali, Da Nang, Playa del Carmen</li>}
+                  {vibes.includes('city-culture') && <li>• City and culture focus — think Bangkok, Buenos Aires, Mexico City</li>}
+                  {vibes.includes('adventure-wellness') && <li>• Adventure and wellness oriented — Chiang Mai, Medellín, Tbilisi</li>}
+                  {selectedRoute && <li>• Expanded the <strong>{selectedRoute.replace(/-/g, ' ')}</strong> route on discover — good starting point for the conversation</li>}
+                  {vibes.length === 0 && !selectedRoute && <li>• No vibes or route selected — use the call to understand lifestyle priorities before recommending anything</li>}
+                </ul>
+              </div>
+            </div>
           </div>
-        ) : (
+        );
+      })()}
+
+      {/* Preferences (legacy route-builder leads) */}
+      {(route.preferences as any)?.source !== 'discover-page' && (
+        <div className="bg-white rounded-xl border border-stone-200 p-6">
+          <h2 className="text-lg font-semibold text-stone-900 mb-4">Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <h3 className="text-sm font-medium text-stone-600 mb-2">Lifestyle</h3>
               <div className="flex flex-wrap gap-2">
                 {route.preferences.lifestyle?.length > 0 ? (
                   route.preferences.lifestyle.map((item, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
-                    >
-                      {item}
-                    </span>
+                    <span key={idx} className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">{item}</span>
                   ))
                 ) : (
                   <span className="text-sm text-stone-400 italic">Not specified</span>
@@ -385,12 +444,7 @@ export default function RouteDetailClient() {
               <div className="flex flex-wrap gap-2">
                 {route.preferences.workSetup?.length > 0 ? (
                   route.preferences.workSetup.map((item, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm"
-                    >
-                      {item}
-                    </span>
+                    <span key={idx} className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">{item}</span>
                   ))
                 ) : (
                   <span className="text-sm text-stone-400 italic">Not specified</span>
@@ -400,16 +454,14 @@ export default function RouteDetailClient() {
             <div>
               <h3 className="text-sm font-medium text-stone-600 mb-2">Travel Style</h3>
               {route.preferences.travelStyle ? (
-                <span className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">
-                  {route.preferences.travelStyle}
-                </span>
+                <span className="px-2 py-1 bg-stone-100 text-stone-700 rounded-md text-sm">{route.preferences.travelStyle}</span>
               ) : (
                 <span className="text-sm text-stone-400 italic">Not specified</span>
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Stops */}
       <div className="bg-white rounded-xl border border-stone-200 p-6">

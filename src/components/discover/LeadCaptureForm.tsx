@@ -4,15 +4,16 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MessageCircle, Check } from 'lucide-react';
 import { RegionKey } from '@/lib/cityPresets';
-import { BudgetKey } from '@/lib/tripTemplates';
+import { VibeKey } from '@/components/discover/VibeSelector';
 import Link from 'next/link';
 
 interface LeadCaptureFormProps {
   selectedRegions: RegionKey[];
-  selectedBudget: BudgetKey | null;
+  selectedVibes: VibeKey[];
+  selectedRouteId: string | null;
 }
 
-export default function LeadCaptureForm({ selectedRegions, selectedBudget }: LeadCaptureFormProps) {
+export default function LeadCaptureForm({ selectedRegions, selectedVibes, selectedRouteId }: LeadCaptureFormProps) {
   const [name, setName] = useState('');
   const [contactType, setContactType] = useState<'email' | 'whatsapp'>('email');
   const [contactValue, setContactValue] = useState('');
@@ -61,10 +62,21 @@ export default function LeadCaptureForm({ selectedRegions, selectedBudget }: Lea
       
       // Format email for API (WhatsApp uses special format)
       const email = contactType === 'email' ? contactValue : `${contactValue}@whatsapp`;
-      
-      // Create notes with user selections
-      const budgetLabel = selectedBudget ? `R${selectedBudget}k/mo` : 'not specified';
-      const notes = `Lead from discover page. Budget: ${budgetLabel}. Regions: ${selectedRegions.join(', ')}`;
+
+      // Build human-readable notes for the team
+      const vibeLabels: Record<VibeKey, string> = {
+        'beach': 'Beach & Chill',
+        'city-culture': 'City & Culture',
+        'adventure-wellness': 'Adventure & Wellness',
+      };
+      const vibeText = selectedVibes.map((v) => vibeLabels[v]).join(', ') || 'not specified';
+      const notes = [
+        `Lead from discover page.`,
+        `Contact preference: ${contactType}.`,
+        `Regions: ${selectedRegions.join(', ')}.`,
+        `Vibes: ${vibeText}.`,
+        selectedRouteId ? `Route of interest: ${selectedRouteId}.` : null,
+      ].filter(Boolean).join(' ');
 
       const response = await fetch(apiUrl('routes'), {
         method: 'POST',
@@ -77,7 +89,9 @@ export default function LeadCaptureForm({ selectedRegions, selectedBudget }: Lea
           region: selectedRegions.join(','),
           stops: [],
           preferences: {
-            budget: selectedBudget,
+            vibes: selectedVibes,
+            selectedRoute: selectedRouteId,
+            contactPreference: contactType,
             source: 'discover-page',
           },
           notes: notes,
@@ -142,10 +156,10 @@ export default function LeadCaptureForm({ selectedRegions, selectedBudget }: Lea
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <Link
-            href="/route-builder"
+            href={selectedRouteId ? `/templates/${selectedRouteId}` : '/templates'}
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-bold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
           >
-            <span>Build Your Full Itinerary</span>
+            <span>View Your Itinerary</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
@@ -154,7 +168,7 @@ export default function LeadCaptureForm({ selectedRegions, selectedBudget }: Lea
             href="/templates"
             className="inline-flex items-center justify-center px-8 py-4 bg-white hover:bg-gray-50 text-sb-navy-900 font-bold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-gray-200"
           >
-            Browse Popular Trips
+            Browse All Trips
           </Link>
         </div>
       </motion.div>
