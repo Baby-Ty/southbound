@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, region, stops, preferences, notes } = body;
+    const { name, email, phone, region, stops, preferences, notes, source, templateId, templateName, story } = body;
 
     if (!name || !email || !region || !stops || !preferences) {
       return NextResponse.json(
@@ -56,11 +56,16 @@ export async function POST(request: NextRequest) {
     const route = await saveRoute({
       name: name.trim(),
       email,
+      ...(phone && { phone: phone.trim() }),
       region,
       stops,
       preferences,
-      status: 'draft',
+      status: 'submitted',
       notes: notes || '',
+      ...(source && { source }),
+      ...(templateId && { templateId }),
+      ...(templateName && { templateName }),
+      ...(story && { story }),
     });
 
     return NextResponse.json({ route }, { status: 201 });

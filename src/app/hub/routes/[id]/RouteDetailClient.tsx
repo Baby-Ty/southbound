@@ -18,6 +18,12 @@ import {
   Trash2,
   Save,
   X,
+  Phone,
+  ExternalLink,
+  Copy,
+  Check,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
 import { apiUrl } from '@/lib/api';
@@ -49,6 +55,10 @@ export default function RouteDetailClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isEditingStops, setIsEditingStops] = useState(false);
+  const [editableStops, setEditableStops] = useState<SavedRoute['stops']>([]);
+  const [isSavingStops, setIsSavingStops] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     // Ensure we have a routeId before attempting to load
@@ -151,6 +161,42 @@ export default function RouteDetailClient() {
       console.error('Error deleting route:', err);
       alert('Failed to delete route: ' + err.message);
     }
+  }
+
+  async function saveStops() {
+    if (!route) return;
+    try {
+      setIsSavingStops(true);
+      const response = await fetch(apiUrl(`routes/${routeId}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stops: editableStops }),
+      });
+      if (!response.ok) throw new Error('Failed to update stops');
+      const data = await response.json();
+      setRoute(data.route);
+      setIsEditingStops(false);
+    } catch (err: any) {
+      alert('Failed to save stops: ' + err.message);
+    } finally {
+      setIsSavingStops(false);
+    }
+  }
+
+  function getClientLink() {
+    if (!routeId) return '';
+    const origin = window.location.origin;
+    return route?.templateId
+      ? `${origin}/templates/${route.templateId}?saved=${routeId}`
+      : `${origin}/route/${routeId}`;
+  }
+
+  function copyClientLink() {
+    const link = getClientLink();
+    if (!link) return;
+    navigator.clipboard.writeText(link);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
   }
 
   const getRegionName = (region: string) => {
@@ -308,6 +354,61 @@ export default function RouteDetailClient() {
         </div>
       </div>
 
+      {/* ── Source + shareable link bar ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {route.source === 'template' ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sb-orange-100 text-sb-orange-700 rounded-full text-xs font-bold">
+              🗺️ Template save
+            </span>
+          ) : route.source === 'route-builder' ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-bold">
+              🛠️ Route builder
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-stone-200 text-stone-600 rounded-full text-xs font-bold">
+              📋 Lead
+            </span>
+          )}
+          {route.templateName && (
+            <span className="text-sm text-stone-600 font-medium">{route.templateName}</span>
+          )}
+          {route.templateId && (
+            <Link
+              href={`/templates/${route.templateId}`}
+              target="_blank"
+              className="inline-flex items-center gap-1 text-xs text-sb-orange-600 hover:text-sb-orange-700 transition-colors font-medium"
+            >
+              View template <ExternalLink className="w-3 h-3" />
+            </Link>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-stone-500">Client link:</span>
+          <code className="text-xs text-stone-600 bg-white border border-stone-200 rounded px-2 py-0.5 max-w-[220px] truncate">
+            {route?.templateId
+              ? `/templates/${route.templateId}?saved=${routeId}`
+              : `/route/${routeId}`}
+          </code>
+          <button
+            onClick={copyClientLink}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-sb-orange-600 hover:text-sb-orange-700 transition-colors"
+          >
+            {linkCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {linkCopied ? 'Copied!' : 'Copy'}
+          </button>
+          <a
+            href={getClientLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-stone-500 hover:text-stone-700 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Open
+          </a>
+        </div>
+      </div>
+
       {/* ── Client Profile ── */}
       {(() => {
         const prefs = route.preferences as any;
@@ -358,6 +459,12 @@ export default function RouteDetailClient() {
                     )}
                     <span className="text-sm text-stone-700 font-medium truncate">{contactValue}</span>
                   </div>
+                  {route.phone && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Phone className="w-3.5 h-3.5 text-stone-400" />
+                      <a href={`tel:${route.phone}`} className="text-sm text-stone-700 font-medium hover:text-sb-orange-600 transition-colors">{route.phone}</a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -463,102 +570,139 @@ export default function RouteDetailClient() {
         </div>
       )}
 
+      {/* Story */}
+      {route.story && (
+        <div className="bg-sb-navy-800 rounded-xl p-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-sb-orange-400 mb-3">The Journey</p>
+          <p className="text-white/90 leading-relaxed">{route.story}</p>
+        </div>
+      )}
+
       {/* Stops */}
       <div className="bg-white rounded-xl border border-stone-200 p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Route Stops</h2>
-        {route.stops.length === 0 ? (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-stone-900">Route Stops</h2>
+          {!isEditingStops ? (
+            <button
+              onClick={() => { setEditableStops(route.stops); setIsEditingStops(true); }}
+              className="px-3 py-1.5 text-sm bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" /> Edit Stops
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveStops}
+                disabled={isSavingStops}
+                className="px-3 py-1.5 text-sm bg-sb-orange-500 text-white rounded-lg hover:bg-sb-orange-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSavingStops ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Save
+              </button>
+              <button
+                onClick={() => setIsEditingStops(false)}
+                className="px-3 py-1.5 text-sm bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors flex items-center gap-2"
+              >
+                <X className="w-4 h-4" /> Cancel
+              </button>
+            </div>
+          )}
+        </div>
+        {/* ── Edit mode ── */}
+        {isEditingStops ? (
+          <div className="space-y-3">
+            {editableStops.map((stop, index) => (
+              <div key={stop.id} className="border border-stone-200 rounded-lg p-4 bg-stone-50">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-xs font-bold text-stone-400 w-5 text-center">{index + 1}</span>
+                  <input
+                    type="text"
+                    value={stop.city}
+                    onChange={e => setEditableStops(prev => prev.map((s, i) => i === index ? { ...s, city: e.target.value } : s))}
+                    className="flex-1 min-w-[140px] px-3 py-2 rounded-lg border border-stone-300 text-sm focus:border-sb-orange-400 focus:outline-none"
+                    placeholder="City"
+                  />
+                  <input
+                    type="text"
+                    value={stop.country}
+                    onChange={e => setEditableStops(prev => prev.map((s, i) => i === index ? { ...s, country: e.target.value } : s))}
+                    className="w-36 px-3 py-2 rounded-lg border border-stone-300 text-sm focus:border-sb-orange-400 focus:outline-none"
+                    placeholder="Country"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setEditableStops(prev => prev.map((s, i) => i === index ? { ...s, weeks: Math.max(1, s.weeks - 1) } : s))}
+                      className="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center hover:bg-stone-200 transition-colors"
+                    ><Minus className="w-3 h-3" /></button>
+                    <span className="text-sm font-semibold w-16 text-center text-stone-700">{stop.weeks}w</span>
+                    <button
+                      onClick={() => setEditableStops(prev => prev.map((s, i) => i === index ? { ...s, weeks: s.weeks + 1 } : s))}
+                      className="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center hover:bg-stone-200 transition-colors"
+                    ><Plus className="w-3 h-3" /></button>
+                  </div>
+                  <textarea
+                    value={stop.highlights.notes}
+                    onChange={e => setEditableStops(prev => prev.map((s, i) => i === index ? { ...s, highlights: { ...s.highlights, notes: e.target.value } } : s))}
+                    className="flex-1 min-w-[180px] px-3 py-2 rounded-lg border border-stone-300 text-sm focus:border-sb-orange-400 focus:outline-none resize-none"
+                    placeholder="Notes (accommodation, specifics...)"
+                    rows={2}
+                  />
+                  <button
+                    onClick={() => setEditableStops(prev => prev.filter((_, i) => i !== index))}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                    title="Remove stop"
+                  ><Trash2 className="w-4 h-4" /></button>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => setEditableStops(prev => [...prev, {
+                id: `stop-${Date.now()}`,
+                city: '',
+                country: '',
+                weeks: 4,
+                budgetCoins: 2,
+                tags: [],
+                highlights: { places: [], accommodation: '', activities: [], notes: '' },
+              }])}
+              className="flex items-center gap-2 text-sm font-semibold text-sb-orange-600 hover:text-sb-orange-700 transition-colors mt-1"
+            >
+              <Plus className="w-4 h-4" /> Add stop
+            </button>
+          </div>
+        ) : route.stops.length === 0 ? (
           <div className="text-center py-8">
             <MapPin className="w-12 h-12 mx-auto mb-4 text-stone-300" />
             <p className="text-stone-500 mb-2">No itinerary stops yet</p>
             <p className="text-sm text-stone-400">
-              {(route.preferences as any)?.source === 'discover-page' 
-                ? 'This lead came from the discover page and hasn\'t built an itinerary yet.'
-                : 'This route doesn\'t have any stops added.'}
+              {(route.preferences as any)?.source === 'discover-page'
+                ? "This lead came from the discover page and hasn't built an itinerary yet."
+                : "This route doesn't have any stops added."}
             </p>
           </div>
         ) : (
-        <div className="space-y-4">
-          {route.stops.map((stop, index) => (
-            <div
-              key={stop.id}
-              className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-stone-900">
-                    {index + 1}. {stop.city}, {stop.country}
-                  </h3>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4" />
-                      {stop.weeks} {stop.weeks === 1 ? 'week' : 'weeks'}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-lg">
-                        {stop.budgetCoins === 1 ? '💰' : stop.budgetCoins === 2 ? '💰💰' : '💰💰💰'}
-                      </span>
-                      Budget
+          <div className="space-y-4">
+            {route.stops.map((stop, index) => (
+              <div key={stop.id} className="border border-stone-200 rounded-lg p-4 hover:bg-stone-50 transition-colors">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-stone-900">
+                      {index + 1}. {stop.city}{stop.country ? `, ${stop.country}` : ''}
+                    </h3>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-stone-600">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4" />
+                        {stop.weeks} {stop.weeks === 1 ? 'week' : 'weeks'}
+                      </div>
                     </div>
                   </div>
                 </div>
+                {stop.highlights?.notes && (
+                  <p className="text-sm text-stone-600 mt-2 pt-2 border-t border-stone-100">{stop.highlights.notes}</p>
+                )}
               </div>
-
-              {stop.tags && stop.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {stop.tags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {stop.highlights && (
-                <div className="space-y-3 mt-4 pt-4 border-t border-stone-200">
-                  {stop.highlights.accommodation && (
-                    <div>
-                      <h4 className="text-sm font-medium text-stone-700 mb-1">Accommodation</h4>
-                      <p className="text-sm text-stone-600">{stop.highlights.accommodation}</p>
-                    </div>
-                  )}
-                  
-                  {stop.highlights.activities && stop.highlights.activities.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-stone-700 mb-1">Activities</h4>
-                      <ul className="list-disc list-inside text-sm text-stone-600 space-y-1">
-                        {stop.highlights.activities.map((activity, idx) => (
-                          <li key={idx}>{activity}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {stop.highlights.places && Array.isArray(stop.highlights.places) && stop.highlights.places.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-stone-700 mb-1">Places to Visit</h4>
-                      <ul className="list-disc list-inside text-sm text-stone-600 space-y-1">
-                        {stop.highlights.places.map((place, idx) => {
-                          const placeName = typeof place === 'string' ? place : place.title;
-                          return <li key={idx}>{placeName}</li>;
-                        })}
-                      </ul>
-                    </div>
-                  )}
-
-                  {stop.highlights.notes && (
-                    <div>
-                      <h4 className="text-sm font-medium text-stone-700 mb-1">Notes</h4>
-                      <p className="text-sm text-stone-600">{stop.highlights.notes}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
       </div>
 

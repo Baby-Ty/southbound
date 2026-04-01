@@ -83,6 +83,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${patrickHand.variable} ${dmSans.variable} ${plusJakartaSans.variable} ${playfair.variable}`}>
+      <head>
+        {/* Resource hints for external domains */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://cdn.sanity.io" />
+        <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+      </head>
       <body
         className="antialiased"
       >

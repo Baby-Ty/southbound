@@ -69,6 +69,9 @@ function TripOptionsContent() {
   const styleParam = searchParams.get("style") || "nomad";
   const seedVersion = searchParams.get("v") || "1";
   const templateParam = searchParams.get("template");
+  const baseCityParam = searchParams.get("baseCity");
+  const sourceParam = searchParams.get("source");
+  const isExtend = sourceParam === "extend";
   
   const region: RegionKey = useMemo(() => {
     if (regionParam === "europe" || regionParam === "southeast-asia") return regionParam;
@@ -133,6 +136,37 @@ function TripOptionsContent() {
 
     async function init() {
       setIsMounted(true);
+
+      // Extend-trip flow: skip cache, seed base city first then fill region
+      if (isExtend && baseCityParam) {
+        const regionPresets =
+          (await getCitiesForRegion(region).catch(() => null)) || (CITY_PRESETS[region] || []);
+        const basePreset =
+          regionPresets.find((p) => p.city.toLowerCase() === baseCityParam.toLowerCase()) ||
+          regionPresets.find((p) => p.city.toLowerCase().includes(baseCityParam.toLowerCase()));
+        const otherPresets = regionPresets
+          .filter((p) => p.city !== basePreset?.city && !p.isDetour)
+          .slice(0, 2);
+        const seedCities = basePreset ? [basePreset, ...otherPresets] : regionPresets.slice(0, 3);
+        const selectedStops = seedCities.map((p, i) => {
+          const stop = makeStopFromPreset(p, i);
+          stop.weeks = 4;
+          stop.weeksEdited = true;
+          return stop;
+        });
+        if (!cancelled) {
+          setState((prev) => ({
+            ...prev,
+            travelStyle: styleParam,
+            base: selectedStops[0]?.city || prev.base,
+            stops: selectedStops,
+            seedVersion: "extend",
+            seedSignature: `extend:${baseCityParam}`,
+          }));
+        }
+        return;
+      }
+
       const raw = localStorage.getItem(STORAGE_KEY);
 
       // Compute the current "default trip signature" (if any) so we can invalidate
@@ -328,7 +362,7 @@ function TripOptionsContent() {
     return () => {
       cancelled = true;
     };
-  }, [region, styleParam, seedVersion, templateParam]);
+  }, [region, styleParam, seedVersion, templateParam, isExtend, baseCityParam]);
 
   // autosave
   useEffect(() => {
@@ -531,20 +565,30 @@ function TripOptionsContent() {
         <div className="relative text-center space-y-6 mb-16">
           <div className="inline-block rotate-[-2deg] mb-2">
             <div className="bg-sb-orange-100 text-sb-orange-700 px-4 py-1 rounded-sm shadow-sm border border-sb-orange-200 font-handwritten text-xl transform hover:scale-105 transition-transform cursor-default">
-              Customized just for you ✦
+              {isExtend ? `Extending from ${baseCityParam} ✦` : 'Customized just for you ✦'}
             </div>
           </div>
-          
+
           <h1 className="text-5xl sm:text-7xl font-bold text-sb-navy-700 tracking-tight leading-tight">
             Your <span className="relative inline-block">
               <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-sb-teal-600 to-sb-orange-500">{regionName}</span>
               <span className="absolute -bottom-2 left-0 w-full h-3 bg-sb-orange-200/40 -skew-x-6 -z-10 rounded-sm"></span>
             </span> Adventure
           </h1>
-          
+
           <p className="text-xl sm:text-2xl text-sb-navy-600/80 max-w-2xl mx-auto font-medium leading-relaxed font-serif">
-            Morning coffees, afternoon work sprints, weekend waterfalls: here is your next 90 days.
+            {isExtend
+              ? `Starting in ${baseCityParam}, then wherever you want to go. Edit, swap, or add cities below.`
+              : 'Morning coffees, afternoon work sprints, weekend waterfalls: here is your next 90 days.'}
           </p>
+
+          {/* Extend banner */}
+          {isExtend && baseCityParam && (
+            <div className="inline-flex items-center gap-3 bg-sb-teal-50 border border-sb-teal-200 text-sb-teal-800 text-sm px-5 py-2.5 rounded-full mt-2">
+              <span className="w-2 h-2 rounded-full bg-sb-teal-500 flex-shrink-0" />
+              <span><strong>{baseCityParam}</strong> is locked in as stop 1. Drag, swap, or add cities to shape your route.</span>
+            </div>
+          )}
         </div>
 
         {/* Trip at a Glance - Scrapbook Style */}

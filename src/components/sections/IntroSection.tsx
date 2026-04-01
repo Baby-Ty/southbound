@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const IntroSection = () => {
   return (
-    <section className="py-24 bg-stone-50 border-b border-stone-100 relative overflow-hidden">
+    <section className="py-24 bg-white border-b border-stone-100 relative overflow-hidden">
       {/* Subtle background elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-30">
         <div className="absolute top-10 left-10 w-64 h-64 bg-[#E86B32]/5 rounded-full blur-3xl"></div>

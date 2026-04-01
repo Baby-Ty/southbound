@@ -343,15 +343,7 @@ html.lenis, html.lenis body {
   position: relative;
 }
 .texture-lined-paper::before {
-  /* Red vertical margin line */
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 3rem;
-  width: 1px;
-  background-color: #ef4444;
-  opacity: 0.3;
+  content: none;
 }
 
 /* Gentle animations for section dividers */

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -13,11 +13,13 @@ import {
 } from 'lucide-react';
 import { SavedRoute } from '@/lib/cosmos';
 import { apiUrl } from '@/lib/api';
+import InsuranceBanner from '@/components/InsuranceBanner';
 
 export default function RouteViewClient() {
   const params = useParams();
+  const router = useRouter();
   const routeId = params?.id as string;
-  
+
   const [route, setRoute] = useState<SavedRoute | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function RouteViewClient() {
       setLoading(true);
       setError(null);
       const response = await fetch(apiUrl(`routes/${routeId}`));
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           setError('Route not found');
@@ -42,8 +44,13 @@ export default function RouteViewClient() {
         }
         return;
       }
-      
+
       const data = await response.json();
+      // If this route was saved from a template, redirect to the rich template view
+      if (data.route?.templateId) {
+        router.replace(`/templates/${data.route.templateId}?saved=${routeId}`);
+        return;
+      }
       setRoute(data.route);
     } catch (err: any) {
       console.error('Error loading route:', err);
@@ -273,6 +280,12 @@ export default function RouteViewClient() {
             <p className="text-sm text-stone-600 whitespace-pre-wrap">{route.notes}</p>
           </div>
         )}
+
+        {/* Insurance Banner */}
+        <InsuranceBanner
+          variant="route"
+          duration={`${getTotalWeeks(route.stops)} weeks`}
+        />
       </div>
     </div>
   );

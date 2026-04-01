@@ -72,6 +72,7 @@ export function apiUrl(path: string): string {
   const isTripTemplatesRoute = cleanPath.startsWith('trip-templates');
   const isRoutesRoute = cleanPath.startsWith('routes');
   const isCitiesRoute = cleanPath.startsWith('cities');
+  const isCityGuidesRoute = cleanPath.startsWith('city-guides');
   const isDefaultTripsRoute = cleanPath.startsWith('default-trips');
   
   // Check if we're on localhost (for local development)
@@ -91,7 +92,7 @@ export function apiUrl(path: string): string {
   
   // These routes use local Next.js API only on localhost (for development)
   // In production, they go to Azure Functions
-  if ((isCountriesRoute || isTripTemplatesRoute || isRoutesRoute || isCitiesRoute || isDefaultTripsRoute) && isLocalhost) {
+  if ((isCountriesRoute || isTripTemplatesRoute || isRoutesRoute || isCitiesRoute || isCityGuidesRoute || isDefaultTripsRoute) && isLocalhost) {
     const finalUrl = `/api/${cleanPath}`;
     console.log('[apiUrl] Using local Next.js API route:', finalUrl);
     return finalUrl;

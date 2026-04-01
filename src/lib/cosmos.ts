@@ -110,6 +110,7 @@ export interface SavedRoute {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   region: string;
   stops: StopPlan[];
   preferences: {
@@ -122,6 +123,10 @@ export interface SavedRoute {
   updatedAt: string;
   notes?: string;
   adminNotes?: string;
+  source?: 'route-builder' | 'template';
+  templateId?: string;
+  templateName?: string;
+  story?: string;
 }
 
 export interface HighlightItem {
@@ -156,14 +161,26 @@ const LEADS_CONTAINER_ID = 'leads';
 const TRIP_TEMPLATES_CONTAINER_ID = 'tripTemplates';
 
 // Route CRUD Operations
+function generateRouteId(name?: string): string {
+  const digits = String(Math.floor(1000 + Math.random() * 9000));
+  if (name) {
+    const slug = name
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)[0]           // first name only
+      .replace(/[^a-z0-9]/g, ''); // strip anything non-alphanumeric
+    if (slug) return `${slug}-${digits}`;
+  }
+  return `trip-${digits}`;
+}
+
 export async function saveRoute(routeData: Omit<SavedRoute, 'id' | 'createdAt' | 'updatedAt'>): Promise<SavedRoute> {
   try {
     const container = await getContainer(ROUTES_CONTAINER_ID);
-    const { nanoid } = await import('nanoid');
-    
+
     const route: SavedRoute = {
       ...routeData,
-      id: nanoid(),
+      id: generateRouteId(routeData.name),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

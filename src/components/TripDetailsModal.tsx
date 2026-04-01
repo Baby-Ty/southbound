@@ -2,7 +2,18 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { X, Calendar, MapPin, Users, Wifi, Coffee, Plane } from 'lucide-react';
+import { X, Calendar, MapPin, Users, Wifi, Coffee, Plane, ArrowRight } from 'lucide-react';
+import InsuranceBanner from './InsuranceBanner';
+
+// Maps each popular trip to its region and suggested extension cities
+const EXTENSION_MAP: Record<string, { region: string; baseCity: string; suggestions: string[] }> = {
+  'mexico-playa-del-carmen': { region: 'latin-america', baseCity: 'Playa del Carmen', suggestions: ['Mexico City', 'Medellín', 'Buenos Aires'] },
+  'argentina-buenos-aires':  { region: 'latin-america', baseCity: 'Buenos Aires',     suggestions: ['Mexico City', 'Medellín', 'Rio'] },
+  'ecuador-cuenca':          { region: 'latin-america', baseCity: 'Cuenca',            suggestions: ['Lima', 'Buenos Aires', 'Mexico City'] },
+  'indonesia-canggu-bali':   { region: 'southeast-asia', baseCity: 'Bali (Canggu)',   suggestions: ['Chiang Mai', 'Da Nang'] },
+  'vietnam-da-nang':         { region: 'southeast-asia', baseCity: 'Da Nang',          suggestions: ['Bali (Canggu)', 'Chiang Mai'] },
+  'georgia-tbilisi':         { region: 'europe',         baseCity: 'Tbilisi',          suggestions: ['Lisbon', 'Budapest', 'Split'] },
+};
 
 interface Trip {
   _id: string;
@@ -218,7 +229,13 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
 		imageUrl: imageUrl || 'https://picsum.photos/800/400?random=100',
 	};
 
-	const tripDetails = getTripDetails(resolvedTrip);
+  const rawDetails = getTripDetails(resolvedTrip);
+  const tripDetails = {
+    ...rawDetails,
+    includes: rawDetails.includes.includes('Santam travel insurance')
+      ? rawDetails.includes
+      : [...rawDetails.includes, 'Santam travel insurance'],
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -349,8 +366,55 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
               </div>
             </div>
 
+            {/* Insurance Banner */}
+            <InsuranceBanner variant="modal" duration={resolvedTrip.duration} />
+
+            {/* Extend Trip Section */}
+            {EXTENSION_MAP[resolvedTrip._id] && (() => {
+              const ext = EXTENSION_MAP[resolvedTrip._id];
+              const params = new URLSearchParams({
+                region: ext.region,
+                baseCity: ext.baseCity,
+                source: 'extend',
+                v: '5',
+              });
+              return (
+                <div className="mt-8 pt-6 border-t border-sb-navy-100">
+                  <div className="bg-gradient-to-br from-sb-teal-50 to-sb-mint-50 rounded-2xl p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-sb-teal-700 uppercase tracking-wider mb-1">Want to stay longer?</p>
+                        <p className="text-sb-navy-700 font-semibold text-base mb-3">
+                          This is a starting point. Most people extend to 180 days.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="bg-white border border-sb-navy-200 text-sb-navy-600 text-xs px-3 py-1 rounded-full font-medium">
+                            {ext.baseCity}
+                          </span>
+                          <span className="text-sb-navy-400 text-xs flex items-center">+</span>
+                          {ext.suggestions.slice(0, 2).map(city => (
+                            <span key={city} className="bg-white border border-dashed border-sb-teal-300 text-sb-teal-700 text-xs px-3 py-1 rounded-full font-medium">
+                              {city}
+                            </span>
+                          ))}
+                          <span className="text-sb-navy-400 text-xs flex items-center">+ more</span>
+                        </div>
+                      </div>
+                    </div>
+                    <a
+                      href={`/trip-options?${params.toString()}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-sb-teal-600 hover:bg-sb-teal-700 text-white text-sm font-semibold rounded-full transition-all hover:scale-105 shadow-sm"
+                    >
+                      Extend to 180 days
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* CTA Section */}
-            <div className="mt-8 pt-8 border-t border-sb-navy-200">
+            <div className="mt-6 pt-6 border-t border-sb-navy-200">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <div className="text-3xl font-bold text-sb-navy-700">
@@ -360,7 +424,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
                     per month • all-inclusive
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3">
                   <button onClick={() => setPrelaunchOpen(true)} className="px-6 py-3 border-2 border-sb-orange-500 text-sb-orange-500 font-semibold rounded-full hover:bg-sb-orange-50 transition-colors">
                     Save for Later

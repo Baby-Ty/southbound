@@ -9,7 +9,7 @@ import { tripAdvisorClient } from '@/lib/tripadvisor';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, locationId, cityName, countryName, limit = 20 } = body;
+    const { query, locationId, cityName, countryName, limit = 20, includePhotos = true } = body;
 
     if (!query && !locationId && !cityName) {
       return NextResponse.json(
@@ -31,24 +31,24 @@ export async function POST(request: NextRequest) {
       // Search by location ID
       const locationDetails = await tripAdvisorClient.getLocationDetails(locationId);
       if (locationDetails) {
-        results = [await tripAdvisorClient.locationToActivity(locationDetails)];
+        results = [await tripAdvisorClient.locationToActivity(locationDetails, includePhotos)];
       } else {
         results = [];
       }
     } else if (cityName) {
       // Search by city name (for ActivityPickerModal)
-      const searchQuery = countryName 
-        ? `things to do ${cityName} ${countryName}` 
+      const searchQuery = countryName
+        ? `things to do ${cityName} ${countryName}`
         : `things to do ${cityName}`;
       const locations = await tripAdvisorClient.searchLocations(searchQuery, { limit });
       results = await Promise.all(
-        locations.map((loc) => tripAdvisorClient.locationToActivity(loc))
+        locations.map((loc) => tripAdvisorClient.locationToActivity(loc, includePhotos))
       );
     } else {
       // Search by query
       const locations = await tripAdvisorClient.searchLocations(query, { limit });
       results = await Promise.all(
-        locations.map((loc) => tripAdvisorClient.locationToActivity(loc))
+        locations.map((loc) => tripAdvisorClient.locationToActivity(loc, includePhotos))
       );
     }
 

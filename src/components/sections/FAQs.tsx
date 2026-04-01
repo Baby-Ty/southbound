@@ -31,10 +31,15 @@ const faqs = [
   {
     id: 5,
     question: 'What\'s included in the price?',
-    answer: 'Accommodation, coworking access, airport transfers, SIM card with data, 24/7 support, and visa assistance. Flights can be added, or you can book your own.'
+    answer: 'Accommodation, coworking access, Santam travel insurance, airport transfers, SIM card with data, 24/7 support, and visa assistance. Flights can be added, or you can book your own.'
   },
   {
     id: 6,
+    question: 'Is travel insurance included?',
+    answer: 'Yes. Every South Bound package includes a Santam travel insurance policy matched to your full trip duration—whether that\'s 90 days or longer. It covers emergency medical (up to R120 million), trip cancellation, lost luggage, and 24/7 emergency support via WhatsApp. You don\'t need to source your own policy separately.'
+  },
+  {
+    id: 7,
     question: 'Is this only for South Africans?',
     answer: 'We\'re built by South Africans, for South Africans—with SA remote work culture, time zones, and budgets in mind. If you\'re from elsewhere but vibe with that, get in touch!'
   }

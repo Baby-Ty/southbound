@@ -24,6 +24,13 @@ export async function GET(request: NextRequest) {
       cities = cities.filter(c => c.isDetour !== true);
     }
 
+    // Filter by specific city names (comma-separated)
+    const names = searchParams.get('names');
+    if (names) {
+      const nameList = names.split(',').map(n => n.trim().toLowerCase());
+      cities = cities.filter(c => nameList.includes(c.city.toLowerCase()));
+    }
+
     return NextResponse.json({ cities });
   } catch (error: any) {
     console.error('[API /cities] Error:', error);

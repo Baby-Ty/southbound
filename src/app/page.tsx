@@ -4,16 +4,16 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
 // Lazy load below-the-fold sections for better performance
-const HowItWorksSection = dynamic(() => import('@/components/HowItWorksSection'), {
-  loading: () => <div className="py-24 bg-white" />,
-});
-
 const DestinationsGrid = dynamic(() => import('@/components/sections/DestinationsGrid'), {
   loading: () => <div className="py-24 bg-white" />,
 });
 
 const ExperienceSection = dynamic(() => import('@/components/sections/ExperienceSection'), {
   loading: () => <div className="py-24 bg-stone-900" />,
+});
+
+const WorkReadySection = dynamic(() => import('@/components/sections/WorkReady').then(mod => ({ default: mod.WorkReadySection })), {
+  loading: () => <div className="py-24 bg-[#FDF6EF]" />,
 });
 
 const OurPromiseSection = dynamic(() => import('@/components/OurPromiseSection'), {
@@ -35,8 +35,8 @@ export default function Home() {
         <Hero />
         <IntroSection />
         
-        <HowItWorksSection />
-        
+        <WorkReadySection />
+
         <div className="relative">
           <div className="absolute top-0 left-0 right-0 z-10 -translate-y-1/2">
              {/* Optional Divider spot if needed later */}
