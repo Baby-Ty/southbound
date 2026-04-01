@@ -183,18 +183,14 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
         return (
           <div className="absolute top-5 right-5 z-10 flex flex-col gap-1 items-end">
             {flags.map(({ emoji, country }, i) => (
-              <div key={i} className="relative group/flag flex items-center">
-                {/* Tooltip */}
-                <span className="absolute right-8 whitespace-nowrap bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-md pointer-events-none opacity-0 group-hover/flag:opacity-100 transition-opacity duration-150">
+              <div key={i} className="relative group/flag">
+                {/* Tooltip — appears above the flag */}
+                <span className="absolute bottom-8 right-0 whitespace-nowrap bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-md pointer-events-none opacity-0 group-hover/flag:opacity-100 transition-opacity duration-150">
                   {country}
                 </span>
                 {/* Flag circle */}
                 <div className="w-6 h-6 rounded-full overflow-hidden border border-white/30 opacity-75 hover:opacity-100 transition-opacity flex-shrink-0">
-                  <img
-                    src={flagUrl(emoji)}
-                    alt={country}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={flagUrl(emoji)} alt={country} className="w-full h-full object-cover" />
                 </div>
               </div>
             ))}
@@ -204,7 +200,7 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
 
       {/* Content Overlay */}
       <div className={`absolute bottom-0 left-0 right-0 p-6 text-white z-10 transform transition-transform duration-500 ease-out ${isExpanded ? 'translate-y-0' : 'translate-y-4'}`}>
-        
+
         <div className="mb-2 overflow-hidden">
           <h3 className="text-3xl font-bold mb-1">{dest.name}</h3>
           <div className="flex items-center gap-2 text-orange-300 font-medium">
