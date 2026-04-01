@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Wifi, Shield, Sun, ArrowRight, MapPin, Zap, Loader2 } from 'lucide-react';
 import { TripTemplate } from '@/lib/tripTemplates';
+import { CITY_PRESETS, CityPreset } from '@/lib/cityPresets';
 
 // Fallback destinations in case API fails or no curated templates
 const fallbackDestinations = [
@@ -74,6 +75,56 @@ const fallbackDestinations = [
 
 type DestinationType = typeof fallbackDestinations[0] | (TripTemplate & { link: string; tag: string; price: string; vibe: string; stats: typeof fallbackDestinations[0]['stats']; bestFor: string });
 
+// Mirrors the same helper used in TemplateDetailClient
+function flagUrl(emoji: string): string {
+  try {
+    const code = [...emoji]
+      .map(c => (c.codePointAt(0)! - 0x1F1E6 + 65))
+      .map(n => String.fromCharCode(n))
+      .join('')
+      .toLowerCase();
+    return `https://flagcdn.com/w80/${code}.png`;
+  } catch {
+    return '';
+  }
+}
+
+function findCityPreset(cityName: string): CityPreset | undefined {
+  const normalised = cityName.toLowerCase().replace(/[^a-z]/g, '');
+  for (const region of Object.values(CITY_PRESETS)) {
+    const match = region.find((c) => {
+      const cn = c.city.toLowerCase().replace(/[^a-z]/g, '');
+      return cn === normalised || normalised.includes(cn) || cn.includes(normalised);
+    });
+    if (match) return match;
+  }
+  return undefined;
+}
+
+// Returns unique { flag emoji, country name } pairs for a destination's cities
+function getCountryFlags(dest: DestinationType): Array<{ emoji: string; country: string }> {
+  const cities: string[] = 'presetCities' in dest && dest.presetCities
+    ? dest.presetCities
+    : [];
+
+  if (cities.length === 0) {
+    // Fallback: parse "City, Country" style name
+    const parts = (dest.name as string).split(', ');
+    if (parts.length > 1) cities.push(dest.name as string);
+  }
+
+  const seen = new Set<string>();
+  const result: Array<{ emoji: string; country: string }> = [];
+  for (const city of cities) {
+    const preset = findCityPreset(city);
+    if (preset?.flag && !seen.has(preset.flag)) {
+      seen.add(preset.flag);
+      result.push({ emoji: preset.flag, country: preset.country });
+    }
+  }
+  return result;
+}
+
 const DestinationCard = ({ dest }: { dest: DestinationType }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -124,6 +175,32 @@ const DestinationCard = ({ dest }: { dest: DestinationType }) => {
           {dest.tag}
         </span>
       </div>
+
+      {/* Country flag circles - top right, stacked vertically */}
+      {(() => {
+        const flags = getCountryFlags(dest);
+        if (flags.length === 0) return null;
+        return (
+          <div className="absolute top-5 right-5 z-10 flex flex-col gap-1 items-end">
+            {flags.map(({ emoji, country }, i) => (
+              <div key={i} className="relative group/flag flex items-center">
+                {/* Tooltip */}
+                <span className="absolute right-8 whitespace-nowrap bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-md pointer-events-none opacity-0 group-hover/flag:opacity-100 transition-opacity duration-150">
+                  {country}
+                </span>
+                {/* Flag circle */}
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-white/30 opacity-75 hover:opacity-100 transition-opacity flex-shrink-0">
+                  <img
+                    src={flagUrl(emoji)}
+                    alt={country}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Content Overlay */}
       <div className={`absolute bottom-0 left-0 right-0 p-6 text-white z-10 transform transition-transform duration-500 ease-out ${isExpanded ? 'translate-y-0' : 'translate-y-4'}`}>
