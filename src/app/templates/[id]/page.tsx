@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { TRIP_TEMPLATES } from '@/lib/tripTemplates';
 import TemplateDetailClient from './TemplateDetailClient';
@@ -21,5 +22,9 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   const template = findTemplate(id);
   if (!template) notFound();
-  return <TemplateDetailClient id={id} />;
+  return (
+    <Suspense fallback={null}>
+      <TemplateDetailClient id={id} />
+    </Suspense>
+  );
 }
