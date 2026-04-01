@@ -276,27 +276,13 @@ export default function TripResults({ selectedRegions, selectedVibes, preselecte
 
             {/* CTA Buttons */}
             <div className="pt-2 flex flex-wrap gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Scroll to lead capture form
-                  const formElement = document.getElementById('lead-capture-form');
-                  if (formElement) {
-                    formElement.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start'
-                    });
-                    // Focus the name input after scroll
-                    setTimeout(() => {
-                      const nameInput = document.getElementById('name');
-                      nameInput?.focus();
-                    }, 500);
-                  }
-                }}
+              <Link
+                href={`/templates/${trip.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="px-8 py-3 bg-sb-orange-500 hover:bg-sb-orange-600 text-white font-semibold rounded-full transition-all hover:scale-105 shadow-medium"
               >
                 Use this as a starting point
-              </button>
+              </Link>
               <Link
                 href={`/templates/${trip.id}`}
                 onClick={(e) => e.stopPropagation()}
